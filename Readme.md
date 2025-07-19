@@ -15,8 +15,7 @@ You only need to do this once:
 ```bash
 npm install -g pnpm
 ```
-
-From the root of the repo (/transcendence):
+After pulling changes from the root directory run :
 ``` bash
 pnpm install
 ```

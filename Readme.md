@@ -89,7 +89,7 @@ Always use pnpm install from the root directory.
 
     ```
 
-6. To use a share backage with frontend or backend, you need to add it by the following:
+6. To use a share package with frontend or backend, you need to add it by the following:
     ``` bash
     pnpm add @repo/trpc --workspace --filter backend  # installs the @repo/trpc package as a dependency specifically for the backend project
     ```

@@ -2,9 +2,9 @@ services:
   pong:
     container_name: pong
     build: .
-    working_dir: /app
+    working_dir: /pong
     volumes:
-      - .:/app
+      - .:/pong
     command: tail -f /dev/null
     ports:
       - "8080:8080"

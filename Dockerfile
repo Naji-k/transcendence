@@ -1,6 +1,6 @@
 FROM node:22
 
-WORKDIR /app
+WORKDIR /pong
 
 RUN npm install -g pnpm concurrently
 

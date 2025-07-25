@@ -16,7 +16,15 @@ You only need to do this once:
 npm install -g pnpm #at codam we don't have the rights to install pnpm
 ```
 
-   ### 🚨 At Codam add `npx` as a prefix to all pnpm commands
+   ### 🚨 At Codam 
+
+```bash
+docker compose up -d
+docker compose exec pong bash
+
+pnpm install
+```
+
 
 After pulling changes from the root directory run :
 ``` bash

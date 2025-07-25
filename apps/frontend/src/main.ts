@@ -4,20 +4,11 @@ import HavokPhysics from '@babylonjs/havok';
 const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 const keys: Record<string, boolean> = {};
 
-async function getPhysics(): Promise<any>
-{
-	const havokInstance = await HavokPhysics(
-	{
-		locateFile: (file: string) =>
-		{
-			if (file.endsWith('.wasm'))
-			{
-				return 'dist/HavokPhysics.wasm';
-			}
-			return file;
-		}
+export async function getPhysics(): Promise<any> {
+	const havok = await HavokPhysics({
+		locateFile: (file: string) => `/${file}`  // not dist/, not ./, just `/`
 	});
-	return havokInstance;
+	return havok;
 }
 
 async function startGame()

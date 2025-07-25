@@ -410,6 +410,9 @@ packages:
   avvio@9.1.0:
     resolution: {integrity: sha512-fYASnYi600CsH/j9EQov7lECAniYiBFiiAtBNuZYLA2leLe9qOvZzqYHFjtIj6gD2VMoMLP14834LFWvr4IfDw==}
 
+  babylonjs@8.18.0:
+    resolution: {integrity: sha512-ca6bW21v+9GKSLdXjs4wWXSFXPP0dhNk+sMoSoX0Zwpx5IWuqcyCaPGuu1ducpA+KzrGOibX7Aljjw2/ym/O5w==}
+
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
@@ -970,6 +973,8 @@ snapshots:
     dependencies:
       '@fastify/error': 4.2.0
       fastq: 1.19.1
+
+  babylonjs@8.18.0: {}
 
   balanced-match@1.0.2: {}
 

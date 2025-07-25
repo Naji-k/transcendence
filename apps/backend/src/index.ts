@@ -1,6 +1,15 @@
-console.log('Hello from TypeScript backend!');
+import { buildServer } from "./server";
 
-// Example basic server setup
-const PORT = process.env.PORT || 3000;
+const fastify = buildServer();
 
-console.log(`Backend server ready on port ${PORT}`);
+const start = async () => {
+  try {
+    await fastify.listen({ port: 3000, host: "0.0.0.0" });
+    console.log("🚀 Server running at http://localhost:3000");
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+};
+
+start();

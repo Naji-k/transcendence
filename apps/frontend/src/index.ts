@@ -1,4 +1,8 @@
 export * from './gameObjects/ball';
 export * from './gameObjects/paddle';
-// export * from './draw';
-export * from './game';
+export * from './gameObjects/wall';
+export * from './gameObjects/player';
+export * from './gameObjects/goal';
+export * from './gameObjects/game';
+export * from './initialize';
+export * from './main';

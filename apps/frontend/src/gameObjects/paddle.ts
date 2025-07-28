@@ -1,5 +1,5 @@
 import { Ball } from './ball';
-import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
+import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
 
 export class Paddle
 {
@@ -28,7 +28,8 @@ export class Paddle
 		);
 
 		this.aggregate.body.setLinearVelocity(Vector3.Zero());
-		// this.aggregate.body.setMotionType(PhysicsMotionType.KINEMATIC);
+		this.aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
+		this.aggregate.body.disablePreStep = false;
 		const mat = new StandardMaterial("ballMat", this.mesh.getScene());
 		mat.diffuseColor = _color;
 		mat.ambientColor = Color3.Black();
@@ -38,25 +39,8 @@ export class Paddle
 
 	move()
 	{
-		// this.mesh.position.x += this.velocity.x;
-		// this.mesh.position.z += this.velocity.z;
-
-		// this.aggregate.body.setLinearVelocity(this.velocity);
 		this.mesh.position.x += this.velocity.x;
 		this.mesh.position.z += this.velocity.z;
-
-		// Force the physics body to sync with the mesh position
-		// this.aggregate.body.setTargetTransform(
-		// 	this.mesh.position, 
-		// 	this.mesh.rotationQuaternion || this.aggregate.body.transformNode.rotationQuaternion
-		// );
-		// const currentPos = this.aggregate.body.transformNode.position;
-		// const newPos = new Vector3(
-		// 	currentPos.x + this.velocity.x,
-		// 	currentPos.y,
-		// 	currentPos.z + this.velocity.z
-		// );
-		// this.aggregate.body.setTargetTransform(newPos, this.aggregate.body.transformNode.rotationQuaternion);
 	}
 
 	getMesh(): Mesh

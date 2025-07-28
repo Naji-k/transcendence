@@ -1,7 +1,7 @@
 import { Wall, Ball, Paddle, createWalls, createPaddles, createBalls,
-		createGoals, createPlayers, createGround, Player, Goal, GameMenu } from '../index';
+		createGoals, createPlayers, createGround, Player, Goal, createScoreboard, GameMenu } from '../index';
 import { CreateStreamingSoundAsync, CreateAudioEngineAsync } from '@babylonjs/core';
-import { Engine, Scene, FreeCamera, PointLight, Vector3, HemisphericLight, HavokPlugin } from '@babylonjs/core';
+import { Engine, Scene, FreeCamera, Vector3, HemisphericLight, HavokPlugin } from '@babylonjs/core';
 import * as GUI from "@babylonjs/gui";
 
 const maxPlayerCount = 6;
@@ -16,6 +16,7 @@ export class Game
 	private walls: Wall[] = [];
 	private goals: Goal[] = [];
 	private players: Player[] = [];
+	private scoreboard: GUI.TextBlock[] = [];
 
 	private dimensions: [number, number];
 	private gameIsRunning: boolean;
@@ -102,6 +103,7 @@ export class Game
 		createBalls(scene, this.balls, 1);
 		createGoals(scene, this.goals);
 		createPlayers(this.players);
+		this.scoreboard = createScoreboard(scene);
 
 		return scene;
 	}
@@ -139,7 +141,7 @@ export class Game
 			this.resumeGame();
 		});
 	}
-	
+
 	private showCountdown(scene: Scene, onFinish: () => void)
 	{
 		const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
@@ -185,6 +187,7 @@ export class Game
 					if (this.goals[j].score(this.balls[i]) == true)
 					{
 						this.players[j].loseLife();
+						this.scoreboard[j].text = `Player ${this.players[j].ID}: ${this.players[j].getLives()}`;
 						if (this.players.length == 1)
 						{
 							this.pauseGame();

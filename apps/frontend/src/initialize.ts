@@ -1,5 +1,6 @@
 import { Wall, Ball, Paddle, Goal, Player, clr } from './index';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
+import * as GUI from "@babylonjs/gui";
 
 const ballDiameter = 0.5;
 
@@ -192,4 +193,24 @@ export function	createGround(scene: Scene, dimensions: number[])
 	mat.diffuseColor = new Color3(0.2, 1, 1);
 	mat.ambientColor = new Color3(1, 0.2, 0.2);
 	ground.material = mat;
+}
+
+export function createScoreboard(scene: Scene): GUI.TextBlock[]
+{
+	const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("Scores", true, scene);
+	let scoreboard = [];
+
+	for (let i = 0; i < Player.playerArray.length; i++)
+	{
+		const player = Player.playerArray[i];
+		const textBlock = new GUI.TextBlock();
+		textBlock.text = `Player ${player.ID}: ${player.getLives()}`;
+		textBlock.color = Paddle.paddleColors[i].toHexString();
+		textBlock.fontSize = 24;
+		textBlock.top = `${i * 30}px`;
+		textBlock.left = "10px";
+		advancedTexture.addControl(textBlock);
+		scoreboard.push(textBlock);
+	}
+	return scoreboard;
 }

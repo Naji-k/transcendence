@@ -56,9 +56,9 @@ export class Player
 		return this.name;
 	}
 
-	getScore(): number
+	getLives(): number
 	{
-		return this.score;
+		return this.lives;
 	}
 
 	incrementScore(): void
@@ -97,5 +97,6 @@ export class Player
 		Player.paddleArray.splice(this.arrayPosition, 1);
 		this.paddle.destroy();
 		this.goal.destroy();
+		Player.playerCount--;
 	}
 }

@@ -1,6 +1,7 @@
 import { Wall, Ball, Paddle, Goal, Player, clr } from './index';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
-import * as GUI from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from "@babylonjs/gui";
+
 
 const ballDiameter = 0.5;
 
@@ -195,20 +196,35 @@ export function	createGround(scene: Scene, dimensions: number[])
 	ground.material = mat;
 }
 
-export function createScoreboard(scene: Scene): GUI.TextBlock[]
+export function createScoreboard(scene: Scene): TextBlock[]
 {
-	const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("Scores", true, scene);
+	const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+	const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("Scores");
+	let background = new Rectangle();
+	background.widthInPixels = 200;
+	background.heightInPixels = 35 * Player.playerCount + 10;
+	background.cornerRadius = 10;
+	background.color = "black";
+	background.thickness = 2;
+	background.background = "rgba(0, 0, 0, 0.8)";
+	background.isVisible = true;
+	background.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+	background.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+	advancedTexture.addControl(background);
+	
 	let scoreboard = [];
 
 	for (let i = 0; i < Player.playerArray.length; i++)
 	{
 		const player = Player.playerArray[i];
-		const textBlock = new GUI.TextBlock();
+		const textBlock = new TextBlock();
 		textBlock.text = `Player ${player.ID}: ${player.getLives()}`;
 		textBlock.color = Paddle.paddleColors[i].toHexString();
-		textBlock.fontSize = 24;
-		textBlock.top = `${i * 30}px`;
-		textBlock.left = "10px";
+		textBlock.fontSize = 30;
+		textBlock.top = `${i * 35 - canvas.height / 2 + 20}px`;
+		textBlock.left = `${-(canvas.width / 2) + 100}px`;
+		// textBlock.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+		// textBlock.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 		advancedTexture.addControl(textBlock);
 		scoreboard.push(textBlock);
 	}

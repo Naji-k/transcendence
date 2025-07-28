@@ -80,15 +80,9 @@ export class GameMenu
 			{
 				switch (kbInfo.event.key)
 				{
-					case 'ArrowUp':
-						this.navigateUp();
-						break;
-					case 'ArrowDown':
-						this.navigateDown();
-						break;
-					case 'Enter':
-						this.selectCurrentButton();
-						break;
+					case 'ArrowUp': this.navigateUp(); break;
+					case 'ArrowDown': this.navigateDown(); break;
+					case 'Enter': this.selectCurrentButton(); break;
 				}
 			}
 			this.scene.render();

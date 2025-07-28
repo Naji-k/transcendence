@@ -205,13 +205,13 @@ export class Game
 				{
 					this.balls[i].update(this.paddles);
 				}
-				else if (this.balls.length == 0)
+				if (this.balls.length == 0)
 				{
 					for (let j = 0; j < this.players.length; j++)
 					{
 						this.paddles[j].reset();
-						createBalls(this.scene, this.balls, 1);
 					}
+					createBalls(this.scene, this.balls, 1);
 				}
 				scored = false;
 			}

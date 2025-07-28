@@ -1,4 +1,4 @@
-import { Ball, Player } from '../index';
+import { Ball, Player, Game } from '../index';
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
 
 export enum clr
@@ -14,11 +14,13 @@ export enum clr
 export class Paddle
 {
 	private mesh:			Mesh;
+	private material:		StandardMaterial;
 	private spawnPosition:	Vector3;
 	private velocity:		Vector3;
 	private aggregate:		PhysicsAggregate;
 	private targetSpeed:	number = 1;
 	private acceleration: 	number = 0.01;
+	private frozen:			boolean;
 
 	static paddleColors: Color3[] =
 	[
@@ -52,11 +54,13 @@ export class Paddle
 		// this.aggregate.body.setLinearVelocity(Vector3.Zero());
 		this.aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
 		this.aggregate.body.disablePreStep = false;
-		const mat = new StandardMaterial("ballMat", this.mesh.getScene());
-		mat.diffuseColor = _color;
-		mat.ambientColor = Color3.Black();
-		mat.alpha = 0.9;
-        this.mesh.material = mat;
+		this.material = new StandardMaterial("paddleMat", this.mesh.getScene());
+		this.material.diffuseColor = _color;
+		this.material.ambientColor = Color3.Black();
+		this.material.alpha = 0.9;
+        this.mesh.material = this.material;
+
+		this.frozen = false;
 	}
 
 	move()
@@ -83,6 +87,10 @@ export class Paddle
 
 	reset()
 	{
+		if (this.frozen == true)
+		{
+			return;
+		}
 		this.mesh.position.x = this.spawnPosition.x;
 		this.mesh.position.z = this.spawnPosition.z;
 		this.velocity.x = 0;
@@ -91,6 +99,10 @@ export class Paddle
 
 	update(direction: number, pressed: boolean)
 	{
+		if (this.frozen == true)
+		{
+			return;
+		}
 		let currentSpeed = this.velocity.length();
 	
 		if (pressed == false && currentSpeed > 0)
@@ -125,9 +137,11 @@ export class Paddle
 		return this.mesh.intersectsMesh(ball.getMesh(), false);
 	}
 
-	destroy()
+	eliminate()
 	{
-		this.mesh.dispose();
-		this.aggregate.dispose();
+		this.mesh.position = this.spawnPosition;
+		this.mesh.material = Game.eliminatedMaterial;
+		this.frozen = true;
+		this.aggregate.body.setLinearVelocity(Vector3.Zero());
 	}
 }

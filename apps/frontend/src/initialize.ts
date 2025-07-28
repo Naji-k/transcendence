@@ -196,7 +196,7 @@ export function	createGround(scene: Scene, dimensions: number[])
 	ground.material = mat;
 }
 
-export function createScoreboard(scene: Scene): TextBlock[]
+export function createScoreboard(): TextBlock[]
 {
 	const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 	const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("Scores");

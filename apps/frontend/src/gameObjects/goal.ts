@@ -1,5 +1,5 @@
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PointLight, Scene } from '@babylonjs/core';
-import { Ball } from './ball';
+import { Ball, Game } from '../index';
 
 export class Goal
 {
@@ -63,10 +63,10 @@ export class Goal
 		return this.back.intersectsMesh(ball.getMesh(), false);
 	}
 
-	destroy()
+	eliminate()
 	{
-		this.post1.dispose();
-		this.post2.dispose();
-		this.back.dispose();
+		this.post1.material = Game.eliminatedMaterial;
+		this.post2.material = Game.eliminatedMaterial;
+		this.back.material = Game.eliminatedMaterial;
 	}
 }

@@ -1,8 +1,8 @@
 import { Wall, Ball, Paddle, createWalls, createPaddles, createBalls,
 		createGoals, createPlayers, createGround, Player, Goal, createScoreboard, GameMenu } from '../index';
-import { CreateStreamingSoundAsync, CreateAudioEngineAsync } from '@babylonjs/core';
-import { Engine, Scene, FreeCamera, Vector3, HemisphericLight, HavokPlugin } from '@babylonjs/core';
-import * as GUI from "@babylonjs/gui";
+import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
+	Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight, HavokPlugin, StandardMaterial } from '@babylonjs/core';
+import { TextBlock, AdvancedDynamicTexture } from "@babylonjs/gui";
 
 const maxPlayerCount = 6;
 
@@ -16,13 +16,20 @@ export class Game
 	private walls: Wall[] = [];
 	private goals: Goal[] = [];
 	private players: Player[] = [];
-	private scoreboard: GUI.TextBlock[] = [];
+	private scoreboard: TextBlock[] = [];
 
 	private dimensions: [number, number];
 	private gameIsRunning: boolean;
 
 	private	gameCanvas: HTMLCanvasElement;
 	private keys: Record<string, boolean> = {};
+
+	static wallhitSound: StreamingSound;
+	static paddlehitSound: StreamingSound;
+	static playerOutSound: StreamingSound;
+	static victorySound: StreamingSound;
+
+	static eliminatedMaterial: StandardMaterial;
 
 	constructor(havokInstance: any)
 	{
@@ -75,14 +82,26 @@ export class Game
 	{
 		const audioEngine = await CreateAudioEngineAsync();
 		audioEngine.volume = 0.5;
-		const frogs = await CreateStreamingSoundAsync("music", "/sounds/frogs.mp3");
+		// const frogs = await CreateStreamingSoundAsync("music", "/sounds/frogs.mp3");
+		Game.wallhitSound = await CreateStreamingSoundAsync("wallhit", "/sounds/wallhit.wav");
+		Game.paddlehitSound = await CreateStreamingSoundAsync("paddlehit", "/sounds/paddlehit.wav");
+		Game.playerOutSound = await CreateStreamingSoundAsync("playerout", "/sounds/playerout.wav");
+		Game.victorySound = await CreateStreamingSoundAsync("victory", "/sounds/victory.wav");
+
+		Game.paddlehitSound.maxInstances = 1;
+		Game.wallhitSound.maxInstances = 1;
+
 		await audioEngine.unlockAsync();
-		frogs.play();
+		// frogs.play();
+		setTimeout(() => {}, 200);
 
 		const fileText = await(loadFileText('public/maps/' + map));
 		const grid = this.parseMapFile(fileText);
 
 		this.scene = this.createScene(this.engine, this.havokInstance, grid);
+		Game.eliminatedMaterial = new StandardMaterial("eliminatedMat", this.scene);
+		Game.eliminatedMaterial.diffuseColor = new Color3(0.5, 0.5, 0.5);
+		Game.eliminatedMaterial.alpha = 0.5;
 	}
 
 	private createScene(engine: Engine, havokInstance: any, grid: string[][]): Scene
@@ -103,7 +122,7 @@ export class Game
 		createBalls(scene, this.balls, 1);
 		createGoals(scene, this.goals);
 		createPlayers(this.players);
-		this.scoreboard = createScoreboard(scene);
+		this.scoreboard = createScoreboard();
 
 		return scene;
 	}
@@ -144,8 +163,8 @@ export class Game
 
 	private showCountdown(scene: Scene, onFinish: () => void)
 	{
-		const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
-		const countdownText = new GUI.TextBlock();
+		const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
+		const countdownText = new TextBlock();
 		countdownText.color = "red";
 		countdownText.fontSize = 180;
 		countdownText.outlineWidth = 5;
@@ -188,12 +207,22 @@ export class Game
 					{
 						this.players[j].loseLife();
 						this.scoreboard[j].text = `Player ${this.players[j].ID}: ${this.players[j].getLives()}`;
-						if (this.players.length == 1)
+						if (Player.playerCount == 1)
 						{
 							this.pauseGame();
-							alert("Player " + this.players[0].ID + " wins!");
+							Game.victorySound.play();
+							const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("victoryUI");
+							const victoryText = new TextBlock();
+							victoryText.color = Player.playerColors[this.players[j].ID];
+							victoryText.text = `${this.players[j].getName()} wins!`;
+							victoryText.fontSize = 50;
+							victoryText.outlineWidth = 10;
+							victoryText.outlineColor = "black";
+							advancedTexture.addControl(victoryText);
+							this.scene.render();
 							return;
 						}
+						Game.playerOutSound.play();
 						this.balls[i].destroy();
 						this.balls.splice(i, 1);
 						i--;

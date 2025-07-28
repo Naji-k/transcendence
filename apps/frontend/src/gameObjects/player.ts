@@ -18,11 +18,21 @@ export class Player
 	static paddleArray: Paddle[] = [];
 	static playerCount: number = 0;
 
+	static playerColors: string[] =
+	[
+		"Red",
+		"Blue",
+		"Yellow",
+		"Green",
+		"Magenta",
+		"Cyan"
+	];
+
 	constructor(name: string = "Sjon", _id: number, goal: Goal, paddle: Paddle)
 	{
 		this.name = name;
 		this.score = 0;
-		this.lives = 10;
+		this.lives = 1;
 		this.ID = _id;
 		this.arrayPosition = _id;
 		this.goal = goal;
@@ -86,17 +96,20 @@ export class Player
 		this.controlKeys[1] = keyDown;
 	}
 
+	isAlive(): boolean
+	{
+		return this.lives > 0;
+	}
+
 	private eliminate()
 	{
-		for (let i = this.arrayPosition + 1; i < Player.playerArray.length; i++)
-		{
-			Player.playerArray[i].decreaseArrayPosition();
-		}
-		Player.playerArray.splice(this.arrayPosition, 1);
-		Player.goalArray.splice(this.arrayPosition, 1);
-		Player.paddleArray.splice(this.arrayPosition, 1);
-		this.paddle.destroy();
-		this.goal.destroy();
+		// for (let i = this.arrayPosition + 1; i < Player.playerArray.length; i++)
+		// {
+		// 	Player.playerArray[i].decreaseArrayPosition();
+		// }
+		// Player.playerArray.splice(this.arrayPosition, 1);
+		this.paddle.eliminate();
+		this.goal.eliminate();
 		Player.playerCount--;
 	}
 }

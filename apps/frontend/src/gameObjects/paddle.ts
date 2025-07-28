@@ -1,4 +1,4 @@
-import { Ball } from './Ball';
+import { Ball } from './ball';
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
 
 export class Paddle

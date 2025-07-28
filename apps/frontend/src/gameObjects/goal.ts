@@ -1,5 +1,5 @@
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
-import { Ball } from './Ball';
+import { Ball } from './ball';
 
 export class Goal
 {

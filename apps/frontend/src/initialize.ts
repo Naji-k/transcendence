@@ -1,43 +1,51 @@
 import { Wall, Ball, Paddle, Goal, Player } from './index';
-import { Scene, Vector3, Color3, StandardMaterial } from '@babylonjs/core';
+import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
 
-export function createWalls(scene: Scene, walls: Wall[], dimensions: number[])
+function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: number[])
 {
 	const height = dimensions[0];
 	const width = dimensions[1];
 	const wallThickness = 0.5;
 	const wallHeight = 2;
-	const wallMat = new StandardMaterial('wallMat', scene);
-	wallMat.alpha = 0.1;
-	wallMat.diffuseColor = new Color3(1, 1, 1);
-
+	const blackColor = Color3.Black();
+	
 	walls.push(
 		new Wall(new Vector3(wallThickness, wallHeight, height + wallThickness * 2),
 		new Vector3(-width / 2 - wallThickness / 2, wallHeight / 2, 0),
-		Color3.Black(),
+		blackColor,
+		0.3,
 		scene)
 	);
 	
 	walls.push(
 		new Wall(new Vector3(wallThickness, wallHeight, height + wallThickness * 2),
 		new Vector3(width / 2 + wallThickness / 2, wallHeight / 2, 0),
-		Color3.Black(),
+		blackColor,
+		0.3,
 		scene)
 	);
-
+	
 	walls.push(
 		new Wall(new Vector3(width, wallHeight, wallThickness),
 		new Vector3(0, wallHeight / 2, -height / 2 - wallThickness / 2),
-		Color3.Black(),
+		blackColor,
+		0.3,
 		scene)
 	);
-
+	
 	walls.push(
 		new Wall(new Vector3(width, wallHeight, wallThickness),
 		new Vector3(0, wallHeight / 2, height / 2 + wallThickness / 2),
-		Color3.Black(),
+		blackColor,
+		0.3,
 		scene)
 	);
+}
+
+export function createWalls(scene: Scene, walls: Wall[], dimensions: number[], grid: string[][])
+{
+	createSurroundingWalls(scene, walls, dimensions);
+
 }
 
 export function createPaddles(scene: Scene, paddles: Paddle[])
@@ -85,4 +93,19 @@ export function createPlayers(scene: Scene, players: Player[])
 		players.push(player);
 	}
 	Player.playerArray = players;
+}
+
+export function	createGround(scene: Scene, dimensions: number[])
+{
+	const ground = MeshBuilder.CreateGround('ground', {width: dimensions[1], height: dimensions[0], updatable: true}, scene);
+	new PhysicsAggregate(
+		ground,
+		PhysicsShapeType.BOX,
+		{ mass: 0, restitution: 0.5 },
+		scene
+	);
+	const mat = new StandardMaterial('floor', ground.getScene());
+	mat.diffuseColor = new Color3(0.2, 1, 1);
+	mat.ambientColor = new Color3(1, 0.2, 0.2);
+	ground.material = mat;
 }

@@ -1,5 +1,5 @@
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
-import { Paddle } from './Paddle';
+import { Paddle } from './paddle';
 
 export class Ball
 {
@@ -8,7 +8,7 @@ export class Ball
 	private diameter:	number;
 	private aggregate:	PhysicsAggregate;
 	private minimumSpeed: number = 20;
-	lasthit:			number;
+	private lasthit:	number;
 
 	constructor(_center: Vector3, _color: Color3, _diameter: number, scene: Scene)
 	{
@@ -22,6 +22,7 @@ export class Ball
 			scene
 		);
 		this.diameter = _diameter;
+		this.lasthit = -1;
 		this.velocity = Vector3.Zero();
 		this.aggregate.body.setLinearVelocity(this.randomVector().scale(Math.random() * this.minimumSpeed));
 		this.aggregate.body.setLinearDamping(0.1);
@@ -86,5 +87,10 @@ export class Ball
 	getMesh(): Mesh
 	{
 		return this.mesh;
+	}
+
+	lastHit(): number
+	{
+		return this.lasthit;
 	}
 }

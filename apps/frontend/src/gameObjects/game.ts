@@ -1,6 +1,6 @@
-import { Wall, Ball, Paddle, createWalls, createPaddles, createBalls, createGoals, createPlayers, Player, Goal } from '../index';
+import { Wall, Ball, Paddle, createWalls, createPaddles, createBalls, createGoals, createPlayers, createGround, Player, Goal } from '../index';
 import { Engine, Scene, FreeCamera, PointLight, Vector3, Color3, MeshBuilder, StandardMaterial,
-		HemisphericLight, HavokPlugin, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
+		HemisphericLight, HavokPlugin, TAARenderingPipeline, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
 import * as GUI from "@babylonjs/gui";
 
 export class Game
@@ -18,18 +18,18 @@ export class Game
 	private playerCount: number;
 	private gameShouldRun: boolean;
 
-	private	canvas: HTMLCanvasElement;
+	private	gameCanvas: HTMLCanvasElement;
 	private keys: Record<string, boolean> = {};
 
-	constructor(havokInstance: any, canvas: HTMLCanvasElement)
+	constructor(havokInstance: any, gameCanvas: HTMLCanvasElement)
 	{
-		this.canvas = canvas;
+		this.gameCanvas = gameCanvas;
 		this.havokInstance = havokInstance;
 		this.dimensions = [0, 0];
 		this.playerCount = 0;
 		this.gameShouldRun = true;
 
-		this.engine = new Engine(canvas, true);
+		this.engine = new Engine(gameCanvas, true, {antialias: true});
 	}
 
 	setKeyInfo(keys: Record<string, boolean>)
@@ -94,10 +94,10 @@ export class Game
 		const fileText = await(loadFileText('public/maps/' + map));
 		const grid = this.parseMapFile(fileText);
 
-		this.scene = this.createScene(this.engine, this.havokInstance);
+		this.scene = this.createScene(this.engine, this.havokInstance, grid);
 	}
 
-	createScene(engine: Engine, havokInstance: any): Scene
+	createScene(engine: Engine, havokInstance: any, grid: string[][]): Scene
 	{
 		const scene = new Scene(engine);
 		const havokPlugin = new HavokPlugin(true, havokInstance);
@@ -105,29 +105,19 @@ export class Game
 
 		const camera = new FreeCamera("camera1", new Vector3(0, 30, 5), scene);
 		camera.setTarget(Vector3.Zero());
-		camera.attachControl(this.canvas, true);
+		camera.attachControl(this.gameCanvas, true);
 		const hemiLight = new HemisphericLight("hemiLight", new Vector3(0, 1, 0), scene);
 		hemiLight.intensity = 0.6;
 		const light2 = new PointLight("pointLight", camera.position, scene);
 		light2.intensity = 0.8;
-		const ground = MeshBuilder.CreateGround('ground', {width: 30, height: 20, updatable: true}, scene);
-		const groundAggregate = new PhysicsAggregate(
-			ground,
-			PhysicsShapeType.BOX,
-			{ mass: 0, restitution: 0.5 },
-			scene
-		);
-		const mat = new StandardMaterial('floor', ground.getScene());
-		mat.diffuseColor = new Color3(0.2, 1, 1);
-		mat.ambientColor = new Color3(1, 0.2, 0.2);
-		ground.material = mat;
 
-		createWalls(this.scene, this.walls, this.dimensions);
-		createPaddles(this.scene, this.paddles);
-		createBalls(this.scene, this.balls);
+		createGround(scene, this.dimensions);
+		createWalls(scene, this.walls, this.dimensions, grid);
+		createPaddles(scene, this.paddles);
+		createBalls(scene, this.balls);
 		createGoals(scene, this.goals);
 		createPlayers(scene, this.players);
-		
+
 		return scene;
 	}
 
@@ -230,6 +220,7 @@ export class Game
 	getWalls(): Wall[] {return this.walls;}
 	getGoals(): Goal[] {return this.goals;}
 	getPlayers(): Player[] {return this.players;}
+	getScene(): Scene {return this.scene;}
 }
 
 async function loadFileText(filePath: string): Promise<string>
@@ -242,3 +233,4 @@ async function loadFileText(filePath: string): Promise<string>
 	}
 	return response.text();
 }
+

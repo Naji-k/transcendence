@@ -1,4 +1,4 @@
-import { Paddle, Goal, Ball } from '../index';
+import { Paddle, Goal, Ball, Wall } from '../index';
 
 export class Player
 {
@@ -12,15 +12,17 @@ export class Player
 	public	ID:			number;
 
 	static ballArray: Ball[] = [];
+	static wallArray: Wall[] = [];
 	static goalArray: Goal[] = [];
 	static playerArray: Player[] = [];
 	static paddleArray: Paddle[] = [];
+	static playerCount: number = 0;
 
 	constructor(name: string = "Sjon", _id: number, goal: Goal, paddle: Paddle)
 	{
 		this.name = name;
 		this.score = 0;
-		this.lives = 125;
+		this.lives = 10;
 		this.ID = _id;
 		this.arrayPosition = _id;
 		this.goal = goal;

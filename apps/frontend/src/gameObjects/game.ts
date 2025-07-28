@@ -4,6 +4,8 @@ import { CreateStreamingSoundAsync, CreateAudioEngineAsync } from '@babylonjs/co
 import { Engine, Scene, FreeCamera, PointLight, Vector3, HemisphericLight, HavokPlugin } from '@babylonjs/core';
 import * as GUI from "@babylonjs/gui";
 
+const maxPlayerCount = 6;
+
 export class Game
 {
 	private engine: Engine;
@@ -30,7 +32,7 @@ export class Game
 		this.havokInstance = havokInstance;
 		this.dimensions = [0, 0];
 		this.gameIsRunning = true;
-		this.engine = new Engine(gameCanvas, true, {antialias: true});
+		this.engine = new Engine(this.gameCanvas, true, {antialias: true});
 	}
 
 	keyEvents()
@@ -52,7 +54,12 @@ export class Game
 			throw new Error("Lines 1-3 format: size: <rows>x<columns>, players: <number>, empty line");
 		}
 		this.dimensions = [parseInt(sizeMatch[1]), parseInt(sizeMatch[2])];
-		this.playerCount = parseInt(playersMatch[1]);
+		Player.playerCount = parseInt(playersMatch[1]);
+
+		if (Player.playerCount < 1 || Player.playerCount > maxPlayerCount)
+		{
+			throw new Error(`Invalid player count: ${Player.playerCount}. Must be between 1 and ${maxPlayerCount}.`);
+		}
 
 		lines.splice(0, 3);
 		if (lines.length != this.dimensions[0] ||
@@ -87,14 +94,12 @@ export class Game
 		camera.setTarget(Vector3.Zero());
 		// camera.attachControl(this.gameCanvas, true);
 		const hemiLight = new HemisphericLight("hemiLight", new Vector3(0, 1, 0), scene);
-		hemiLight.intensity = 0.6;
-		const light2 = new PointLight("pointLight", camera.position, scene);
-		light2.intensity = 0.8;
+		hemiLight.intensity = 0.2;
 
 		createGround(scene, this.dimensions);
 		createWalls(scene, this.walls, this.dimensions, grid);
-		createPaddles(scene, this.paddles);
-		createBalls(scene, this.balls);
+		createPaddles(scene, this.paddles, grid);
+		createBalls(scene, this.balls, 1);
 		createGoals(scene, this.goals);
 		createPlayers(this.players);
 
@@ -155,7 +160,7 @@ export class Game
 			{
 				countdownText.text = sequence[step];
 				step++;
-				setTimeout(next, 1000);
+				setTimeout(next, 500);
 			}
 			else
 			{
@@ -196,6 +201,14 @@ export class Game
 				if (scored == false)
 				{
 					this.balls[i].update(this.paddles);
+				}
+				else if (this.balls.length == 0)
+				{
+					for (let j = 0; j < this.players.length; j++)
+					{
+						this.paddles[j].reset();
+						createBalls(this.scene, this.balls, 1);
+					}
 				}
 				scored = false;
 			}

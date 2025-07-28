@@ -1,4 +1,4 @@
-import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
+import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PointLight, Scene } from '@babylonjs/core';
 import { Ball } from './ball';
 
 export class Goal
@@ -52,6 +52,9 @@ export class Goal
 			{ mass: 0, restitution: 1 },
 			scene
 		);
+
+		const light = new PointLight("goalLight", new Vector3(position.x, this.height, position.z), scene);
+		light.intensity = 0.5;
 		return post;
 	}
 

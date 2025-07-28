@@ -189,6 +189,7 @@ export class Game
 	{
 		if (this.gameShouldRun == true)
 		{
+			let scored = false;
 			this.keyEvents();
 			for (let i = 0; i < this.balls.length; i++)
 			{
@@ -210,10 +211,15 @@ export class Game
 						this.balls[i].destroy();
 						this.balls.splice(i, 1);
 						i--;
+						scored = true;
 						break;
 					}
 				}
-				this.balls[i].update(this.paddles);
+				if (scored == false)
+				{
+					this.balls[i].update(this.paddles);
+				}
+				scored = false;
 			}
 		}
 		this.scene.render();

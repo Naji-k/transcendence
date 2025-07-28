@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@repo/db": "workspace:*",
     "@repo/trpc": "workspace:*",
     "@trpc/server": "^11.4.3",
     "fastify": "^5.4.0",

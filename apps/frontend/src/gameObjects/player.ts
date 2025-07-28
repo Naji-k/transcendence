@@ -8,6 +8,7 @@ export class Player
 	private goal:		Goal;
 	private paddle:		Paddle;
 	private arrayPosition:	number;
+	private controlKeys:	[string, string] = ["", ""];
 	public	ID:			number;
 
 	static ballArray: Ball[] = [];
@@ -24,6 +25,28 @@ export class Player
 		this.arrayPosition = _id;
 		this.goal = goal;
 		this.paddle = paddle;
+	}
+
+	checkForActions(keys: Record<string, boolean>)
+	{
+		const keyDownIsPressed = keys[this.controlKeys[0]];
+		const keyUpIsPressed = keys[this.controlKeys[1]];
+
+		if (keyUpIsPressed == true || keyDownIsPressed == true)
+		{
+			if (keyUpIsPressed == true)
+			{
+				this.paddle.update(1, true);
+			}
+			if (keyDownIsPressed == true)
+			{
+				this.paddle.update(-1, true);
+			}
+		}
+		else
+		{
+			this.paddle.update(0, false);
+		}
 	}
 
 	getName(): string
@@ -44,11 +67,10 @@ export class Player
 	loseLife()
 	{
 		this.lives--;
-	}
-
-	isAlive(): boolean
-	{
-		return this.lives > 0;
+		if (this.lives <= 0)
+		{
+			this.eliminate();
+		}
 	}
 
 	decreaseArrayPosition()
@@ -56,7 +78,13 @@ export class Player
 		this.arrayPosition--;
 	}
 
-	eliminatePlayer()
+	setControls(keyUp: string, keyDown: string)
+	{
+		this.controlKeys[0] = keyUp;
+		this.controlKeys[1] = keyDown;
+	}
+
+	private eliminate()
 	{
 		for (let i = this.arrayPosition + 1; i < Player.playerArray.length; i++)
 		{

@@ -49,11 +49,11 @@ export class Ball
 
 	update(paddles: Paddle[])
 	{
-		for (let i = 0; i < paddles.length; i++)
+		for (let pad = 0; pad < paddles.length; pad++)
 		{
-			if (this.mesh.intersectsMesh(paddles[i].getMesh(), false) == true)
+			if (this.mesh.intersectsMesh(paddles[pad].getMesh(), false) == true)
 			{
-				this.lasthit = i;
+				this.lasthit = pad;
 			}
 		}
 

@@ -50,8 +50,8 @@ export function createWalls(scene: Scene, walls: Wall[], dimensions: number[], g
 
 export function createPaddles(scene: Scene, paddles: Paddle[])
 {
-	paddles.push(new Paddle(new Vector3(1, 1, 5), new Vector3(-13, 0.5, 0), new Color3(1, 0, 0), scene));
 	paddles.push(new Paddle(new Vector3(1, 1, 5), new Vector3(13, 0.5, 0), new Color3(0, 0, 1), scene));
+	paddles.push(new Paddle(new Vector3(1, 1, 5), new Vector3(-13, 0.5, 0), new Color3(1, 0, 0), scene));
 	Player.paddleArray = paddles;
 }
 
@@ -68,7 +68,6 @@ export function createGoals(scene: Scene, goals: Goal[])
 {
 	const goalWidth = 10;
 	const goalHeight = 5;
-	const goalDepth = 0.1;
 
 	goals.push(new Goal(
 		new Vector3(-14, goalHeight / 2, -goalWidth / 2),
@@ -85,11 +84,19 @@ export function createGoals(scene: Scene, goals: Goal[])
 	Player.goalArray = goals;
 }
 
-export function createPlayers(scene: Scene, players: Player[])
+export function createPlayers(players: Player[])
 {
 	for (let i = 0; i < 2; i++)
 	{
 		const player = new Player(`Player ${i + 1}`, i, Player.goalArray[i], Player.paddleArray[i]);
+		switch (i)
+		{
+			case 0: player.setControls('ArrowUp', 'ArrowDown'); break;
+			case 1: player.setControls('w', 's'); break;
+			case 2: player.setControls('i', 'k'); break;
+			case 3: player.setControls('t', 'g'); break;
+			default: player.setControls('ArrowUp', 'ArrowDown'); break;
+		}
 		players.push(player);
 	}
 	Player.playerArray = players;

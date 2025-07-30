@@ -1,19 +1,19 @@
 CREATE TABLE `match_history_table` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`mode` text NOT NULL,
-	`victor` text NOT NULL,
+	`victor` integer NOT NULL,
 	`createdAt` integer NOT NULL,
-	FOREIGN KEY (`victor`) REFERENCES `users_table`(`alias`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`victor`) REFERENCES `users_table`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `unique_match_idx` ON `match_history_table` (`createdAt`,`mode`,`victor`);--> statement-breakpoint
 CREATE TABLE `single_match_players_table` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`player` text NOT NULL,
+	`player` integer NOT NULL,
 	`score` integer DEFAULT 0 NOT NULL,
 	`placement` integer DEFAULT -1 NOT NULL,
 	`matchId` integer NOT NULL,
-	FOREIGN KEY (`player`) REFERENCES `users_table`(`alias`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`player`) REFERENCES `users_table`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`matchId`) REFERENCES `match_history_table`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint

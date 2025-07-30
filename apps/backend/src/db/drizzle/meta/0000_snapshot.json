@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "90f2d1c2-e8e8-4e7c-9e3a-782beeaefee7",
+  "id": "b0da5c69-aa5e-4bf1-9275-6d4769c20273",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "match_history_table": {
@@ -23,7 +23,7 @@
         },
         "victor": {
           "name": "victor",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -48,15 +48,15 @@
         }
       },
       "foreignKeys": {
-        "match_history_table_victor_users_table_alias_fk": {
-          "name": "match_history_table_victor_users_table_alias_fk",
+        "match_history_table_victor_users_table_id_fk": {
+          "name": "match_history_table_victor_users_table_id_fk",
           "tableFrom": "match_history_table",
           "tableTo": "users_table",
           "columnsFrom": [
             "victor"
           ],
           "columnsTo": [
-            "alias"
+            "id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -78,7 +78,7 @@
         },
         "player": {
           "name": "player",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -118,15 +118,15 @@
         }
       },
       "foreignKeys": {
-        "single_match_players_table_player_users_table_alias_fk": {
-          "name": "single_match_players_table_player_users_table_alias_fk",
+        "single_match_players_table_player_users_table_id_fk": {
+          "name": "single_match_players_table_player_users_table_id_fk",
           "tableFrom": "single_match_players_table",
           "tableTo": "users_table",
           "columnsFrom": [
             "player"
           ],
           "columnsTo": [
-            "alias"
+            "id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"

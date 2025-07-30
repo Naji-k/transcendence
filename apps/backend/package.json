@@ -3,25 +3,34 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "ts-node src/index.ts",
-    "dev:watch": "nodemon --exec ts-node src/index.ts",
+    "db:generate": "drizzle-kit generate --config=./src/db/drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config=./src/db/drizzle.config.ts",
+    "db:push": "drizzle-kit push --config=./src/db/drizzle.config.ts",
+    "dev": "tsx src/index.ts",
+    "dev:watch": "tsx --watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rm -rf dist/ ",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "database_test": "tsx src/db/src/db_test.ts"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@repo/db": "workspace:*",
     "@repo/trpc": "workspace:*",
     "@trpc/server": "^11.4.3",
+    "@libsql/client": "^0.15.10",
+    "dotenv": "^17.2.0",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.44.3",
+    "drizzle-seed": "^0.3.1",
     "fastify": "^5.4.0",
     "nodemon": "^3.1.10"
   },
   "devDependencies": {
     "@types/node": "^24.0.14",
-    "ts-node": "^10.9.1",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   }
 }

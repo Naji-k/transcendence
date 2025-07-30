@@ -1,5 +1,4 @@
 import { AnySQLiteColumn, int, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core"
-import { sql } from "drizzle-orm"
 
 // Table for all the user data (add more fields like total matches, W/L ratio etc)
 export const usersTable = sqliteTable(

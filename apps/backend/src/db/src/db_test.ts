@@ -35,6 +35,7 @@ async function main() {
 			process.exit(1);
 		} else {
 			console.log('Unknown error');
+      console.log(error);
 			process.exit(2);
 		}
 	}
@@ -96,7 +97,11 @@ async function main() {
 	console.log('Getting all matches from the database: ', matches_1);
 
 	/* Test participants entries */
-  const randomId2 = allIds[Math.floor(Math.random() * allIds.length)];
+  let randomId2 = allIds[Math.floor(Math.random() * allIds.length)];
+  while (randomId2 === randomId1)
+  {
+    randomId2 = allIds[Math.floor(Math.random() * allIds.length)];
+  }
 	const participant1: NewParticipant = { player: randomId1, score: 5, placement: 1, matchId: lastMatchId};
 	const participant2: NewParticipant = { player: randomId2, score: 3, placement: 2, matchId: lastMatchId};
 	try {

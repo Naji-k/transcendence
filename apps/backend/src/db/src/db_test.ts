@@ -9,7 +9,7 @@ import path from 'path';
 
 console.log(__dirname);
 
-config({ path: path.resolve(__dirname, '../../../../../.env') });
+config({ path: path.resolve(__dirname, '../../../../../.env') }); // This works only if the .env used is in the root of the project, process.cwd() can also be used with different path resolution. It depends on the project structure and where the .env file will be stored or if there will be multiple.
 
 const dbFilePath = path.resolve(__dirname, '../', process.env.DB_FILE_NAME!);
 

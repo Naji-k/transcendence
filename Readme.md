@@ -32,11 +32,11 @@ pnpm install
 ```
 ### To run Apps
 
-- Backend: `pnpm --filter backend dev`
+- Backend: `pnpm --filter backend dev` || `pnpm dev:backend`
 
-- Frontend: `pnpm --filter frontend dev`
+- Frontend: `pnpm --filter frontend dev` || `pnpm dev:frontend`
 
-- All: `pnpm -r dev`
+- All: `pnpm dev`
 
 
 ### Project Structure

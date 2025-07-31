@@ -9,7 +9,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@repo/tsconfig": "workspace:*",
     "@trpc/server": "^11.4.3",
     "zod": "^4.0.5"
+  },
+  "devDependencies": {
+    "fastify": "^5.4.0"
   }
 }

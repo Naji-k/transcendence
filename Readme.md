@@ -37,7 +37,8 @@ pnpm install
 - Frontend: `pnpm --filter frontend dev` || `pnpm dev:frontend`
 
 - All: `pnpm dev`
-
+- Eslint: `pnpm lint:backend` || `pnpm lint:frontend` || `pnpm lint`
+- Prettier formatter: `pnpm format:backend` || `pnpm format:frontend` || `pnpm format`
 
 ### Project Structure
 ``` bash

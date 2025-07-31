@@ -1,5 +1,7 @@
 {
+  "extends":"@repo/tsconfig/tsconfig.base.json", /* Extend the base TypeScript configuration */ 
   "compilerOptions": {
+<<<<<<< HEAD
     "target": "es2022", /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
     "module": "commonjs", /* Specify what module code is generated. */
     "rootDir": "./src", /* Specify the root folder within your source files. */
@@ -8,12 +10,11 @@
     "forceConsistentCasingInFileNames": true, /* Ensure that casing is correct in imports. */
     "strict": true, /* Enable all strict type-checking options. */
     "skipLibCheck": true, /* Skip type checking all .d.ts files. */
+=======
+    "rootDir": "./src",
+    "outDir": "./dist"
+>>>>>>> 0e9d45e (feat: use tsconfig-base for the whole project)
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -26,6 +26,9 @@ importers:
       '@repo/trpc':
         specifier: workspace:*
         version: link:../../packages/trpc-contract
+      '@repo/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig-base
       '@trpc/server':
         specifier: ^11.4.3
         version: 11.4.3(typescript@5.8.3)
@@ -75,6 +78,9 @@ importers:
       '@babylonjs/havok':
         specifier: ^1.3.10
         version: 1.3.10
+      '@repo/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig-base
       babylonjs:
         specifier: ^8.18.0
         version: 8.19.1

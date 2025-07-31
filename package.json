@@ -12,7 +12,8 @@
     "lint:backend": "eslint --ext .ts,.tsx ./apps/backend",
     "lint:frontend": "eslint --ext .ts,.tsx ./apps/frontend",
     "lint": "eslint --ext .ts,.tsx",
-    "lint:fix": "eslint --ext .ts,.tsx . --fix"
+    "lint:fix": "eslint --ext .ts,.tsx . --fix",
+    "clear": "rm -rf dist node_modules && pnpm -r clear"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",

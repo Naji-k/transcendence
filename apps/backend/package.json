@@ -9,9 +9,14 @@
     "dev:watch": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+<<<<<<< HEAD
     "clean": "rm -rf dist/",
     "test": "echo \"Error: no test specified\" && exit 1",
     "database_test": "ts-node src/db/src/db_test.ts"
+=======
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clear": "rm -rf dist node_modules"
+>>>>>>> af6f44d (feat: add clear to all packages to remove dist and node_modules)
   },
   "author": "",
   "license": "ISC",

@@ -9,6 +9,8 @@ pids
 *.pid.lock
 
 *dist/
+*.env
+*.db
 
 # node-waf configuration
 .lock-wscript

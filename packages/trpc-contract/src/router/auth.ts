@@ -3,11 +3,15 @@
  * Handles user authentication operations such as login, logout, and registration.
  */
 import { createRouter, publicProcedure } from "../trpc";
-import { signUpInput } from "../schemas";
+import { signUpInput, loginInput } from "../schemas";
+import { Response } from "../types";
 
 export const authRouter = createRouter({
+  /**
+   * signUp procedure handles user registration.
+   * It validates the input and creates a new user in the database.
+   */
   signUp: publicProcedure
-
     .input(signUpInput)
     .mutation(async ({ ctx, input }) => {
       //   const hashedPassword = return a hashed version of input.password
@@ -16,8 +20,39 @@ export const authRouter = createRouter({
       //     email: input.email,
       //     password: hashedPassword,
       // });
-      //   return user;
-      return { id: "new-user-id", email: input.email, name: input.name };
+      const user = { id: "user-id", email: input.email }; // Mock user for demonstration
+      return {
+        status: 201,
+        message: "User created successfully",
+        data: user,
+      } as Response; // Mock response for demonstration
     }),
+  /**
+   * login procedure handles user login.
+   * It checks if the user exists and if the password is correct.
+   * If successful, it generates a JWT token and returns it.
+   */
+  login: publicProcedure.input(loginInput).mutation(async ({ ctx, input }) => {
+    // const user = await ctx.db.findUserByEmail(input.email);
+    // const validPassword = await comparePassword(input.password, user.password);
 
+    const user = { id: "2", email: input.email }; // Mock user for demonstration
+    const validPassword = true; // Mock password check
+    if (!user || !validPassword) {
+      console.error("Invalid email or password");
+      return {
+        status: 401,
+        message: "Invalid email or password",
+      } as Response;
+    }
+    // Generate JWT token
+    const auth = ctx.jwtUtils.sign(user.id, user.email);
+    return {
+      status: 200,
+      message: "Login successful",
+      data: {
+        token: auth, // JWT token
+      },
+    } as Response; // Mock response for demonstration
+  }),
 });

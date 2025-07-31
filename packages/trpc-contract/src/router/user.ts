@@ -7,7 +7,17 @@ import { createRouter, publicProcedure } from "../trpc";
 export const userRouter = createRouter({
   getUser: publicProcedure.query(async ({ ctx }) => {
     // Example: Return user information from context
-    ctx.user = { id: "1", email: "example@user.com" }; // This should be replaced with actual user fetching logic
-    return ctx.user || null;
+    if (!ctx.user) {
+      return {
+        status: 401,
+        message: "Unauthorized",
+      };
+    }
+    //valid token, fetch user info from db and return it
+    return {
+      status: 200,
+      message: "User retrieved successfully",
+      data: ctx.user,
+    };
   }),
 });

@@ -3,9 +3,8 @@ import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType,
 export class Wall
 {
 	private mesh:		Mesh;
-	private aggregate:	PhysicsAggregate;
 
-	constructor(dimensions: Vector3, _position: Vector3, _color: Color3, scene: Scene)
+	constructor(dimensions: Vector3, _position: Vector3, _color: Color3, opacity: number, scene: Scene)
 	{
 		this.mesh = MeshBuilder.CreateBox
 		(
@@ -15,7 +14,7 @@ export class Wall
 		);
 		this.mesh.position = _position;
 
-		this.aggregate = new PhysicsAggregate(
+		new PhysicsAggregate(
 			this.mesh,
 			PhysicsShapeType.BOX,
 			{ mass: 0, restitution: 1 },
@@ -24,7 +23,12 @@ export class Wall
 
 		const mat = new StandardMaterial("wallMat", this.mesh.getScene());
 		mat.diffuseColor = _color;
-		mat.alpha = 0.3;
+		mat.alpha = opacity;
         this.mesh.material = mat;
+	}
+
+	getMesh(): Mesh
+	{
+		return this.mesh;
 	}
 }

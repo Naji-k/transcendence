@@ -1,13 +1,34 @@
-import { Ball } from './Ball';
-import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
+import { Ball, Player } from '../index';
+import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
+
+export enum clr
+{
+	Red = 0,
+	Blue = 1,
+	Yellow = 2,
+	Green = 3,
+	Magenta = 4,
+	Cyan = 5
+}
 
 export class Paddle
 {
 	private mesh:			Mesh;
+	private spawnPosition:	Vector3;
 	private velocity:		Vector3;
 	private aggregate:		PhysicsAggregate;
 	private targetSpeed:	number = 1;
 	private acceleration: 	number = 0.01;
+
+	static paddleColors: Color3[] =
+	[
+		new Color3(1, 0, 0), // Red
+		new Color3(0, 0, 1), // Blue
+		new Color3(1, 1, 0), // Yellow
+		new Color3(0, 1, 0), // Green
+		new Color3(1, 0, 1), // Magenta
+		new Color3(0, 1, 1)  // Cyan
+	];
 
 	constructor(dimensions: Vector3, _position: Vector3, _color: Color3, scene: Scene)
 	{
@@ -17,6 +38,7 @@ export class Paddle
 			{width: dimensions.x, height: dimensions.y, depth: dimensions.z},
 			scene
 		);
+		this.spawnPosition = _position.clone();
 		this.mesh.position = _position;
 		this.velocity = Vector3.Zero();
 
@@ -27,8 +49,9 @@ export class Paddle
 			scene
 		);
 
-		this.aggregate.body.setLinearVelocity(Vector3.Zero());
-		// this.aggregate.body.setMotionType(PhysicsMotionType.KINEMATIC);
+		// this.aggregate.body.setLinearVelocity(Vector3.Zero());
+		this.aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
+		this.aggregate.body.disablePreStep = false;
 		const mat = new StandardMaterial("ballMat", this.mesh.getScene());
 		mat.diffuseColor = _color;
 		mat.ambientColor = Color3.Black();
@@ -38,30 +61,32 @@ export class Paddle
 
 	move()
 	{
-		// this.mesh.position.x += this.velocity.x;
-		// this.mesh.position.z += this.velocity.z;
-
-		// this.aggregate.body.setLinearVelocity(this.velocity);
 		this.mesh.position.x += this.velocity.x;
 		this.mesh.position.z += this.velocity.z;
-
-		// Force the physics body to sync with the mesh position
-		// this.aggregate.body.setTargetTransform(
-		// 	this.mesh.position, 
-		// 	this.mesh.rotationQuaternion || this.aggregate.body.transformNode.rotationQuaternion
-		// );
-		// const currentPos = this.aggregate.body.transformNode.position;
-		// const newPos = new Vector3(
-		// 	currentPos.x + this.velocity.x,
-		// 	currentPos.y,
-		// 	currentPos.z + this.velocity.z
-		// );
-		// this.aggregate.body.setTargetTransform(newPos, this.aggregate.body.transformNode.rotationQuaternion);
+		for (let i = 0; i < Player.wallArray.length; i++)
+		{
+			if (this.mesh.intersectsMesh(Player.wallArray[i].getMesh(), false) == true)
+			{
+				this.mesh.position.x -= this.velocity.x * 2;
+				this.mesh.position.z -= this.velocity.z * 2;
+				this.velocity.x = 0;
+				this.velocity.z = 0;
+				return;
+			}
+		}
 	}
 
 	getMesh(): Mesh
 	{
 		return this.mesh;
+	}
+
+	reset()
+	{
+		this.mesh.position.x = this.spawnPosition.x;
+		this.mesh.position.z = this.spawnPosition.z;
+		this.velocity.x = 0;
+		this.velocity.z = 0;
 	}
 
 	update(direction: number, pressed: boolean)

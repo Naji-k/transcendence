@@ -1,5 +1,5 @@
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PointLight, Scene } from '@babylonjs/core';
-import { Ball, Game } from '../index';
+import { Ball } from '../index';
 
 export class Goal
 {
@@ -7,10 +7,16 @@ export class Goal
 	private post2:	Mesh;
 	private back:	Mesh;
 	private height:	number;
+	private lights:	PointLight[] = [];
+	private isAlive:	boolean;
+
+	private static goalPostMaterial: StandardMaterial;
+	private static eliminatedMaterial: StandardMaterial;
 
 	constructor(loc1: Vector3, loc2: Vector3, scene: Scene)
 	{
 		this.height = loc1.y * 2;
+		this.isAlive = true;
 		this.post1 = this.createPost(loc1, scene);
 		this.post2 = this.createPost(loc2, scene);
 		this.back = MeshBuilder.CreateBox("goalBack", { width: 0.1, height: 5, depth: loc2.subtract(loc1).length() }, scene);
@@ -41,10 +47,7 @@ export class Goal
 	{
 		const post = MeshBuilder.CreateCylinder("goalPost", { diameter: 0.5, height: this.height }, scene);
 		post.position = position;
-
-		const mat = new StandardMaterial("postMat", scene);
-		mat.diffuseColor = new Color3(1, 1, 0);
-		post.material = mat;
+		post.material = Goal.goalPostMaterial;
 
 		new PhysicsAggregate(
 			post,
@@ -53,20 +56,40 @@ export class Goal
 			scene
 		);
 
-		const light = new PointLight("goalLight", new Vector3(position.x, this.height, position.z), scene);
-		light.intensity = 0.5;
+		this.lights.push(new PointLight("goalLight", new Vector3(position.x, this.height, position.z), scene));
+		this.lights[this.lights.length - 1].intensity = 0.5;
 		return post;
 	}
 
 	score(ball: Ball): boolean
 	{
-		return this.back.intersectsMesh(ball.getMesh(), false);
+		return this.back.intersectsMesh(ball.getMesh(), false) == true && this.isAlive == true;
 	}
 
 	eliminate()
 	{
-		this.post1.material = Game.eliminatedMaterial;
-		this.post2.material = Game.eliminatedMaterial;
-		this.back.material = Game.eliminatedMaterial;
+		this.post1.material = Goal.eliminatedMaterial;
+		this.post2.material = Goal.eliminatedMaterial;
+		this.back.material = Goal.eliminatedMaterial;
+		for (const light of this.lights)
+		{
+			light.dispose();
+		}
+		this.isAlive = false;
+	}
+	
+
+	static setEliminatedMaterial(mat: StandardMaterial)
+	{
+		Goal.eliminatedMaterial = mat;
+	}
+	
+	static createGoalPostMaterial(scene: Scene)
+	{
+		const mat = new StandardMaterial("goalPostMat", scene);
+
+		mat.diffuseColor = new Color3(0, 0, 0);
+		mat.ambientColor = new Color3(0, 0, 0);
+		Goal.goalPostMaterial = mat;
 	}
 }

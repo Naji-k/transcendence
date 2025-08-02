@@ -1,4 +1,4 @@
-import { Ball, Player, Game } from '../index';
+import { Ball, Wall } from '../index';
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
 
 export enum clr
@@ -21,6 +21,8 @@ export class Paddle
 	private targetSpeed:	number = 1;
 	private acceleration: 	number = 0.01;
 	private frozen:			boolean;
+
+	private static eliminatedMaterial: StandardMaterial;
 
 	static paddleColors: Color3[] =
 	[
@@ -51,7 +53,6 @@ export class Paddle
 			scene
 		);
 
-		// this.aggregate.body.setLinearVelocity(Vector3.Zero());
 		this.aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
 		this.aggregate.body.disablePreStep = false;
 		this.material = new StandardMaterial("paddleMat", this.mesh.getScene());
@@ -59,17 +60,16 @@ export class Paddle
 		this.material.ambientColor = Color3.Black();
 		this.material.alpha = 0.9;
         this.mesh.material = this.material;
-
 		this.frozen = false;
 	}
 
-	move()
+	move(walls: Wall[])
 	{
 		this.mesh.position.x += this.velocity.x;
 		this.mesh.position.z += this.velocity.z;
-		for (let i = 0; i < Player.wallArray.length; i++)
+		for (let i = 0; i < walls.length; i++)
 		{
-			if (this.mesh.intersectsMesh(Player.wallArray[i].getMesh(), false) == true)
+			if (this.mesh.intersectsMesh(walls[i].getMesh(), false) == true)
 			{
 				this.mesh.position.x -= this.velocity.x * 2;
 				this.mesh.position.z -= this.velocity.z * 2;
@@ -97,13 +97,14 @@ export class Paddle
 		this.velocity.z = 0;
 	}
 
-	update(direction: number, pressed: boolean)
+	update(direction: number, pressed: boolean, walls: Wall[])
 	{
 		if (this.frozen == true)
 		{
 			return;
 		}
-		let currentSpeed = this.velocity.length();
+
+		const currentSpeed = this.velocity.length();
 	
 		if (pressed == false && currentSpeed > 0)
 		{
@@ -129,7 +130,7 @@ export class Paddle
 			}
 			this.velocity.z += this.acceleration * direction;
 		}
-		this.move();
+		this.move(walls);
 	}
 
 	hits(ball: Ball): boolean
@@ -140,8 +141,13 @@ export class Paddle
 	eliminate()
 	{
 		this.mesh.position = this.spawnPosition;
-		this.mesh.material = Game.eliminatedMaterial;
+		this.mesh.material = Paddle.eliminatedMaterial;
 		this.frozen = true;
 		this.aggregate.body.setLinearVelocity(Vector3.Zero());
+	}
+
+	static setEliminatedMaterial(mat: StandardMaterial)
+	{
+		Paddle.eliminatedMaterial = mat;
 	}
 }

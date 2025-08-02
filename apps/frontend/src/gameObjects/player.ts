@@ -7,15 +7,9 @@ export class Player
 	private lives:		number;
 	private goal:		Goal;
 	private paddle:		Paddle;
-	private arrayPosition:	number;
 	private controlKeys:	[string, string] = ["", ""];
 	public	ID:			number;
 
-	static ballArray: Ball[] = [];
-	static wallArray: Wall[] = [];
-	static goalArray: Goal[] = [];
-	static playerArray: Player[] = [];
-	static paddleArray: Paddle[] = [];
 	static playerCount: number = 0;
 
 	static playerColors: string[] =
@@ -34,12 +28,11 @@ export class Player
 		this.score = 0;
 		this.lives = 1;
 		this.ID = _id;
-		this.arrayPosition = _id;
 		this.goal = goal;
 		this.paddle = paddle;
 	}
 
-	checkForActions(keys: Record<string, boolean>)
+	checkForActions(keys: Record<string, boolean>, walls: Wall[] = [])
 	{
 		const keyDownIsPressed = keys[this.controlKeys[0]];
 		const keyUpIsPressed = keys[this.controlKeys[1]];
@@ -48,16 +41,16 @@ export class Player
 		{
 			if (keyUpIsPressed == true)
 			{
-				this.paddle.update(1, true);
+				this.paddle.update(1, true, walls);
 			}
 			if (keyDownIsPressed == true)
 			{
-				this.paddle.update(-1, true);
+				this.paddle.update(-1, true, walls);
 			}
 		}
 		else
 		{
-			this.paddle.update(0, false);
+			this.paddle.update(0, false, walls);
 		}
 	}
 
@@ -85,11 +78,6 @@ export class Player
 		}
 	}
 
-	decreaseArrayPosition()
-	{
-		this.arrayPosition--;
-	}
-
 	setControls(keyUp: string, keyDown: string)
 	{
 		this.controlKeys[0] = keyUp;
@@ -103,13 +91,7 @@ export class Player
 
 	private eliminate()
 	{
-		// for (let i = this.arrayPosition + 1; i < Player.playerArray.length; i++)
-		// {
-		// 	Player.playerArray[i].decreaseArrayPosition();
-		// }
-		// Player.playerArray.splice(this.arrayPosition, 1);
 		this.paddle.eliminate();
 		this.goal.eliminate();
-		Player.playerCount--;
 	}
 }

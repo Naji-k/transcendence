@@ -1,5 +1,5 @@
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
-import { Paddle, Game, Player } from '../index';
+import { Paddle, Game, Wall } from '../index';
 
 export class Ball
 {
@@ -47,22 +47,22 @@ export class Ball
 		return randomVec;
 	}
 
-	update(paddles: Paddle[])
+	update(paddles: Paddle[], walls: Wall[])
 	{
 		for (let pad = 0; pad < paddles.length; pad++)
 		{
 			if (this.mesh.intersectsMesh(paddles[pad].getMesh(), false) == true)
 			{
 				this.lasthit = pad;
-				Game.paddlehitSound.play();
+				Game.playPaddleHitSound();
 			}
 		}
 
-		for (let i = 0; i < Player.wallArray.length; i++)
+		for (let i = 0; i < walls.length; i++)
 		{
-			if (this.mesh.intersectsMesh(Player.wallArray[i].getMesh(), false) == true)
+			if (this.mesh.intersectsMesh(walls[i].getMesh(), false) == true)
 			{
-				Game.wallhitSound.play();
+				Game.playWallHitSound();
 			}
 		}
 

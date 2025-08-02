@@ -4,6 +4,6 @@ export * from './gameObjects/wall';
 export * from './gameObjects/player';
 export * from './gameObjects/goal';
 export * from './gameObjects/game';
-export * from './gameObjects/menu';
+export * from './gameObjects/game_menu';
 export * from './initialize';
 export * from './main';

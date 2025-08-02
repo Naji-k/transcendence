@@ -2,7 +2,6 @@ import { Wall, Ball, Paddle, Goal, Player, clr } from './index';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from "@babylonjs/gui";
 
-
 const ballDiameter = 0.5;
 
 function getBlockSize(x: number, y: number, grid: string[][]): [number, number]
@@ -101,16 +100,15 @@ export function createWalls(scene: Scene, walls: Wall[], dimensions: number[], g
 			}
 		}
 	}
-	Player.wallArray = walls;
 }
 
-export function createPaddles(scene: Scene, paddles: Paddle[], grid: string[][])
+export function createPaddles(scene: Scene, paddles: Paddle[], grid: string[][], players: number)
 {
 	let playerChar: string;
 	const gridWidth = grid[0].length;
 	const gridHeight = grid.length;
 
-	for (let i = 1; i <= Player.playerCount; i++)
+	for (let i = 1; i <= players; i++)
 	{
 		playerChar = i.toString();
 		for (let x = 0; x < grid.length; x++)
@@ -131,7 +129,6 @@ export function createPaddles(scene: Scene, paddles: Paddle[], grid: string[][])
 			}
 		}
 	}
-	Player.paddleArray = paddles;
 }
 
 export function createBalls(scene: Scene, balls: Ball[], amount: number)
@@ -140,7 +137,6 @@ export function createBalls(scene: Scene, balls: Ball[], amount: number)
 	{
 		balls.push(new Ball(new Vector3(0, ballDiameter, 0), Paddle.paddleColors[clr.Green], 0.5, scene));
 	}
-	Player.ballArray = balls;
 }
 
 export function createGoals(scene: Scene, goals: Goal[])
@@ -159,15 +155,13 @@ export function createGoals(scene: Scene, goals: Goal[])
 		new Vector3(14, goalHeight / 2, goalWidth / 2),
 		scene
 	));
-
-	Player.goalArray = goals;
 }
 
-export function createPlayers(players: Player[])
+export function createPlayers(players: Player[], goals: Goal[], paddles: Paddle[], numPlayers: number)
 {
-	for (let i = 0; i < Player.playerCount; i++)
+	for (let i = 0; i < numPlayers; i++)
 	{
-		const player = new Player(`Player ${i + 1}`, i, Player.goalArray[i], Player.paddleArray[i]);
+		const player = new Player(`Player ${i + 1}`, i + 1, goals[i], paddles[i]);
 		switch (i)
 		{
 			case 0: player.setControls('ArrowUp', 'ArrowDown'); break;
@@ -178,7 +172,6 @@ export function createPlayers(players: Player[])
 		}
 		players.push(player);
 	}
-	Player.playerArray = players;
 }
 
 export function	createGround(scene: Scene, dimensions: number[])
@@ -196,13 +189,13 @@ export function	createGround(scene: Scene, dimensions: number[])
 	ground.material = mat;
 }
 
-export function createScoreboard(): TextBlock[]
+export function createScoreboard(scoreboard: TextBlock[], players: Player[])
 {
 	const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 	const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("Scores");
 	let background = new Rectangle();
 	background.widthInPixels = 200;
-	background.heightInPixels = 35 * Player.playerCount + 10;
+	background.heightInPixels = 35 * players.length + 10;
 	background.cornerRadius = 10;
 	background.color = "black";
 	background.thickness = 2;
@@ -211,12 +204,10 @@ export function createScoreboard(): TextBlock[]
 	background.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
 	background.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 	advancedTexture.addControl(background);
-	
-	let scoreboard = [];
 
-	for (let i = 0; i < Player.playerArray.length; i++)
+	for (let i = 0; i < players.length; i++)
 	{
-		const player = Player.playerArray[i];
+		const player = players[i];
 		const textBlock = new TextBlock();
 		textBlock.text = `Player ${player.ID}: ${player.getLives()}`;
 		textBlock.color = Paddle.paddleColors[i].toHexString();
@@ -228,5 +219,4 @@ export function createScoreboard(): TextBlock[]
 		advancedTexture.addControl(textBlock);
 		scoreboard.push(textBlock);
 	}
-	return scoreboard;
 }

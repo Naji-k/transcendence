@@ -11,25 +11,23 @@ export class Game
 	private engine: Engine;
 	private scene: Scene;
 	private havokInstance: any;
+	private dimensions: [number, number];
+	private gameIsRunning: boolean;
+	private	gameCanvas: HTMLCanvasElement;
+	
+	private keys: Record<string, boolean> = {};
+	private scoreboard: TextBlock[] = [];
+	private players: Player[] = [];	
 	private paddles: Paddle[] = [];
 	private balls: Ball[] = [];
 	private walls: Wall[] = [];
 	private goals: Goal[] = [];
-	private players: Player[] = [];
-	private scoreboard: TextBlock[] = [];
+	private playerCount: number = 0;
 
-	private dimensions: [number, number];
-	private gameIsRunning: boolean;
-
-	private	gameCanvas: HTMLCanvasElement;
-	private keys: Record<string, boolean> = {};
-
-	static wallhitSound: StreamingSound;
-	static paddlehitSound: StreamingSound;
-	static playerOutSound: StreamingSound;
-	static victorySound: StreamingSound;
-
-	static eliminatedMaterial: StandardMaterial;
+	private static wallhitSound: StreamingSound;
+	private static paddlehitSound: StreamingSound;
+	private static playerOutSound: StreamingSound;
+	private static victorySound: StreamingSound;
 
 	constructor(havokInstance: any)
 	{
@@ -41,6 +39,7 @@ export class Game
 		this.dimensions = [0, 0];
 		this.gameIsRunning = true;
 		this.engine = new Engine(this.gameCanvas, true, {antialias: true});
+		this.scene = new Scene(this.engine);
 	}
 
 	keyEvents()
@@ -53,7 +52,7 @@ export class Game
 
 	private parseMapFile(mapText: string): string[][]
 	{
-		let lines = mapText.split('\n');
+		const lines = mapText.split('\n');
 		const sizeMatch = lines[0].match(/^size:\s*(\d+)x(\d+)$/);
 		const playersMatch = lines[1].match(/^players:\s*(\d+)$/);
 		
@@ -62,11 +61,11 @@ export class Game
 			throw new Error("Lines 1-3 format: size: <rows>x<columns>, players: <number>, empty line");
 		}
 		this.dimensions = [parseInt(sizeMatch[1]), parseInt(sizeMatch[2])];
-		Player.playerCount = parseInt(playersMatch[1]);
+		this.playerCount = parseInt(playersMatch[1]);
 
-		if (Player.playerCount < 1 || Player.playerCount > maxPlayerCount)
+		if (this.playerCount < 1 || this.playerCount > maxPlayerCount)
 		{
-			throw new Error(`Invalid player count: ${Player.playerCount}. Must be between 1 and ${maxPlayerCount}.`);
+			throw new Error(`Invalid player count: ${this.playerCount}. Must be between 1 and ${maxPlayerCount}.`);
 		}
 
 		lines.splice(0, 3);
@@ -80,34 +79,68 @@ export class Game
 
 	async loadMap(map: string)
 	{
-		const audioEngine = await CreateAudioEngineAsync();
-		audioEngine.volume = 0.5;
-		// const frogs = await CreateStreamingSoundAsync("music", "/sounds/frogs.mp3");
-		Game.wallhitSound = await CreateStreamingSoundAsync("wallhit", "/sounds/wallhit.wav");
-		Game.paddlehitSound = await CreateStreamingSoundAsync("paddlehit", "/sounds/paddlehit.wav");
-		Game.playerOutSound = await CreateStreamingSoundAsync("playerout", "/sounds/playerout.wav");
-		Game.victorySound = await CreateStreamingSoundAsync("victory", "/sounds/victory.wav");
-
-		Game.paddlehitSound.maxInstances = 1;
-		Game.wallhitSound.maxInstances = 1;
-
-		await audioEngine.unlockAsync();
-		// frogs.play();
-		setTimeout(() => {}, 200);
+		try
+		{
+			const audioEngine = await CreateAudioEngineAsync();
+			audioEngine.volume = 0.5;
+			const frogs = await CreateStreamingSoundAsync("music", "/sounds/frogs.mp3");
+			Game.wallhitSound = await CreateStreamingSoundAsync("wallhit", "/sounds/wallhit.wav");
+			Game.paddlehitSound = await CreateStreamingSoundAsync("paddlehit", "/sounds/paddlehit.wav");
+			Game.playerOutSound = await CreateStreamingSoundAsync("playerout", "/sounds/playerout.wav");
+			Game.victorySound = await CreateStreamingSoundAsync("victory", "/sounds/victory.wav");
+			Game.paddlehitSound.maxInstances = 1;
+			Game.wallhitSound.maxInstances = 1;
+	
+			await audioEngine.unlockAsync();
+			frogs.play();
+			setTimeout(() => {}, 100);
+		}
+		catch (error)
+		{
+			console.error("Error loading audio:", error);
+		}
 
 		const fileText = await(loadFileText('public/maps/' + map));
 		const grid = this.parseMapFile(fileText);
+		const eliminationMat = new StandardMaterial("eliminatedMat", this.scene);
 
-		this.scene = this.createScene(this.engine, this.havokInstance, grid);
-		Game.eliminatedMaterial = new StandardMaterial("eliminatedMat", this.scene);
-		Game.eliminatedMaterial.diffuseColor = new Color3(0.5, 0.5, 0.5);
-		Game.eliminatedMaterial.alpha = 0.5;
+		eliminationMat.diffuseColor = new Color3(0.5, 0.5, 0.5);
+		eliminationMat.alpha = 0.5;
+
+		Paddle.setEliminatedMaterial(eliminationMat);
+		Goal.setEliminatedMaterial(eliminationMat);
+		Goal.createGoalPostMaterial(this.scene);
+		this.createScene(grid);
 	}
 
-	private createScene(engine: Engine, havokInstance: any, grid: string[][]): Scene
+	private victory()
 	{
-		const scene = new Scene(engine);
-		const havokPlugin = new HavokPlugin(true, havokInstance);
+		this.pauseGame();
+		Game.playVictorySound();
+		
+		const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("victoryUI", true, this.scene);
+		const victoryText = new TextBlock();
+		
+		for (let i = 0; i < this.players.length; i++)
+		{
+			if (this.players[i].isAlive() == true)
+			{
+				victoryText.color = Player.playerColors[i];
+				victoryText.text = `${this.players[i].getName()} wins!`;
+				break;
+			}
+		}
+		victoryText.fontSize = 50;
+		victoryText.outlineWidth = 10;
+		victoryText.outlineColor = "black";
+		advancedTexture.addControl(victoryText);
+		this.scene.render();
+	}
+
+	private createScene(grid: string[][])
+	{
+		const scene = this.scene;
+		const havokPlugin = new HavokPlugin(true, this.havokInstance);
 		scene.enablePhysics(new Vector3(0, -10, 0), havokPlugin);
 
 		const camera = new FreeCamera("camera1", new Vector3(0, 30, 5), scene);
@@ -118,13 +151,12 @@ export class Game
 
 		createGround(scene, this.dimensions);
 		createWalls(scene, this.walls, this.dimensions, grid);
-		createPaddles(scene, this.paddles, grid);
+		createPaddles(scene, this.paddles, grid, this.playerCount);
 		createBalls(scene, this.balls, 1);
 		createGoals(scene, this.goals);
-		createPlayers(this.players);
-		this.scoreboard = createScoreboard();
-
-		return scene;
+		createPlayers(this.players, this.goals, this.paddles, this.playerCount);
+		createScoreboard(this.scoreboard, this.players);
+		this.scene = scene;
 	}
 
 	private pauseGame()
@@ -206,20 +238,11 @@ export class Game
 					if (this.goals[j].score(this.balls[i]) == true)
 					{
 						this.players[j].loseLife();
+						this.playerCount--;
 						this.scoreboard[j].text = `Player ${this.players[j].ID}: ${this.players[j].getLives()}`;
-						if (Player.playerCount == 1)
+						if (this.playerCount == 1)
 						{
-							this.pauseGame();
-							Game.victorySound.play();
-							const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("victoryUI");
-							const victoryText = new TextBlock();
-							victoryText.color = Player.playerColors[this.players[j].ID];
-							victoryText.text = `${this.players[j].getName()} wins!`;
-							victoryText.fontSize = 50;
-							victoryText.outlineWidth = 10;
-							victoryText.outlineColor = "black";
-							advancedTexture.addControl(victoryText);
-							this.scene.render();
+							this.victory();
 							return;
 						}
 						Game.playerOutSound.play();
@@ -232,7 +255,7 @@ export class Game
 				}
 				if (scored == false)
 				{
-					this.balls[i].update(this.paddles);
+					this.balls[i].update(this.paddles, this.walls);
 				}
 				if (this.balls.length == 0)
 				{
@@ -255,6 +278,12 @@ export class Game
 	getPlayers(): Player[] {return this.players;}
 	getScene(): Scene {return this.scene;}
 	gameRunning(): boolean {return this.gameIsRunning;}
+
+	static playBallHitSound() { Game.paddlehitSound.play(); }
+	static playPaddleHitSound() { Game.paddlehitSound.play(); }
+	static playPlayerOutSound() { Game.playerOutSound.play(); }
+	static playVictorySound() { Game.victorySound.play(); }
+	static playWallHitSound() { Game.wallhitSound.play(); }
 }
 
 async function loadFileText(filePath: string): Promise<string>
@@ -267,4 +296,3 @@ async function loadFileText(filePath: string): Promise<string>
 	}
 	return response.text();
 }
-

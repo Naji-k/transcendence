@@ -71,8 +71,8 @@ export class Paddle
 		{
 			if (this.mesh.intersectsMesh(walls[i].getMesh(), false) == true)
 			{
-				this.mesh.position.x -= this.velocity.x * 2;
-				this.mesh.position.z -= this.velocity.z * 2;
+				this.mesh.position.x -= this.velocity.x;
+				this.mesh.position.z -= this.velocity.z;
 				this.velocity.x = 0;
 				this.velocity.z = 0;
 				return;

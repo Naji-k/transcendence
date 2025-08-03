@@ -2,10 +2,17 @@ import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from "@
 import { Scene, ActionManager, ExecuteCodeAction, KeyboardEventTypes } from "@babylonjs/core";
 import { Game } from "./game";
 
+enum menus
+{
+	MAIN,
+	SETTINGS,
+	QUIT
+}
+
 export class GameMenu
 {
-	private advancedTexture: AdvancedDynamicTexture;
-	private menuContainer: Rectangle;
+	private menuTextures: AdvancedDynamicTexture []= [];
+	private menuContainer: Rectangle[] = [];
 	private buttons: Button[] = [];
 	private selectedIndex;
 	private isVisible;
@@ -18,40 +25,61 @@ export class GameMenu
 		this.game = game;
 		this.selectedIndex = 0;
 		this.isVisible = false;
-		this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
-		this.menuContainer = new Rectangle();
-		this.setupGUI();
+		this.menuTextures.push(AdvancedDynamicTexture.CreateFullscreenUI("mainUI", true, scene));
+		this.menuTextures.push(AdvancedDynamicTexture.CreateFullscreenUI("settingsUI", true, scene));
+		this.menuContainer.push(new Rectangle());
+		this.menuContainer.push(new Rectangle());
+		this.setupMainMenu();
+		this.setupSettingsMenu();
 		this.setupKeyboardInput();
 	}
 
-	private setupGUI()
+	private setupMainMenu()
 	{
-		this.menuContainer.widthInPixels = 400;
-		this.menuContainer.heightInPixels = 300;
-		this.menuContainer.cornerRadius = 10;
-		this.menuContainer.color = "black";
-		this.menuContainer.thickness = 2;
-		this.menuContainer.background = "rgba(0, 0, 0, 0.8)";
-		this.menuContainer.isVisible = false;
-		this.advancedTexture.addControl(this.menuContainer);
+		const x = menus.MAIN;
 
-		this.createMenuButton("RESUME", 0, () => this.toggleMenu());
-		this.createMenuButton("SETTINGS", 1, () => this.openSettings());
-		this.createMenuButton("QUIT", 2, () => this.quitGame());
+		this.menuContainer[x].widthInPixels = 400;
+		this.menuContainer[x].heightInPixels = 300;
+		this.menuContainer[x].cornerRadius = 10;
+		this.menuContainer[x].color = "black";
+		this.menuContainer[x].thickness = 2;
+		this.menuContainer[x].background = "rgba(0, 0, 0, 0.8)";
+		this.menuContainer[x].isVisible = false;
+		this.menuTextures[x].addControl(this.menuContainer[x]);
+
+		this.createMenuButton("RESUME", 0, x, () => this.toggleMenu(menus.MAIN));
+		this.createMenuButton("SETTINGS", 1, x, () => this.openSettings());
+		this.createMenuButton("QUIT", 2, x, () => this.quitGame());
 		this.updateButtonStyles();
 	}
 
-	private createMenuButton(text: string, index: number, onClick: () => void)
+	private setupSettingsMenu()
+	{
+		const x = menus.SETTINGS;
+
+		this.menuContainer[x].widthInPixels = 400;
+		this.menuContainer[x].heightInPixels = 300;
+		this.menuContainer[x].cornerRadius = 10;
+		this.menuContainer[x].color = "black";
+		this.menuContainer[x].thickness = 2;
+		this.menuContainer[x].background = "rgba(0, 0, 0, 0.8)";
+		this.menuContainer[x].isVisible = false;
+		this.menuTextures[x].addControl(this.menuContainer[x]);
+
+		this.createMenuButton("BACK", 0, x, () => this.toggleMenu(menus.SETTINGS));
+	}
+
+	private createMenuButton(text: string, index: number, menu: menus, onClick: () => void)
 	{
 		const button = Button.CreateSimpleButton(`button_${index}`, text);
+
 		button.widthInPixels = 200;
 		button.heightInPixels = 50;
 		button.color = "black";
 		button.fontSize = 20;
 		button.background = "transparent";
 		button.topInPixels = (index - 1) * 70;
-		button.onPointerClickObservable.add(onClick);
-		this.menuContainer.addControl(button);
+		this.menuContainer[menu].addControl(button);
 		this.buttons.push(button);
 	}
 
@@ -65,7 +93,7 @@ export class GameMenu
 			{
 				if (evt.sourceEvent.key === 'Escape')
 				{
-					this.toggleMenu();
+					this.toggleMenu(menus.MAIN);
 				}
 			}
 		));
@@ -85,7 +113,6 @@ export class GameMenu
 					case 'Enter': this.selectCurrentButton(); break;
 				}
 			}
-			this.scene.render();
 		});
 	}
 
@@ -116,21 +143,19 @@ export class GameMenu
 				button.color = "black";
 			}
 		});
+		this.scene.render();
 	}
 
 	private selectCurrentButton()
 	{
-		// Trigger the click event of the selected button
 		console.log(`Selected: ${this.buttons[this.selectedIndex].name}`);
-
 		this.updateButtonStyles();
-		// this.buttons[this.selectedIndex].onPointerClickObservable.notifyObservers();
 	}
 
-	public toggleMenu()
+	public toggleMenu(menu: menus)
 	{
 		this.isVisible = !this.isVisible;
-		this.menuContainer.isVisible = this.isVisible;
+		this.menuContainer[menu].isVisible = this.isVisible;
 		
 		if (this.isVisible == true)
 		{

@@ -1,5 +1,5 @@
-import { Wall, Ball, Paddle, createWalls, createPaddles, createBalls,
-		createGoals, createPlayers, createGround, Player, Goal, createScoreboard, GameMenu } from '../index';
+import { Wall, Ball, Paddle, createWalls, createBalls,
+		createPlayers, createGround, Player, Goal, createScoreboard, GameMenu } from '../index';
 import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
 	Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight, HavokPlugin, StandardMaterial } from '@babylonjs/core';
 import { TextBlock, AdvancedDynamicTexture } from "@babylonjs/gui";
@@ -83,7 +83,7 @@ export class Game
 		{
 			const audioEngine = await CreateAudioEngineAsync();
 			audioEngine.volume = 0.5;
-			const frogs = await CreateStreamingSoundAsync("music", "/sounds/frogs.mp3");
+			// const frogs = await CreateStreamingSoundAsync("music", "/sounds/frogs.mp3");
 			Game.wallhitSound = await CreateStreamingSoundAsync("wallhit", "/sounds/wallhit.wav");
 			Game.paddlehitSound = await CreateStreamingSoundAsync("paddlehit", "/sounds/paddlehit.wav");
 			Game.playerOutSound = await CreateStreamingSoundAsync("playerout", "/sounds/playerout.wav");
@@ -92,8 +92,7 @@ export class Game
 			Game.wallhitSound.maxInstances = 1;
 	
 			await audioEngine.unlockAsync();
-			frogs.play();
-			setTimeout(() => {}, 100);
+			// frogs.play();
 		}
 		catch (error)
 		{
@@ -151,10 +150,8 @@ export class Game
 
 		createGround(scene, this.dimensions);
 		createWalls(scene, this.walls, this.dimensions, grid);
-		createPaddles(scene, this.paddles, grid, this.playerCount);
 		createBalls(scene, this.balls, 1);
-		createGoals(scene, this.goals);
-		createPlayers(this.players, this.goals, this.paddles, this.playerCount);
+		createPlayers(this.players, this.goals, this.paddles, this.playerCount, grid, scene);
 		createScoreboard(this.scoreboard, this.players);
 		this.scene = scene;
 	}
@@ -238,7 +235,10 @@ export class Game
 					if (this.goals[j].score(this.balls[i]) == true)
 					{
 						this.players[j].loseLife();
-						this.playerCount--;
+						if (this.players[j].isAlive() == false)
+						{
+							this.playerCount--;
+						}
 						this.scoreboard[j].text = `Player ${this.players[j].ID}: ${this.players[j].getLives()}`;
 						if (this.playerCount == 1)
 						{

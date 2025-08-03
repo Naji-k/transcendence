@@ -10,8 +10,6 @@ export class Player
 	private controlKeys:	[string, string] = ["", ""];
 	public	ID:			number;
 
-	static playerCount: number = 0;
-
 	static playerColors: string[] =
 	[
 		"Red",
@@ -26,7 +24,7 @@ export class Player
 	{
 		this.name = name;
 		this.score = 0;
-		this.lives = 1;
+		this.lives = 3;
 		this.ID = _id;
 		this.goal = goal;
 		this.paddle = paddle;

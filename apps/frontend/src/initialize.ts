@@ -1,6 +1,6 @@
-import { Wall, Ball, Paddle, Goal, Player, clr } from './index';
+import { Wall, Ball, Paddle, Goal, Player, clr, Colors } from './index';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
-import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from '@babylonjs/gui';
 
 const ballDiameter = 0.5;
 
@@ -39,7 +39,7 @@ function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: number[
 	const height = dimensions[0];
 	const width = dimensions[1];
 	const wallThickness = 0.5;
-	const wallHeight = ballDiameter * 4;
+	const wallHeight = ballDiameter * 8;
 	const wallOpacity = 0.3;
 	const blackColor = Color3.Black();
 	
@@ -203,7 +203,7 @@ function createPaddle(scene: Scene, grid: string[][], player: number): Paddle
 					ballDiameter,
 					(x - gridHeight / 2 + height / 2)
 				);
-				return new Paddle(dimensions, position, Paddle.paddleColors[player - 1], scene);
+				return new Paddle(dimensions, position, Colors[player - 1], scene);
 			}
 		}
 	}
@@ -215,9 +215,8 @@ function createGoal(scene: Scene, grid: string[][], num: number): Goal
 	const goalHeight = 5;
 	const gridWidth = grid[0].length;
 	const gridHeight = grid.length;
-	let playerChar: string;
+	const playerChar = num.toString();
 
-	playerChar = num.toString();
 	for (let x = 0; x < grid.length; x++)
 	{
 		for (let y = 0; y < grid[x].length; y++)
@@ -225,17 +224,18 @@ function createGoal(scene: Scene, grid: string[][], num: number): Goal
 			if (grid[x][y] == playerChar)
 			{
 				const [height, width] = getBlockSize(x, y, grid);
+				const adjustment = Math.max(height, width);
 				const post1 = new Vector3(
-					(y - gridWidth / 2 + width / 2),
+					y - gridWidth / 2,
 					goalHeight / 2,
-					(x - gridHeight / 2 + height / 2 - width / 2)
+					x - gridHeight / 2
 				);
 				const post2 = new Vector3(
-					(y - gridWidth / 2 + width / 2),
+					y - gridWidth / 2,
 					goalHeight / 2,
-					(x - gridHeight / 2 + height / 2 + width / 2)
+					x - gridHeight / 2 + adjustment
 				);
-				return new Goal(post1, post2, Paddle.paddleColors[num - 1], scene);
+				return new Goal(post1, post2, Colors[num - 1], scene);
 			}
 		}
 	}
@@ -254,7 +254,7 @@ export function createBalls(scene: Scene, balls: Ball[], amount: number)
 	{
 		balls.push(new Ball(
 			new Vector3(0, ballDiameter, 0),
-			Paddle.paddleColors[clr.Green],
+			Colors[clr.GREEN],
 			0.5, scene)
 		);
 	}
@@ -262,16 +262,16 @@ export function createBalls(scene: Scene, balls: Ball[], amount: number)
 
 export function createPlayers(players: Player[], goals: Goal[], paddles: Paddle[], numPlayers: number, grid: string[][], scene: Scene)
 {
-	for (let i = 1; i <= numPlayers; i++)
+	for (let i = 0; i < numPlayers; i++)
 	{
-		createPlayerAttributes(scene, paddles, goals, grid, i);
-		const player = new Player(`Player ${i}`, i, goals[i - 1], paddles[i - 1]);
+		createPlayerAttributes(scene, paddles, goals, grid, i + 1);
+		const player = new Player(`Player ${i + 1}`, i + 1, goals[i], paddles[i]);
 		switch (i)
 		{
-			case 1: player.setControls('ArrowUp', 'ArrowDown'); break;
-			case 2: player.setControls('w', 's'); break;
-			case 3: player.setControls('i', 'k'); break;
-			case 4: player.setControls('t', 'g'); break;
+			case 0: player.setControls('ArrowUp', 'ArrowDown'); break;
+			case 1: player.setControls('w', 's'); break;
+			case 2: player.setControls('i', 'k'); break;
+			case 3: player.setControls('t', 'g'); break;
 			default: player.setControls('ArrowUp', 'ArrowDown'); break;
 		}
 		players.push(player);
@@ -288,22 +288,23 @@ export function	createGround(scene: Scene, dimensions: number[])
 		scene
 	);
 	const mat = new StandardMaterial('floor', ground.getScene());
-	mat.diffuseColor = new Color3(0.2, 1, 1);
-	mat.ambientColor = new Color3(1, 0.2, 0.2);
+	mat.diffuseColor = Color3.Gray();
+	mat.ambientColor = Color3.Gray();
+	mat.maxSimultaneousLights = 16;
 	ground.material = mat;
 }
 
 export function createScoreboard(scoreboard: TextBlock[], players: Player[])
 {
 	const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
-	const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("Scores");
+	const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('Scores');
 	let background = new Rectangle();
 	background.widthInPixels = 200;
 	background.heightInPixels = 35 * players.length + 10;
 	background.cornerRadius = 10;
-	background.color = "black";
+	background.color = 'black';
 	background.thickness = 2;
-	background.background = "rgba(0, 0, 0, 0.8)";
+	background.background = 'rgba(0, 0, 0, 0.8)';
 	background.isVisible = true;
 	background.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
 	background.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
@@ -314,7 +315,7 @@ export function createScoreboard(scoreboard: TextBlock[], players: Player[])
 		const player = players[i];
 		const textBlock = new TextBlock();
 		textBlock.text = `Player ${player.ID}: ${player.getLives()}`;
-		textBlock.color = Paddle.paddleColors[i].toHexString();
+		textBlock.color = Colors[i].toHexString();
 		textBlock.fontSize = 30;
 		textBlock.top = `${i * 35 - canvas.height / 2 + 20}px`;
 		textBlock.left = `${-(canvas.width / 2) + 100}px`;

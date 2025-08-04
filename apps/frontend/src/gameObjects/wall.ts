@@ -21,9 +21,10 @@ export class Wall
 			scene
 		);
 
-		const mat = new StandardMaterial("wallMat", this.mesh.getScene());
+		const mat = new StandardMaterial('wallMat', this.mesh.getScene());
 		mat.diffuseColor = _color;
 		mat.alpha = opacity;
+		mat.maxSimultaneousLights = 16;
         this.mesh.material = mat;
 	}
 

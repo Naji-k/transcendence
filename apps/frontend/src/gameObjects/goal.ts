@@ -1,7 +1,7 @@
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PointLight, Scene } from '@babylonjs/core';
 import { Ball } from '../index';
 
-const goalHeight = 5;
+const goalHeight = 4;
 const goalPostDiameter = 0.5;
 const goalThickness = 0.5;
 
@@ -23,20 +23,26 @@ export class Goal
 	{
 		this.height = loc1.y * 2;
 		this.isAlive = true;
+		this.color = clr;
 		this.post1 = this.createPost(loc1, scene);
 		this.post2 = this.createPost(loc2, scene);
-		this.back = MeshBuilder.CreateBox("goalBack", { width: goalThickness, height: goalHeight, depth: loc2.subtract(loc1).length() }, scene);
-		this.front = MeshBuilder.CreateBox("goalFront", { width: goalThickness, height: goalHeight, depth: loc2.subtract(loc1).length() }, scene);
+		
+		this.front = MeshBuilder.CreateBox('goalFront', { width: goalThickness, height: goalHeight, depth: loc2.subtract(loc1).length() }, scene);
+		this.back = MeshBuilder.CreateBox('goalBack', { width: goalThickness, height: goalHeight, depth: loc2.subtract(loc1).length() }, scene);
+
+		
 		const position = Vector3.Lerp(loc1, loc2, 0.5);
 
-		this.back.position = position;
+		this.front.position = position;
+		this.back.position = position.clone();
+
 		if (this.post1.position.x < 0)
 		{
-			this.back.position.x -= 0.25;
+			this.back.position.x += goalThickness;
 		}
 		else
 		{
-			this.back.position.x += 0.25;
+			this.back.position.x += goalThickness;
 		}
 		new PhysicsAggregate(
 			this.back,
@@ -44,18 +50,25 @@ export class Goal
 			{ mass: 0, restitution: 1 },
 			scene
 		);
-		const mat = new StandardMaterial("goalBackMat", scene);
+		new PhysicsAggregate(
+			this.front,
+			PhysicsShapeType.BOX,
+			{ mass: 0, restitution: 1 },
+			scene
+		);
+		const mat = new StandardMaterial('goalMat', scene);
 
 		mat.diffuseColor = clr;
 		mat.ambientColor = clr;
+		mat.alpha = 0.4;
+		mat.maxSimultaneousLights = 16;
 		this.back.material = mat;
-		this.back.material.alpha = 0.4;
-		this.color = clr;
+		this.front.material = mat;
 	}
 
 	createPost(position: Vector3, scene: Scene): Mesh
 	{
-		const post = MeshBuilder.CreateCylinder("goalPost", { diameter: 0.5, height: this.height }, scene);
+		const post = MeshBuilder.CreateCylinder('goalPost', { diameter: goalPostDiameter, height: goalHeight }, scene);
 		post.position = position;
 		post.material = Goal.goalPostMaterial;
 
@@ -65,17 +78,22 @@ export class Goal
 			{ mass: 0, restitution: 1 },
 			scene
 		);
+		const light = new PointLight('goalLight', new Vector3(position.x, this.height, position.z), scene);
 
-		console.log('Made it thus far');
-		this.lights.push(new PointLight("goalLight", new Vector3(position.x, this.height, position.z), scene));
-		// this.lights[this.lights.length - 1].diffuse = this.color;
-		this.lights[this.lights.length - 1].intensity = 0.5;
+		light.diffuse = this.color;
+		light.specular = this.color;
+		light.intensity = 0.5;
+		light.range = 25;
+		light.setEnabled(true);
+		console.log(`Creating light at ${position.x}, ${this.height}, ${position.z}`);
+		console.log(`lights: ${this.lights.length}`);
+		this.lights.push(light);
 		return post;
 	}
 
 	score(ball: Ball): boolean
 	{
-		return this.isAlive == true && this.front.intersectsMesh(ball.getMesh(), false) == true;
+		return this.isAlive == true && this.back.intersectsMesh(ball.getMesh(), false) == true;
 	}
 
 	eliminate()
@@ -98,10 +116,11 @@ export class Goal
 	
 	static createGoalPostMaterial(scene: Scene)
 	{
-		const mat = new StandardMaterial("goalPostMat", scene);
+		const mat = new StandardMaterial('goalPostMat', scene);
 
 		mat.diffuseColor = new Color3(0, 0, 0);
 		mat.ambientColor = new Color3(0, 0, 0);
+		mat.maxSimultaneousLights = 16;
 		Goal.goalPostMaterial = mat;
 	}
 }

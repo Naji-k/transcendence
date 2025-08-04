@@ -2,7 +2,7 @@ import { Wall, Ball, Paddle, createWalls, createBalls,
 		createPlayers, createGround, Player, Goal, createScoreboard, GameMenu } from '../index';
 import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
 	Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight, HavokPlugin, StandardMaterial } from '@babylonjs/core';
-import { TextBlock, AdvancedDynamicTexture } from "@babylonjs/gui";
+import { TextBlock, AdvancedDynamicTexture } from '@babylonjs/gui';
 
 const maxPlayerCount = 6;
 
@@ -39,6 +39,7 @@ export class Game
 		this.dimensions = [0, 0];
 		this.gameIsRunning = true;
 		this.engine = new Engine(this.gameCanvas, true, {antialias: true});
+		// In your scene setup or material creation
 		this.scene = new Scene(this.engine);
 	}
 
@@ -58,7 +59,7 @@ export class Game
 		
 		if (!sizeMatch || !playersMatch || lines[2] != '')
 		{
-			throw new Error("Lines 1-3 format: size: <rows>x<columns>, players: <number>, empty line");
+			throw new Error('Lines 1-3 format: size: <rows>x<columns>, players: <number>, empty line');
 		}
 		this.dimensions = [parseInt(sizeMatch[1]), parseInt(sizeMatch[2])];
 		this.playerCount = parseInt(playersMatch[1]);
@@ -72,6 +73,7 @@ export class Game
 		if (lines.length != this.dimensions[0] ||
 			lines.some(line => line.length != this.dimensions[1]))
 		{
+			console.error(`Map size: ${lines.length}x${lines[0].length}`);
 			throw new Error(`Map size does not match expected size: ${this.dimensions[0]}x${this.dimensions[1]}`);
 		}
 		return lines.map(lines => lines.split(''));
@@ -83,11 +85,11 @@ export class Game
 		{
 			const audioEngine = await CreateAudioEngineAsync();
 			audioEngine.volume = 0.5;
-			// const frogs = await CreateStreamingSoundAsync("music", "/sounds/frogs.mp3");
-			Game.wallhitSound = await CreateStreamingSoundAsync("wallhit", "/sounds/wallhit.wav");
-			Game.paddlehitSound = await CreateStreamingSoundAsync("paddlehit", "/sounds/paddlehit.wav");
-			Game.playerOutSound = await CreateStreamingSoundAsync("playerout", "/sounds/playerout.wav");
-			Game.victorySound = await CreateStreamingSoundAsync("victory", "/sounds/victory.wav");
+			// const frogs = await CreateStreamingSoundAsync('music', '/sounds/frogs.mp3');
+			Game.wallhitSound = await CreateStreamingSoundAsync('wallhit', '/sounds/wallhit.wav');
+			Game.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', '/sounds/paddlehit.wav');
+			Game.playerOutSound = await CreateStreamingSoundAsync('playerout', '/sounds/playerout.wav');
+			Game.victorySound = await CreateStreamingSoundAsync('victory', '/sounds/victory.wav');
 			Game.paddlehitSound.maxInstances = 1;
 			Game.wallhitSound.maxInstances = 1;
 	
@@ -96,15 +98,16 @@ export class Game
 		}
 		catch (error)
 		{
-			console.error("Error loading audio:", error);
+			console.error('Error loading audio:', error);
 		}
 
 		const fileText = await(loadFileText('public/maps/' + map));
 		const grid = this.parseMapFile(fileText);
-		const eliminationMat = new StandardMaterial("eliminatedMat", this.scene);
+		const eliminationMat = new StandardMaterial('eliminatedMat', this.scene);
 
 		eliminationMat.diffuseColor = new Color3(0.5, 0.5, 0.5);
 		eliminationMat.alpha = 0.5;
+		eliminationMat.maxSimultaneousLights = 16;
 
 		Paddle.setEliminatedMaterial(eliminationMat);
 		Goal.setEliminatedMaterial(eliminationMat);
@@ -117,7 +120,7 @@ export class Game
 		this.pauseGame();
 		Game.playVictorySound();
 		
-		const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("victoryUI", true, this.scene);
+		const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('victoryUI', true, this.scene);
 		const victoryText = new TextBlock();
 		
 		for (let i = 0; i < this.players.length; i++)
@@ -131,7 +134,7 @@ export class Game
 		}
 		victoryText.fontSize = 50;
 		victoryText.outlineWidth = 10;
-		victoryText.outlineColor = "black";
+		victoryText.outlineColor = 'black';
 		advancedTexture.addControl(victoryText);
 		this.scene.render();
 	}
@@ -142,10 +145,10 @@ export class Game
 		const havokPlugin = new HavokPlugin(true, this.havokInstance);
 		scene.enablePhysics(new Vector3(0, -10, 0), havokPlugin);
 
-		const camera = new FreeCamera("camera1", new Vector3(0, 30, 5), scene);
+		const camera = new FreeCamera('camera1', new Vector3(0, 30, 5), scene);
 		camera.setTarget(Vector3.Zero());
 		// camera.attachControl(this.gameCanvas, true);
-		const hemiLight = new HemisphericLight("hemiLight", new Vector3(0, 1, 0), scene);
+		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
 		hemiLight.intensity = 0.2;
 
 		createGround(scene, this.dimensions);
@@ -192,15 +195,15 @@ export class Game
 
 	private showCountdown(scene: Scene, onFinish: () => void)
 	{
-		const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
+		const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI', true, scene);
 		const countdownText = new TextBlock();
-		countdownText.color = "red";
+		countdownText.color = 'red';
 		countdownText.fontSize = 180;
 		countdownText.outlineWidth = 5;
-		countdownText.outlineColor = "black";
+		countdownText.outlineColor = 'black';
 		advancedTexture.addControl(countdownText);
 
-		const sequence = ["3", "2", "1", "START"];
+		const sequence = ['3', '2', '1', 'START'];
 		let step = 0;
 		
 		function next()

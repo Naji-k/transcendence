@@ -1,6 +1,6 @@
-import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from "@babylonjs/gui";
-import { Scene, ActionManager, ExecuteCodeAction, KeyboardEventTypes } from "@babylonjs/core";
-import { Game } from "./game";
+import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from '@babylonjs/gui';
+import { Scene, ActionManager, ExecuteCodeAction, KeyboardEventTypes } from '@babylonjs/core';
+import { Game } from './game';
 
 enum menus
 {
@@ -25,8 +25,8 @@ export class GameMenu
 		this.game = game;
 		this.selectedIndex = 0;
 		this.isVisible = false;
-		this.menuTextures.push(AdvancedDynamicTexture.CreateFullscreenUI("mainUI", true, scene));
-		this.menuTextures.push(AdvancedDynamicTexture.CreateFullscreenUI("settingsUI", true, scene));
+		this.menuTextures.push(AdvancedDynamicTexture.CreateFullscreenUI('mainUI', true, scene));
+		this.menuTextures.push(AdvancedDynamicTexture.CreateFullscreenUI('settingsUI', true, scene));
 		this.menuContainer.push(new Rectangle());
 		this.menuContainer.push(new Rectangle());
 		this.setupMainMenu();
@@ -41,15 +41,15 @@ export class GameMenu
 		this.menuContainer[x].widthInPixels = 400;
 		this.menuContainer[x].heightInPixels = 300;
 		this.menuContainer[x].cornerRadius = 10;
-		this.menuContainer[x].color = "black";
+		this.menuContainer[x].color = 'black';
 		this.menuContainer[x].thickness = 2;
-		this.menuContainer[x].background = "rgba(0, 0, 0, 0.8)";
+		this.menuContainer[x].background = 'rgba(0, 0, 0, 0.8)';
 		this.menuContainer[x].isVisible = false;
 		this.menuTextures[x].addControl(this.menuContainer[x]);
 
-		this.createMenuButton("RESUME", 0, x, () => this.toggleMenu(menus.MAIN));
-		this.createMenuButton("SETTINGS", 1, x, () => this.openSettings());
-		this.createMenuButton("QUIT", 2, x, () => this.quitGame());
+		this.createMenuButton('RESUME', 0, x, () => this.toggleMenu(menus.MAIN));
+		this.createMenuButton('SETTINGS', 1, x, () => this.openSettings());
+		this.createMenuButton('QUIT', 2, x, () => this.quitGame());
 		this.updateButtonStyles();
 	}
 
@@ -60,13 +60,13 @@ export class GameMenu
 		this.menuContainer[x].widthInPixels = 400;
 		this.menuContainer[x].heightInPixels = 300;
 		this.menuContainer[x].cornerRadius = 10;
-		this.menuContainer[x].color = "black";
+		this.menuContainer[x].color = 'black';
 		this.menuContainer[x].thickness = 2;
-		this.menuContainer[x].background = "rgba(0, 0, 0, 0.8)";
+		this.menuContainer[x].background = 'rgba(0, 0, 0, 0.8)';
 		this.menuContainer[x].isVisible = false;
 		this.menuTextures[x].addControl(this.menuContainer[x]);
 
-		this.createMenuButton("BACK", 0, x, () => this.toggleMenu(menus.SETTINGS));
+		this.createMenuButton('BACK', 0, x, () => this.toggleMenu(menus.SETTINGS));
 	}
 
 	private createMenuButton(text: string, index: number, menu: menus, onClick: () => void)
@@ -75,9 +75,9 @@ export class GameMenu
 
 		button.widthInPixels = 200;
 		button.heightInPixels = 50;
-		button.color = "black";
+		button.color = 'black';
 		button.fontSize = 20;
-		button.background = "transparent";
+		button.background = 'transparent';
 		button.topInPixels = (index - 1) * 70;
 		this.menuContainer[menu].addControl(button);
 		this.buttons.push(button);
@@ -134,13 +134,13 @@ export class GameMenu
 		{
 			if (index == this.selectedIndex)
 			{
-				button.background = "rgba(255, 255, 255, 0.3)";
-				button.color = "yellow";
+				button.background = 'rgba(255, 255, 255, 0.3)';
+				button.color = 'yellow';
 			}
 			else
 			{
-				button.background = "transparent";
-				button.color = "black";
+				button.background = 'transparent';
+				button.color = 'black';
 			}
 		});
 		this.scene.render();
@@ -176,13 +176,13 @@ export class GameMenu
 	private openSettings()
 	{
 		// Implement settings menu
-		console.log("Opening settings...");
+		console.log('Opening settings...');
 	}
 
 	private quitGame()
 	{
 		// Implement quit logic
-		console.log("Quitting game...");
+		console.log('Quitting game...');
 		// Maybe show confirmation dialog first
 	}
 }

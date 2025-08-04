@@ -7,20 +7,20 @@ export class Player
 	private lives:		number;
 	private goal:		Goal;
 	private paddle:		Paddle;
-	private controlKeys:	[string, string] = ["", ""];
+	private controlKeys:	[string, string] = ['', ''];
 	public	ID:			number;
 
 	static playerColors: string[] =
 	[
-		"Red",
-		"Blue",
-		"Yellow",
-		"Green",
-		"Magenta",
-		"Cyan"
+		'Red',
+		'Blue',
+		'Yellow',
+		'Green',
+		'Magenta',
+		'Cyan'
 	];
 
-	constructor(name: string = "Sjon", _id: number, goal: Goal, paddle: Paddle)
+	constructor(name: string = 'Sjon', _id: number, goal: Goal, paddle: Paddle)
 	{
 		this.name = name;
 		this.score = 0;

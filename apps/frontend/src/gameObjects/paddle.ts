@@ -1,38 +1,17 @@
-import { Ball, Wall } from '../index';
+import { Ball, Wall, clr, Colors } from '../index';
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
-
-export enum clr
-{
-	Red = 0,
-	Blue = 1,
-	Yellow = 2,
-	Green = 3,
-	Magenta = 4,
-	Cyan = 5
-}
 
 export class Paddle
 {
 	private mesh:			Mesh;
-	private material:		StandardMaterial;
 	private spawnPosition:	Vector3;
 	private velocity:		Vector3;
 	private aggregate:		PhysicsAggregate;
-	private targetSpeed:	number = 1;
-	private acceleration: 	number = 0.01;
+	private targetSpeed:	number = 0.5;
+	private acceleration: 	number = 0.03;
 	private frozen:			boolean;
 
 	private static eliminatedMaterial: StandardMaterial;
-
-	static paddleColors: Color3[] =
-	[
-		new Color3(1, 0, 0), // Red
-		new Color3(0, 0, 1), // Blue
-		new Color3(1, 1, 0), // Yellow
-		new Color3(0, 1, 0), // Green
-		new Color3(1, 0, 1), // Magenta
-		new Color3(0, 1, 1)  // Cyan
-	];
 
 	constructor(dimensions: Vector3, _position: Vector3, _color: Color3, scene: Scene)
 	{
@@ -55,11 +34,14 @@ export class Paddle
 
 		this.aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
 		this.aggregate.body.disablePreStep = false;
-		this.material = new StandardMaterial("paddleMat", this.mesh.getScene());
-		this.material.diffuseColor = _color;
-		this.material.ambientColor = Color3.Black();
-		this.material.alpha = 0.9;
-        this.mesh.material = this.material;
+
+		const mat = new StandardMaterial('paddleMat', this.mesh.getScene());
+
+		mat.diffuseColor = _color;
+		mat.ambientColor = Color3.Black();
+		mat.alpha = 0.9;
+		mat.maxSimultaneousLights = 16;
+        this.mesh.material = mat;
 		this.frozen = false;
 	}
 
@@ -69,7 +51,7 @@ export class Paddle
 		this.mesh.position.z += this.velocity.z;
 		for (let i = 0; i < walls.length; i++)
 		{
-			if (this.mesh.intersectsMesh(walls[i].getMesh(), false) == true)
+			if (this.mesh.intersectsMesh(walls[i].getMesh(), true) == true)
 			{
 				this.mesh.position.x -= this.velocity.x;
 				this.mesh.position.z -= this.velocity.z;
@@ -103,7 +85,6 @@ export class Paddle
 		{
 			return;
 		}
-
 		const currentSpeed = this.velocity.length();
 	
 		if (pressed == false && currentSpeed > 0)

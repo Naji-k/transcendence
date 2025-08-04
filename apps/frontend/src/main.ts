@@ -12,12 +12,12 @@ async function startGame()
 
 	if (havokInstance.isError == true)
 	{
-		console.error("Failed to initialize HavokPhysics.");
+		console.error('Failed to initialize HavokPhysics.');
 		return;
 	}
 	const game = new Game(havokInstance);
 	
-	await game.loadMap('standard1v1.map');
+	await game.loadMap('standard2player.map');
 	game.run();
 }
 

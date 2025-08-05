@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "cca24083-6927-4e64-aefd-8193bab0db23",
+  "id": "8ad7d1a8-4003-4813-9e6a-69375fc016d5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "friendships_table": {

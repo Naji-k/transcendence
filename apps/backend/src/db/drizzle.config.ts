@@ -8,7 +8,7 @@ It depends on the project structure and where the .env file will be stored or if
 config({ path: path.resolve(__dirname, '../../../../.env') });
 
 export default defineConfig({
-	out: 'drizzle',
+	out: 'src/db/drizzle',
 	schema: path.resolve(__dirname, 'src/db_schema/schema.ts'),
 	dialect: 'sqlite',
 	dbCredentials: {

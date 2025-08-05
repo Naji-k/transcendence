@@ -1,5 +1,7 @@
-import { Ball, Wall, clr, Colors } from '../index';
+import { Ball, Wall } from '../index';
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
+
+const offset = 0.1;
 
 export class Paddle
 {
@@ -53,8 +55,31 @@ export class Paddle
 		{
 			if (this.mesh.intersectsMesh(walls[i].getMesh(), true) == true)
 			{
-				this.mesh.position.x -= this.velocity.x;
-				this.mesh.position.z -= this.velocity.z;
+				if (this.velocity.x != 0)
+				{
+					this.mesh.position.x -= this.velocity.x;
+					if (this.mesh.position.x < 0)
+					{
+						this.mesh.position.x += offset;
+					}
+					else
+					{
+						this.mesh.position.x -= offset;
+					}
+				}
+				else if (this.velocity.z != 0)
+				{
+					this.mesh.position.z -= this.velocity.z;
+					if (this.mesh.position.z < 0)
+					{
+						this.mesh.position.z += offset;
+					}
+					else
+					{
+						this.mesh.position.z -= offset;
+					}
+				}
+
 				this.velocity.x = 0;
 				this.velocity.z = 0;
 				return;

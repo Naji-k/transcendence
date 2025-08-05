@@ -30,7 +30,7 @@ export class Player
 		this.paddle = paddle;
 	}
 
-	checkForActions(keys: Record<string, boolean>, walls: Wall[] = [])
+	checkForActions(keys: Record<string, boolean>, walls: Wall[])
 	{
 		const keyDownIsPressed = keys[this.controlKeys[0]];
 		const keyUpIsPressed = keys[this.controlKeys[1]];

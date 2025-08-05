@@ -1,7 +1,8 @@
 import { Wall, Ball, Paddle, createWalls, createBalls,
 		createPlayers, createGround, Player, Goal, createScoreboard, GameMenu } from '../index';
 import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
-	Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight, HavokPlugin, StandardMaterial } from '@babylonjs/core';
+	Engine, Scene, FreeCamera, Color3, MeshBuilder, CubeTexture, Color4, Vector3, HemisphericLight, HavokPlugin, StandardMaterial,
+	BackgroundMaterial, Layer, Texture, MirrorTexture, Plane } from '@babylonjs/core';
 import { TextBlock, AdvancedDynamicTexture } from '@babylonjs/gui';
 
 const maxPlayerCount = 6;
@@ -114,7 +115,6 @@ export class Game
 		Goal.createGoalPostMaterial(this.scene);
 		this.createScene(grid);
 	}
-
 	private victory()
 	{
 		this.pauseGame();
@@ -147,15 +147,27 @@ export class Game
 
 		const camera = new FreeCamera('camera1', new Vector3(0, 30, 5), scene);
 		camera.setTarget(Vector3.Zero());
-		// camera.attachControl(this.gameCanvas, true);
+		camera.attachControl(this.gameCanvas, true);
 		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
-		hemiLight.intensity = 0.2;
+		hemiLight.intensity = 0.6;
+		// scene.clearColor = new Color4(0, 0, 0, 1);
 
 		createGround(scene, this.dimensions);
 		createWalls(scene, this.walls, this.dimensions, grid);
 		createBalls(scene, this.balls, 1);
 		createPlayers(this.players, this.goals, this.paddles, this.playerCount, grid, scene);
 		createScoreboard(this.scoreboard, this.players);
+		
+		// const skybox = MeshBuilder.CreateBox('skyBox', { size: 100.0 }, scene);
+		// const skyboxMaterial = new StandardMaterial('skyBox', scene);
+		const background = new Layer('background', 'https://static.wikia.nocookie.net/middleearthshadowofmordor7723/images/5/50/Yre1o.jpg', scene, true);
+		background.isBackground = true;
+		// skyboxMaterial.reflectionTexture = new CubeTexture('/backgrounds/volcano', scene);
+		// skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+		// skyboxMaterial.maxSimultaneousLights = 16;
+		// skyboxMaterial.backFaceCulling = false;
+		// // skyboxMaterial.disableLighting = true;
+		// skybox.material = skyboxMaterial;
 		this.scene = scene;
 	}
 

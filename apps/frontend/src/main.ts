@@ -17,7 +17,7 @@ async function startGame()
 	}
 	const game = new Game(havokInstance);
 	
-	await game.loadMap('standard2player.map');
+	await game.loadMap('crazy1v1.map');
 	game.run();
 }
 

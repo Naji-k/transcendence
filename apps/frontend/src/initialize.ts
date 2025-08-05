@@ -42,35 +42,38 @@ function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: number[
 	const wallHeight = ballDiameter * 8;
 	const wallOpacity = 0.3;
 	const blackColor = Color3.Black();
-	
+	const whiteColor = Color3.White();
+
+	/* | on right */
 	walls.push(
 		new Wall(new Vector3(wallThickness, wallHeight, height + wallThickness * 2),
 		new Vector3(-width / 2 - wallThickness / 2, wallHeight / 2, 0),
-		blackColor,
+		whiteColor,
 		wallOpacity,
 		scene)
 	);
-	
+
+	/* | on left */
 	walls.push(
 		new Wall(new Vector3(wallThickness, wallHeight, height + wallThickness * 2),
 		new Vector3(width / 2 + wallThickness / 2, wallHeight / 2, 0),
-		blackColor,
+		whiteColor,
 		wallOpacity,
 		scene)
 	);
-	
+
 	walls.push(
 		new Wall(new Vector3(width, wallHeight, wallThickness),
 		new Vector3(0, wallHeight / 2, -height / 2 - wallThickness / 2),
-		blackColor,
+		whiteColor,
 		wallOpacity,
 		scene)
 	);
-	
+
 	walls.push(
 		new Wall(new Vector3(width, wallHeight, wallThickness),
 		new Vector3(0, wallHeight / 2, height / 2 + wallThickness / 2),
-		blackColor,
+		whiteColor,
 		wallOpacity,
 		scene)
 	);
@@ -212,7 +215,7 @@ function createPaddle(scene: Scene, grid: string[][], player: number): Paddle
 
 function createGoal(scene: Scene, grid: string[][], num: number): Goal
 {
-	const goalHeight = 5;
+	const goalHeight = Goal.height();
 	const gridWidth = grid[0].length;
 	const gridHeight = grid.length;
 	const playerChar = num.toString();

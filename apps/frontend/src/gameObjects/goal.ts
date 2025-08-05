@@ -1,9 +1,9 @@
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PointLight, Scene } from '@babylonjs/core';
 import { Ball } from '../index';
 
-const goalHeight = 4;
 const goalPostDiameter = 0.5;
 const goalThickness = 0.5;
+const backplateThickness = 0.05;
 
 export class Goal
 {
@@ -19,6 +19,8 @@ export class Goal
 	private static goalPostMaterial: StandardMaterial;
 	private static eliminatedMaterial: StandardMaterial;
 
+	private static goalHeight = 4;
+
 	constructor(loc1: Vector3, loc2: Vector3, clr: Color3, scene: Scene)
 	{
 		this.height = loc1.y * 2;
@@ -27,10 +29,9 @@ export class Goal
 		this.post1 = this.createPost(loc1, scene);
 		this.post2 = this.createPost(loc2, scene);
 		
-		this.front = MeshBuilder.CreateBox('goalFront', { width: goalThickness, height: goalHeight, depth: loc2.subtract(loc1).length() }, scene);
-		this.back = MeshBuilder.CreateBox('goalBack', { width: goalThickness, height: goalHeight, depth: loc2.subtract(loc1).length() }, scene);
+		this.front = MeshBuilder.CreateBox('goalFront', { width: goalThickness, height: Goal.goalHeight, depth: loc2.subtract(loc1).length() }, scene);
+		this.back = MeshBuilder.CreateBox('goalBack', { width: backplateThickness, height: Goal.goalHeight, depth: loc2.subtract(loc1).length() }, scene);
 
-		
 		const position = Vector3.Lerp(loc1, loc2, 0.5);
 
 		this.front.position = position;
@@ -38,11 +39,15 @@ export class Goal
 
 		if (this.post1.position.x < 0)
 		{
-			this.back.position.x += goalThickness;
+			this.front.position.x += goalThickness / 2;
+			this.back.position.x += goalThickness / 2 + backplateThickness / 2;
+			this.post1.position.x += goalThickness;
+			this.post2.position.x += goalThickness;
 		}
 		else
 		{
-			this.back.position.x += goalThickness;
+			this.front.position.x += goalThickness / 2;
+			this.back.position.x += goalThickness / 2 + backplateThickness / 2;
 		}
 		new PhysicsAggregate(
 			this.back,
@@ -68,7 +73,7 @@ export class Goal
 
 	createPost(position: Vector3, scene: Scene): Mesh
 	{
-		const post = MeshBuilder.CreateCylinder('goalPost', { diameter: goalPostDiameter, height: goalHeight }, scene);
+		const post = MeshBuilder.CreateCylinder('goalPost', { diameter: goalPostDiameter, height: Goal.goalHeight }, scene);
 		post.position = position;
 		post.material = Goal.goalPostMaterial;
 
@@ -85,8 +90,6 @@ export class Goal
 		light.intensity = 0.5;
 		light.range = 25;
 		light.setEnabled(true);
-		console.log(`Creating light at ${position.x}, ${this.height}, ${position.z}`);
-		console.log(`lights: ${this.lights.length}`);
 		this.lights.push(light);
 		return post;
 	}
@@ -101,6 +104,7 @@ export class Goal
 		this.post1.material = Goal.eliminatedMaterial;
 		this.post2.material = Goal.eliminatedMaterial;
 		this.back.material = Goal.eliminatedMaterial;
+		this.front.material = Goal.eliminatedMaterial;
 		for (const light of this.lights)
 		{
 			light.dispose();
@@ -112,6 +116,11 @@ export class Goal
 	static setEliminatedMaterial(mat: StandardMaterial)
 	{
 		Goal.eliminatedMaterial = mat;
+	}
+
+	static height(): number
+	{
+		return Goal.goalHeight;
 	}
 	
 	static createGoalPostMaterial(scene: Scene)

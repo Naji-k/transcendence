@@ -1,0 +1,7 @@
+{
+  "name": "@repo/tsconfig",
+  "version": "1.0.0",
+  "description": "base configuration for tsconfig",
+  "main": "tsconfig.base.json",
+  "private": true
+}

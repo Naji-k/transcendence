@@ -1,10 +1,24 @@
 {
   "name": "pong",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev:backend": "pnpm --filter backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
-    "dev": "pnpm -r dev"
+    "dev": "pnpm -r dev",
+    "format:backend": "prettier --write ./apps/backend/**/*.ts",
+    "format:frontend": "prettier --write ./apps/frontend/**/*.ts",
+    "format": "prettier --write .",
+    "lint:backend": "eslint --ext .ts,.tsx ./apps/backend",
+    "lint:frontend": "eslint --ext .ts,.tsx ./apps/frontend",
+    "lint": "eslint --ext .ts,.tsx",
+    "lint:fix": "eslint --ext .ts,.tsx . --fix",
+    "clear": "rm -rf dist node_modules && pnpm -r clear"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "eslint": "^9.32.0",
+    "prettier": "^3.6.2",
+    "typescript-eslint": "^8.38.0"
   }
-
 }

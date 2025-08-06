@@ -1,23 +1,11 @@
-
-import { config } from 'dotenv';
-import { drizzle } from 'drizzle-orm/libsql';
-import { createClient } from '@libsql/client';
 import { eq } from 'drizzle-orm';
-import { friendshipsTable, matchHistoryTable, singleMatchParticipantsTable, usersTable } from './db_schema/schema';
+import { friendshipsTable, matchHistoryTable, singleMatchParticipantsTable, usersTable } from './dbSchema/schema';
 import { reset } from 'drizzle-seed';
-import path from 'path';
+import { db } from './dbClientInit';
+import { createUser } from './dbFunctions';
 
 console.log(__dirname);
 
-config({ path: path.resolve(__dirname, '../../../../../.env') }); // This works only if the .env used is in the root of the project, process.cwd() can also be used with different path resolution. It depends on the project structure and where the .env file will be stored or if there will be multiple.
-
-const dbFilePath = path.resolve(__dirname, '../', process.env.DB_FILE_NAME!);
-
-const client = createClient({
-  url: `file:${dbFilePath}`
-});
-
-const db = drizzle(client);
 type NewMatch = typeof matchHistoryTable.$inferInsert;
 type NewParticipant = typeof singleMatchParticipantsTable.$inferInsert;
 
@@ -51,20 +39,14 @@ async function main() {
 
   /* Test user entries */
   try {
-    await db.insert(usersTable).values({ alias: `first${Date.now()}`, password: `pass${Date.now()}`, name: "name_1", email: `example1${Date.now()}@example.com` });
-    await db.insert(usersTable).values({ alias: `second${Date.now()}`, password: `pass${Date.now()}`, name: "name_2", email: `example2${Date.now()}@example.com` });
-    await db.insert(usersTable).values({ alias: `third${Date.now()}`, password: `pass${Date.now()}`, name: "name_3", email: `example3${Date.now()}@example.com` });
-    await db.insert(usersTable).values({ alias: `fourth${Date.now()}`, password: `pass${Date.now()}`, name: "name_4", email: `example4${Date.now()}@example.com` });
-    // error user
-    // await db.insert(usersTable).values({ alias: "fifth", password: `pass${Date.now()}`, name: "name_5", email: "example@example.com"});
-    // await db.insert(usersTable).values({ alias: "sixth", password: `pass${Date.now()}`, name: "name_6", email: "example@example.com"});
+    await createUser(`first${Date.now()}`, `example1${Date.now()}@example.com`, `pass${Date.now()}`);
+    await createUser(`second${Date.now()}`, `example2${Date.now()}@example.com`, `pass${Date.now()}`);
+    await createUser(`third${Date.now()}`, `example3${Date.now()}@example.com`, `pass${Date.now()}`);
+    await createUser(`fourth${Date.now()}`, `example4${Date.now()}@example.com`, `pass${Date.now()}`);
   } catch (error) {
-    if (error instanceof Error && error.message.includes('Failed query: insert into "users_table"')) {
-      console.log('! Failed to store user !');
-      console.log(error.message);
-      process.exit(3);
-    }
+    process.exit(3);
   }
+
   const users_3 = await db.select().from(usersTable);
   console.log('Getting all users from the database: ', users_3);
 

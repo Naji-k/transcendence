@@ -109,6 +109,11 @@ export class Ball
 		return this.mesh;
 	}
 
+	getAggregate(): PhysicsAggregate
+	{
+		return this.aggregate;
+	}
+
 	lastHit(): number
 	{
 		return this.lasthit;

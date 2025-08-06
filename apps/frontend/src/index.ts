@@ -22,10 +22,20 @@ export enum clr
 
 export const Colors: Color3[] =
 [
-	new Color3(1, 0, 0),	// RED
-	new Color3(0, 0, 1),	// BLUE
-	new Color3(1, 1, 0),	// YELLOW
-	new Color3(0, 1, 0),	// GREEN
-	new Color3(1, 0, 1),	// MAGENTA
-	new Color3(0, 1, 1),	// CYAN
+	new Color3(1, 0, 0),
+	new Color3(0, 0, 1),
+	new Color3(1, 1, 0),
+	new Color3(0, 1, 0),
+	new Color3(1, 0, 1),
+	new Color3(0, 1, 1)
+];
+
+export const TextColors: string[] =
+[
+	'Red',
+	'Blue',
+	'Yellow',
+	'Green',
+	'Magenta',
+	'Cyan'
 ];

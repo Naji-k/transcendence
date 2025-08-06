@@ -1,4 +1,4 @@
-import { Paddle, Goal, Ball, Wall } from '../index';
+import { Paddle, Goal, Wall } from '../index';
 
 export class Player
 {
@@ -10,17 +10,7 @@ export class Player
 	private controlKeys:	[string, string] = ['', ''];
 	public	ID:			number;
 
-	static playerColors: string[] =
-	[
-		'Red',
-		'Blue',
-		'Yellow',
-		'Green',
-		'Magenta',
-		'Cyan'
-	];
-
-	constructor(name: string = 'Sjon', _id: number, goal: Goal, paddle: Paddle)
+	constructor(name: string, _id: number, goal: Goal, paddle: Paddle)
 	{
 		this.name = name;
 		this.score = 0;

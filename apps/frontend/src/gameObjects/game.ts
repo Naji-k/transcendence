@@ -1,5 +1,5 @@
 import { Wall, Ball, Paddle, createWalls, createBalls,
-		createPlayers, createGround, Player, Goal, createScoreboard, GameMenu } from '../index';
+		createPlayers, createGround, Player, Goal, createScoreboard, GameMenu, TextColors } from '../index';
 import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
 		Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		HavokPlugin, StandardMaterial, Layer } from '@babylonjs/core';
@@ -44,7 +44,7 @@ export class Game
 	}
 
 	keyEvents()
-	{			
+	{
 		for (let i = 0; i < this.players.length; i++)
 		{
 			this.players[i].checkForActions(this.keys, this.walls);
@@ -100,7 +100,6 @@ export class Game
 		{
 			console.error('Error loading audio:', error);
 		}
-
 		const fileText = await(loadFileText('public/maps/' + map));
 		const grid = this.parseMapFile(fileText);
 		const eliminationMat = new StandardMaterial('eliminatedMat', this.scene);
@@ -114,6 +113,7 @@ export class Game
 		Goal.createGoalPostMaterial(this.scene);
 		this.createScene(grid);
 	}
+
 	private victory()
 	{
 		this.pauseGame();
@@ -126,7 +126,7 @@ export class Game
 		{
 			if (this.players[i].isAlive() == true)
 			{
-				victoryText.color = Player.playerColors[i];
+				victoryText.color = TextColors[i];
 				victoryText.text = `${this.players[i].getName()} wins!`;
 				break;
 			}
@@ -149,7 +149,6 @@ export class Game
 		// camera.attachControl(this.gameCanvas, true);
 		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
 		hemiLight.intensity = 0.6;
-		// scene.clearColor = new Color4(0, 0, 0, 1);
 
 		createGround(scene, this.dimensions);
 		createWalls(scene, this.walls, this.dimensions, grid);
@@ -230,9 +229,10 @@ export class Game
 
 	private gameLoop()
 	{
+		let scored = false;
+
 		if (this.gameIsRunning == true)
 		{
-			let scored = false;
 			this.keyEvents();
 			for (let i = 0; i < this.balls.length; i++)
 			{

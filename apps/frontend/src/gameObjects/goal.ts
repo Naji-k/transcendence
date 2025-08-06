@@ -3,60 +3,47 @@ import { Ball } from '../index';
 
 const goalPostDiameter = 0.5;
 const goalThickness = 0.5;
-const backplateThickness = 0.05;
 
 export class Goal
 {
-	private post1:	Mesh;
-	private post2:	Mesh;
-	private back:	Mesh;
-	private front:	Mesh;
-	private height:	number;
-	private lights:	PointLight[] = [];
+	private post1:		Mesh;
+	private post2:		Mesh;
+	private plate:		Mesh;
+	private lights:		PointLight[] = [];
 	private isAlive:	boolean;
-	private color:	Color3;
+	private normal:		Vector3;
+	private color:		Color3;
+	private scoringCooldown: number;
 
 	private static goalPostMaterial: StandardMaterial;
 	private static eliminatedMaterial: StandardMaterial;
 
-	private static goalHeight = 4;
+	private static height = 4;
 
-	constructor(loc1: Vector3, loc2: Vector3, clr: Color3, scene: Scene)
+	constructor(loc1: Vector3, loc2: Vector3, clr: Color3, normalDir: Vector3, scene: Scene)
 	{
-		this.height = loc1.y * 2;
 		this.isAlive = true;
+		this.scoringCooldown = 0;
+		this.normal = normalDir;
 		this.color = clr;
 		this.post1 = this.createPost(loc1, scene);
 		this.post2 = this.createPost(loc2, scene);
 		
-		this.front = MeshBuilder.CreateBox('goalFront', { width: goalThickness, height: Goal.goalHeight, depth: loc2.subtract(loc1).length() }, scene);
-		this.back = MeshBuilder.CreateBox('goalBack', { width: backplateThickness, height: Goal.goalHeight, depth: loc2.subtract(loc1).length() }, scene);
-
-		const position = Vector3.Lerp(loc1, loc2, 0.5);
-
-		this.front.position = position;
-		this.back.position = position.clone();
+		this.plate = MeshBuilder.CreateBox('goalplate', { width: goalThickness, height: Goal.height, depth: loc2.subtract(loc1).length() }, scene);
+		this.plate.position = Vector3.Lerp(loc1, loc2, 0.5);
 
 		if (this.post1.position.x < 0)
 		{
-			this.front.position.x += goalThickness / 2;
-			this.back.position.x += goalThickness / 2 + backplateThickness / 2;
 			this.post1.position.x += goalThickness;
 			this.post2.position.x += goalThickness;
 		}
 		else
 		{
-			this.front.position.x += goalThickness / 2;
-			this.back.position.x += goalThickness / 2 + backplateThickness / 2;
+			this.post1.position.x -= goalThickness;
+			this.post2.position.x -= goalThickness;
 		}
 		new PhysicsAggregate(
-			this.back,
-			PhysicsShapeType.BOX,
-			{ mass: 0, restitution: 1 },
-			scene
-		);
-		new PhysicsAggregate(
-			this.front,
+			this.plate,
 			PhysicsShapeType.BOX,
 			{ mass: 0, restitution: 1 },
 			scene
@@ -67,13 +54,12 @@ export class Goal
 		mat.ambientColor = clr;
 		mat.alpha = 0.4;
 		mat.maxSimultaneousLights = 16;
-		this.back.material = mat;
-		this.front.material = mat;
+		this.plate.material = mat;
 	}
 
 	createPost(position: Vector3, scene: Scene): Mesh
 	{
-		const post = MeshBuilder.CreateCylinder('goalPost', { diameter: goalPostDiameter, height: Goal.goalHeight }, scene);
+		const post = MeshBuilder.CreateCylinder('goalPost', { diameter: goalPostDiameter, height: Goal.height }, scene);
 		post.position = position;
 		post.material = Goal.goalPostMaterial;
 
@@ -83,28 +69,57 @@ export class Goal
 			{ mass: 0, restitution: 1 },
 			scene
 		);
-		const light = new PointLight('goalLight', new Vector3(position.x, this.height, position.z), scene);
+		const light = new PointLight('goalLight', new Vector3(position.x, Goal.height, position.z), scene);
 
 		light.diffuse = this.color;
 		light.specular = this.color;
 		light.intensity = 0.5;
 		light.range = 25;
-		light.setEnabled(true);
 		this.lights.push(light);
 		return post;
 	}
 
 	score(ball: Ball): boolean
 	{
-		return this.isAlive == true && this.back.intersectsMesh(ball.getMesh(), false) == true;
+		if (this.isAlive == false)
+		{
+			return false;
+		}
+		if (this.plate.intersectsMesh(ball.getMesh(), false) == false)
+		{
+			return false;
+		}
+
+		if (this.scoringCooldown == 3)
+		{
+			this.scoringCooldown = 0;
+		}
+
+		if (this.scoringCooldown > 0)
+		{
+			this.scoringCooldown++;
+			return false;
+		}
+
+		const linearVelocity = ball.getAggregate().body.getLinearVelocity();
+
+		if (linearVelocity == null)
+		{
+			return false;
+		}
+		const ballDirection = linearVelocity.normalize();
+
+		console.log('Ball direction:', ballDirection);
+		console.log('Goal normal:', this.normal);
+		console.log('Dot product:', Vector3.Dot(ballDirection, this.normal));
+		return Vector3.Dot(ballDirection, this.normal) > 0;
 	}
 
 	eliminate()
 	{
 		this.post1.material = Goal.eliminatedMaterial;
 		this.post2.material = Goal.eliminatedMaterial;
-		this.back.material = Goal.eliminatedMaterial;
-		this.front.material = Goal.eliminatedMaterial;
+		this.plate.material = Goal.eliminatedMaterial;
 		for (const light of this.lights)
 		{
 			light.dispose();
@@ -118,9 +133,9 @@ export class Goal
 		Goal.eliminatedMaterial = mat;
 	}
 
-	static height(): number
+	static getHeight(): number
 	{
-		return Goal.goalHeight;
+		return Goal.height;
 	}
 	
 	static createGoalPostMaterial(scene: Scene)

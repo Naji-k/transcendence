@@ -215,7 +215,7 @@ function createPaddle(scene: Scene, grid: string[][], player: number): Paddle
 
 function createGoal(scene: Scene, grid: string[][], num: number): Goal
 {
-	const goalHeight = Goal.height();
+	const goalHeight = Goal.getHeight();
 	const gridWidth = grid[0].length;
 	const gridHeight = grid.length;
 	const playerChar = num.toString();
@@ -238,7 +238,7 @@ function createGoal(scene: Scene, grid: string[][], num: number): Goal
 					goalHeight / 2,
 					x - gridHeight / 2 + adjustment
 				);
-				return new Goal(post1, post2, Colors[num - 1], scene);
+				return new Goal(post1, post2, Colors[num - 1], new Vector3(0, 0, 1), scene);
 			}
 		}
 	}

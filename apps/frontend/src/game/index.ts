@@ -1,12 +1,12 @@
 import { Color3 } from "babylonjs";
 
-export * from './gameObjects/ball';
-export * from './gameObjects/paddle';
-export * from './gameObjects/wall';
-export * from './gameObjects/player';
-export * from './gameObjects/goal';
-export * from './gameObjects/game';
-export * from './gameObjects/game_menu';
+export * from './game_objects/ball';
+export * from './game_objects/paddle';
+export * from './game_objects/wall';
+export * from './game_objects/player';
+export * from './game_objects/goal';
+export * from './game_objects/game';
+export * from './game_objects/game_menu';
 export * from './initialize';
 export * from './main';
 

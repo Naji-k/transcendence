@@ -1,4 +1,4 @@
-import { Wall, Ball, Paddle, Goal, Player, clr, Colors } from './index';
+import { Wall, Ball, Paddle, Goal, Player, Colors, ColorMap } from './index';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from '@babylonjs/gui';
 
@@ -206,7 +206,7 @@ function createPaddle(scene: Scene, grid: string[][], player: number): Paddle
 					ballDiameter,
 					(x - gridHeight / 2 + height / 2)
 				);
-				return new Paddle(dimensions, position, Colors[player - 1], scene);
+				return new Paddle(dimensions, position, Colors[player - 1].color, scene);
 			}
 		}
 	}
@@ -238,7 +238,7 @@ function createGoal(scene: Scene, grid: string[][], num: number): Goal
 					goalHeight / 2,
 					x - gridHeight / 2 + adjustment
 				);
-				return new Goal(post1, post2, Colors[num - 1], new Vector3(0, 0, 1), scene);
+				return new Goal(post1, post2, Colors[num - 1].color, new Vector3(0, 0, 1), scene);
 			}
 		}
 	}
@@ -257,7 +257,7 @@ export function createBalls(scene: Scene, balls: Ball[], amount: number)
 	{
 		balls.push(new Ball(
 			new Vector3(0, ballDiameter, 0),
-			Colors[clr.GREEN],
+			ColorMap['green'],
 			0.5, scene)
 		);
 	}
@@ -318,7 +318,7 @@ export function createScoreboard(scoreboard: TextBlock[], players: Player[])
 		const player = players[i];
 		const textBlock = new TextBlock();
 		textBlock.text = `Player ${player.ID}: ${player.getLives()}`;
-		textBlock.color = Colors[i].toHexString();
+		textBlock.color = Colors[i].name;
 		textBlock.fontSize = 30;
 		textBlock.top = `${i * 35 - canvas.height / 2 + 20}px`;
 		textBlock.left = `${-(canvas.width / 2) + 100}px`;

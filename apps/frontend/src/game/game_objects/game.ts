@@ -1,5 +1,5 @@
 import { Wall, Ball, Paddle, createWalls, createBalls,
-		createPlayers, createGround, Player, Goal, createScoreboard, GameMenu, TextColors } from '../index';
+		createPlayers, createGround, Player, Goal, createScoreboard, GameMenu, ColorMap, Colors } from '../index';
 import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
 		Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		HavokPlugin, StandardMaterial, Layer } from '@babylonjs/core';
@@ -126,7 +126,7 @@ export class Game
 		{
 			if (this.players[i].isAlive() == true)
 			{
-				victoryText.color = TextColors[i];
+				victoryText.color = Colors[i].name;
 				victoryText.text = `${this.players[i].getName()} wins!`;
 				break;
 			}

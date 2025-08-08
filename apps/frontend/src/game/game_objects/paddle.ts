@@ -1,5 +1,6 @@
 import { Ball, Wall } from '../index';
-import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
+import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh,
+	PhysicsShapeType, PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
 
 const offset = 0.1;
 
@@ -85,6 +86,13 @@ export class Paddle
 				return;
 			}
 		}
+	}
+
+	changeColor(newColor: Color3)
+	{
+		const mat = this.mesh.material as StandardMaterial;
+
+		mat.diffuseColor = newColor;
 	}
 
 	getMesh(): Mesh

@@ -10,32 +10,16 @@ export * from './game_objects/game_menu';
 export * from './initialize';
 export * from './main';
 
-export enum clr
-{
-	RED,
-	BLUE,
-	YELLOW,
-	GREEN,
-	MAGENTA,
-	CYAN
-}
-
-export const Colors: Color3[] =
+export const Colors: { name: string, color: Color3 }[] =
 [
-	new Color3(1, 0, 0),
-	new Color3(0, 0, 1),
-	new Color3(1, 1, 0),
-	new Color3(0, 1, 0),
-	new Color3(1, 0, 1),
-	new Color3(0, 1, 1)
-];
+	{ name: 'red', color: new Color3(1, 0, 0) },
+	{ name: 'blue', color: new Color3(0, 0, 1) },
+	{ name: 'green', color: new Color3(0, 1, 0) },
+	{ name: 'yellow', color: new Color3(1, 1, 0) },
+	{ name: 'purple', color: new Color3(0.5, 0, 0.5) },
+	{ name: 'orange', color: new Color3(1, 0.5, 0) }
+]
 
-export const TextColors: string[] =
-[
-	'Red',
-	'Blue',
-	'Yellow',
-	'Green',
-	'Magenta',
-	'Cyan'
-];
+export const ColorMap: Record<string, Color3> = 
+	Object.fromEntries(Colors.map(entry => [entry.name, entry.color]));
+

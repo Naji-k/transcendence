@@ -9,6 +9,8 @@ pids
 *.pid.lock
 
 *dist/
+*.env
+*.db
 
 # node-waf configuration
 .lock-wscript
@@ -47,6 +49,8 @@ web_modules/
 
 # Output of 'npm pack'
 *.tgz
+
+*.env
 
 
 

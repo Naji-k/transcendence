@@ -1,5 +1,20 @@
-import { type Context } from "@repo/trpc/src/context";
+import { type Context } from "@repo/trpc/src/types";
+import { jwtUtils } from "../auth/jwt"; // Adjust the import path as necessary
 import { type CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
+
+const disableJWT = true; //for development,
+
+/**
+ * Parses the JWT token from the Authorization header.
+ * @param authHeader - The Authorization header from the request.
+ * @returns The JWT token if present, otherwise null.
+ */
+function parseToken(authHeader: string | undefined): string | null {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null;
+  }
+  return authHeader.substring(7); // Remove "Bearer " prefix
+}
 
 /**
  * createTRPCContext function to create the context for tRPC.
@@ -14,11 +29,14 @@ export async function createTRPCContext({
   res,
 }: CreateFastifyContextOptions): Promise<Context> {
   const db = "getDbConnection()"; // Replace with actual DB connection logic ;
-  let user = undefined;
-  const token = req.headers.authorization; // Example: Get token from request headers
-  // Example: Extract user from request headers or session
-  if (token) {
-    user = { id: "user-id", email: "" }; // replace with actual user extraction logic
+  let user = null;
+  const token = parseToken(req.headers.authorization);
+  if (token && !disableJWT) {
+    try {
+      user = jwtUtils.verify(token); // Verify the JWT token
+    } catch (error) {
+      console.error("JWT verification failed:", error);
+    }
   }
-  return { db, user };
+  return { db, jwtUtils, user };
 }

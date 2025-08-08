@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "8ad7d1a8-4003-4813-9e6a-69375fc016d5",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "aba849f2-5e2e-4c64-ab0f-07715312ee3a",
+  "prevId": "8ad7d1a8-4003-4813-9e6a-69375fc016d5",
   "tables": {
     "friendships_table": {
       "name": "friendships_table",
@@ -291,22 +291,6 @@
         },
         "totalMatches": {
           "name": "totalMatches",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "wins": {
-          "name": "wins",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "losses": {
-          "name": "losses",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,

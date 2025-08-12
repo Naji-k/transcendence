@@ -74,9 +74,13 @@ export class Game
 	{
 		const audioEngine = await CreateAudioEngineAsync();
 		audioEngine.volume = 0.5;
-		const frogs = await CreateStreamingSoundAsync("music", "/sounds/frogs.mp3");
-		await audioEngine.unlockAsync();
-		frogs.play();
+		try {
+			const frogs = await CreateStreamingSoundAsync("music", "/sounds/frogs.mp3");
+			await audioEngine.unlockAsync();
+			frogs.play();
+		} catch (error) {
+			console.error("Failed to load sound:", error);
+		}
 
 		const fileText = await(loadFileText('public/maps/' + map));
 		const grid = this.parseMapFile(fileText);

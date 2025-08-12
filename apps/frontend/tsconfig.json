@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/tsconfig/tsconfig.base.json",
+ "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "es2020"], /* Include DOM types */
     "rootDir": "./src",

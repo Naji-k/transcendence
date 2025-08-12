@@ -1,4 +1,4 @@
-<!-- src/routes/pong/+page.svelte -->
+<!-- src/routes/game/+page.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
   

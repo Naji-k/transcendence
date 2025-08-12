@@ -1,12 +1,12 @@
-import { Game } from './index';
 import HavokPhysics from '@babylonjs/havok';
+import { Game } from './index';
 
-export async function getPhysics(): Promise<any>
+async function getPhysics(): Promise<any>
 {
 	return await HavokPhysics({locateFile: (file: string) => `/${file}`});
 }
 	
-async function startGame()
+export async function startGame()
 {
 	const havokInstance = await getPhysics();
 
@@ -20,5 +20,3 @@ async function startGame()
 	await game.loadMap('standard1v1.map');
 	game.run();
 }
-
-startGame();

@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { friendshipsTable, matchHistoryTable, singleMatchParticipantsTable, usersTable } from './dbSchema/schema';
 import { reset } from 'drizzle-seed';
 import { db } from './dbClientInit';
-import { createUser } from './dbFunctions';
+import { createUser, findUserByAlias, findUserByEmail } from './dbFunctions';
 
 console.log(__dirname);
 
@@ -49,6 +49,22 @@ async function main() {
 
   const users_3 = await db.select().from(usersTable);
   console.log('Getting all users from the database: ', users_3);
+
+  /* Test findUserByAlias */
+  console.log('-------findUserByAlias---------');
+  const testUserAlias =  `testUser${Date.now()}`;
+  const testUserEmail = `exampleEmail${Date.now()}`;
+  const testUserPassword = `pass${Date.now()}`;
+  await createUser(testUserAlias, testUserEmail, testUserPassword);
+  let foundUser = await findUserByAlias(testUserAlias);
+  console.log(foundUser);
+  console.log('-------------------------------');
+  console.log('-------findUserByEmail---------');
+  foundUser = await findUserByEmail(testUserEmail);
+  console.log(foundUser);
+  console.log('-------------------------------');
+
+
 
 
   // Capture all user ids in an array

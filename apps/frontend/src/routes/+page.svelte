@@ -1,8 +1,8 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<h1>Super mega awesome pongywongyclongyflongy</h1>
 
 
 <ul>
-	<li><a href="./game">Game Test Page</a></li>
+	<li><a href="./game">Play pongers</a></li>
+  <li><a href="./map_editor">Edit pongers</a></li>
   <li><a href="/signin">Sign In</a></li>
 </ul>

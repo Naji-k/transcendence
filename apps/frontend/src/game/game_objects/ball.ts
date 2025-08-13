@@ -118,4 +118,10 @@ export class Ball
 	{
 		return this.lasthit;
 	}
+
+	setMovement(movement: Vector3)
+	{
+		this.aggregate.body.setLinearVelocity(movement.scale(this.speed));
+		this.velocity = movement.scale(this.speed);
+	}
 }

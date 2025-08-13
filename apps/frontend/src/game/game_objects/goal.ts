@@ -29,7 +29,10 @@ export class Goal
 		this.post1 = this.createPost(loc1, scene);
 		this.post2 = this.createPost(loc2, scene);
 		
-		this.plate = MeshBuilder.CreateBox('goalplate', { width: goalThickness, height: Goal.height, depth: loc2.subtract(loc1).length() }, scene);
+		this.plate = MeshBuilder.CreateBox('goalplate',
+			{ width: goalThickness, height: Goal.height, depth: loc2.subtract(loc1).length() },
+			scene
+		);
 		this.plate.position = Vector3.Lerp(loc1, loc2, 0.5);
 
 		if (this.post1.position.x < 0)

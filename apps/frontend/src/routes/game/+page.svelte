@@ -4,12 +4,12 @@
   
 	onMount(async () =>
 	{
-		const { startGame } = await import('$lib/');
+		const { startGame } = await import('$lib');
 		await startGame();
 	});
 	onDestroy(async () =>
 	{
-		const { destroyGame } = await import('$lib/');
+		const { destroyGame } = await import('$lib');
 		await destroyGame();
 	});
 </script>

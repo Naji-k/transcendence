@@ -4,12 +4,12 @@
 
 	onMount(async () =>
 	{
-		const { startEditor } = await import('$lib/');
+		const { startEditor } = await import('$lib');
 		await startEditor();
 	});
 	onDestroy(async () =>
 	{
-		const { destroyEditor } = await import('$lib/');
+		const { destroyEditor } = await import('$lib');
 		await destroyEditor();
 	});
 </script>

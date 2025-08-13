@@ -88,6 +88,7 @@ export class Game
 			// const frogs = await CreateStreamingSoundAsync('music', './public/sounds/frogs.mp3');
 			Game.wallhitSound = await CreateStreamingSoundAsync('wallhit', './public/sounds/wallhit.wav');
 			Game.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', './public/sounds/paddlehit.wav');
+			// Game.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', './public/sounds/paddlehit.wav');
 			Game.playerOutSound = await CreateStreamingSoundAsync('playerout', './public/sounds/playerout.wav');
 			Game.victorySound = await CreateStreamingSoundAsync('victory', './public/sounds/victory.wav');
 			Game.paddlehitSound.maxInstances = 1;

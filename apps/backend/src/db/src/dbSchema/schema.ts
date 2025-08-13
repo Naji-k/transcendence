@@ -12,11 +12,8 @@ export const usersTable = sqliteTable(
 		email: text().unique(), // Do we want email to be a mandatory field?
     avatarPath: text().default('avatar_default'),
     backgroundPath: text().default('background_default'),
-    wins: int().notNull().default(0),
-    losses: int().notNull().default(0),
     // lastLoginTime: int({ mode: 'timestamp' }),
     // lastActivityTime: int({ mode: 'timestamp' }), // we can use this to display last seen status, I understand that online status will come from memory
-    // totalMatches: int().notNull().default(0),
 });
 
 /* Table for all the friendships -> So that we don't have duplicates,
@@ -44,13 +41,11 @@ export const matchHistoryTable = sqliteTable(
 	id: int().primaryKey({ autoIncrement: true }),
 	victor: int().notNull().references((): AnySQLiteColumn => usersTable.id),
 	createdAt: int({ mode: 'timestamp' }).notNull(),
-	// mode: int().notNull(), // Number of participants
 },
 (table) => [
 	uniqueIndex("unique_match_idx").on(
 		table.createdAt,
 		table.victor,
-		// table.mode,
 		)
 ]);
 
@@ -62,7 +57,6 @@ export const singleMatchParticipantsTable = sqliteTable(
 	matchId: int().notNull().references((): AnySQLiteColumn => matchHistoryTable.id),
 	player: int().notNull().references((): AnySQLiteColumn => usersTable.id),
 	placement: int().notNull().default(0), // This will be the the position that players finish at, only position 1 will be considered a victory 
-	// score: int().notNull().default(0),
 },
 (table) => [
 	uniqueIndex("unique_participation_idx").on(

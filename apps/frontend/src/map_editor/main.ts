@@ -1,5 +1,4 @@
-import { Paddle, Wall, Ball, Goal, Game, Colors, ColorMap } from '../lib/index';
-import { Editor } from './editor';
+import { Paddle, Wall, Ball, Goal, Editor, Game, Colors, ColorMap } from '../lib/index';
 import { Button } from '@babylonjs/gui';
 import HavokPhysics from '@babylonjs/havok';
 
@@ -17,7 +16,7 @@ export async function getPhysics(): Promise<any>
 	return await HavokPhysics({locateFile: (file: string) => `/${file}`});
 }
 
-async function startEditor()
+export async function startEditor()
 {
 	const havokInstance = await getPhysics();
 
@@ -30,5 +29,3 @@ async function startEditor()
 
 	editor.start();
 }
-
-startEditor();

@@ -9,6 +9,9 @@ export * from '../game/game_objects/game';
 export * from '../game/game_objects/game_menu';
 export * from '../game/initialize';
 export * from '../game/main';
+export * from '../map_editor/editor_objects/editor';
+export * from '../map_editor/main';
+export * from '../map_editor/save_map';
 
 export const Colors: { name: string, color: Color3 }[] =
 [

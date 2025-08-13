@@ -283,7 +283,11 @@ export function createPlayers(players: Player[], goals: Goal[], paddles: Paddle[
 
 export function	createGround(scene: Scene, dimensions: number[])
 {
-	const ground = MeshBuilder.CreateGround('ground', {width: dimensions[1], height: dimensions[0], updatable: true}, scene);
+	const ground = MeshBuilder.CreateGround(
+		'ground',
+		{width: dimensions[1], height: dimensions[0], updatable: true},
+		scene
+	);
 	new PhysicsAggregate(
 		ground,
 		PhysicsShapeType.BOX,

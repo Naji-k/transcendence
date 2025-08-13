@@ -1,4 +1,4 @@
-interface MapObject
+export interface MapObject
 {
 	type: string;
 	position: { x: number; y: number; z: number };

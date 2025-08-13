@@ -142,9 +142,9 @@ export class Game
 	{
 		const scene = this.scene;
 		const havokPlugin = new HavokPlugin(true, this.havokInstance);
-		scene.enablePhysics(new Vector3(0, -10, 0), havokPlugin);
-
 		const camera = new FreeCamera('camera1', new Vector3(0, 30, 5), scene);
+		
+		scene.enablePhysics(new Vector3(0, -10, 0), havokPlugin);
 		camera.setTarget(Vector3.Zero());
 		// camera.attachControl(this.gameCanvas, true);
 		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
@@ -277,6 +277,27 @@ export class Game
 		this.scene.render();
 	}
 
+	dispose()
+	{
+		this.engine.stopRenderLoop();
+		this.scene.dispose();
+		this.engine.dispose();
+		this.havokInstance = null;
+		this.gameCanvas = null;
+		this.players = [];
+		this.paddles = [];
+		this.balls = [];
+		this.walls = [];
+		this.goals = [];
+		this.scoreboard = [];
+		Game.wallhitSound.dispose();
+		Game.paddlehitSound.dispose();
+		Game.playerOutSound.dispose();
+		Game.victorySound.dispose();
+		this.gameIsRunning = false;
+		console.log('Game disposed successfully.');
+	}
+
 	getPaddles(): Paddle[] {return this.paddles;}
 	getBalls(): Ball[] {return this.balls;}
 	getWalls(): Wall[] {return this.walls;}
@@ -301,4 +322,12 @@ async function loadFileText(filePath: string): Promise<string>
 		throw new Error(`Failed to load file: ${filePath}`);
 	}
 	return response.text();
+}
+
+/*	Destroys the resources associated with the game	*/
+
+export async function destroyGame(game: Game)
+{
+	game.dispose();
+	console.log('Game destroyed successfully.');
 }

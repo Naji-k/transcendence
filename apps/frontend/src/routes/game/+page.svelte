@@ -1,13 +1,18 @@
 <!-- src/routes/pong/+page.svelte -->
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
   
-	onMount(async () => {
-	  const { startGame } = await import('$lib/');
-	  await startGame();
+	onMount(async () =>
+	{
+		const { startGame } = await import('$lib/');
+		await startGame();
 	});
-  </script>
-  
-  <canvas id="gameCanvas" width="1280" height="720"></canvas>
-  <input id="mapInput" type="file" accept=".map" />
-  
+	onDestroy(async () =>
+	{
+		const { destroyGame } = await import('$lib/');
+		await destroyGame();
+	});
+</script>
+
+<canvas id="gameCanvas" width="1920" height="1080"></canvas>
+<input id="mapInput" type="file" accept=".map" />

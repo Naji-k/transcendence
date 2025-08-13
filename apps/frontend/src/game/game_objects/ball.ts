@@ -1,5 +1,5 @@
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
-import { Paddle } from './paddle';
+import { Paddle, Game, Wall } from '../../lib/index';
 
 export class Ball
 {
@@ -7,12 +7,15 @@ export class Ball
 	private mesh:		Mesh;
 	private diameter:	number;
 	private aggregate:	PhysicsAggregate;
-	private minimumSpeed: number = 20;
+	private speed: 		number;
 	private lasthit:	number;
+	
+	private static baseSpeed: number = 10;
+	private static speedIncrement: number = 0.3;
 
 	constructor(_center: Vector3, _color: Color3, _diameter: number, scene: Scene)
 	{
-		this.mesh = MeshBuilder.CreateSphere("sphere", {diameter: _diameter}, scene);
+		this.mesh = MeshBuilder.CreateSphere('sphere', {diameter: _diameter}, scene);
 		this.mesh.position = _center;
 
 		this.aggregate = new PhysicsAggregate(
@@ -23,13 +26,15 @@ export class Ball
 		);
 		this.diameter = _diameter;
 		this.lasthit = -1;
+		this.speed = Ball.baseSpeed;
 		this.velocity = Vector3.Zero();
-		this.aggregate.body.setLinearVelocity(this.randomVector().scale(Math.random() * this.minimumSpeed));
+		this.aggregate.body.setLinearVelocity(this.randomVector().scale(Math.random() * Ball.baseSpeed));
 		this.aggregate.body.setLinearDamping(0.1);
 		this.aggregate.body.setAngularDamping(0.1);
 
-		const mat = new StandardMaterial("ballMat", this.mesh.getScene());
+		const mat = new StandardMaterial('ballMat', this.mesh.getScene());
 		mat.diffuseColor = _color;
+		mat.maxSimultaneousLights = 16;
 		this.mesh.material = mat;
 	}
 	
@@ -47,13 +52,23 @@ export class Ball
 		return randomVec;
 	}
 
-	update(paddles: Paddle[])
+	update(paddles: Paddle[], walls: Wall[])
 	{
 		for (let pad = 0; pad < paddles.length; pad++)
 		{
 			if (this.mesh.intersectsMesh(paddles[pad].getMesh(), false) == true)
 			{
 				this.lasthit = pad;
+				this.speed += Ball.speedIncrement;
+				Game.playPaddleHitSound();
+			}
+		}
+
+		for (let i = 0; i < walls.length; i++)
+		{
+			if (this.mesh.intersectsMesh(walls[i].getMesh(), false) == true)
+			{
+				Game.playWallHitSound();
 			}
 		}
 
@@ -70,23 +85,33 @@ export class Ball
 
 		let currentSpeed = this.velocity.length();
 
-		if (currentSpeed < this.minimumSpeed)
+		if (currentSpeed < this.speed)
 		{
 			if (currentSpeed > 0.001)
 			{
-				this.velocity = this.velocity.normalize().scale(this.minimumSpeed);
+				this.velocity = this.velocity.normalize().scale(this.speed);
 			}
 			else
 			{
-				this.velocity = this.randomVector().scale(this.minimumSpeed);
+				this.velocity = this.randomVector().scale(this.speed);
 			}
 		}
 		this.aggregate.body.setLinearVelocity(this.velocity);
 	}
 
+	reset()
+	{
+		this.speed = Ball.baseSpeed;
+	}
+
 	getMesh(): Mesh
 	{
 		return this.mesh;
+	}
+
+	getAggregate(): PhysicsAggregate
+	{
+		return this.aggregate;
 	}
 
 	lastHit(): number

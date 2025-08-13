@@ -1,5 +1,5 @@
 import HavokPhysics from '@babylonjs/havok';
-import { Game } from './index';
+import { Game } from '../lib/index';
 
 async function getPhysics(): Promise<any>
 {
@@ -12,11 +12,11 @@ export async function startGame()
 
 	if (havokInstance.isError == true)
 	{
-		console.error("Failed to initialize HavokPhysics.");
+		console.error('Failed to initialize HavokPhysics.');
 		return;
 	}
 	const game = new Game(havokInstance);
 	
-	await game.loadMap('standard1v1.map');
+	await game.loadMap('crazy1v1.map');
 	game.run();
 }

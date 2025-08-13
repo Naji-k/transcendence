@@ -1,3 +1,6 @@
+/* THIS FILE CONTAINS SEVERAL SEPARATE TESTS,
+EACH SECTION HAS A COMMENT ABOVE IT, SEPARATE SECTIONS CAN BE
+COMMENTED OUT IF YOU DON'T WANT TO RUN ALL THE DIFFERENT TESTS */
 import { eq } from 'drizzle-orm';
 import { friendshipsTable, matchHistoryTable, singleMatchParticipantsTable, usersTable } from './dbSchema/schema';
 import { reset } from 'drizzle-seed';
@@ -15,6 +18,7 @@ async function main() {
     await db.select().from(usersTable);
     await db.select().from(matchHistoryTable);
     await db.select().from(singleMatchParticipantsTable);
+    await db.select().from(friendshipsTable);
     console.log('Database exists');
     // console.log(users2);
   } catch (error) {
@@ -30,8 +34,9 @@ async function main() {
 
   /* Reset the tables (doesn't reset the ids) */
   // await reset(db, { usersTable });
-  // await reset(db, {matchHistoryTable });
+  // await reset(db, { matchHistoryTable });
   // await reset(db, { singleMatchParticipantsTable });
+  // await reset(db, { friendshipsTable });
   /* or */
   // await db.delete(singleMatchParticipantsTable);
   // await db.delete(matchHistoryTable);
@@ -50,12 +55,14 @@ async function main() {
   const users_3 = await db.select().from(usersTable);
   console.log('Getting all users from the database: ', users_3);
 
-  /* Test findUserByAlias */
-  console.log('-------findUserByAlias---------');
+  /* Another test user entry to test dbFuctions*/
   const testUserAlias =  `testUser${Date.now()}`;
   const testUserEmail = `exampleEmail${Date.now()}`;
   const testUserPassword = `pass${Date.now()}`;
-  await createUser(testUserAlias, testUserEmail, testUserPassword);
+  const createdUser = await createUser(testUserAlias, testUserEmail, testUserPassword);
+  console.log('createdUser: ', createdUser.id);
+  /* Test findUser */
+  console.log('-------findUserByAlias---------');
   let foundUser = await findUserByAlias(testUserAlias);
   console.log(foundUser);
   console.log('-------------------------------');
@@ -67,7 +74,7 @@ async function main() {
 
 
 
-  // Capture all user ids in an array
+  /* Capture all user ids in an array to use for later tests */
   const allIds = (await db.select({ id: usersTable.id }).from(usersTable).orderBy(usersTable.id)).map(u => u.id);
   const allIdsLength = allIds.length;
 
@@ -93,9 +100,9 @@ async function main() {
 
   /* Test match history entries */
   const randomId1 = allIds[Math.floor(Math.random() * allIds.length)];
-  const match: NewMatch = { mode: "2v2", victor: randomId1, createdAt: new Date() };
+  const match: NewMatch = { victor: randomId1, createdAt: new Date() };
   // error match
-  // match = { mode: "3v3", victor: "sec", createdAt: new Date() };
+  // match = { victor: "sec", createdAt: new Date() };
   let allInsertedIds;
   let lastMatchId;
   try {
@@ -121,14 +128,14 @@ async function main() {
   while (randomId2 === randomId1) {
     randomId2 = allIds[Math.floor(Math.random() * allIds.length)];
   }
-  const participant1: NewParticipant = { player: randomId1, score: 5, placement: 1, matchId: lastMatchId };
-  const participant2: NewParticipant = { player: randomId2, score: 3, placement: 2, matchId: lastMatchId };
+  const participant1: NewParticipant = { player: randomId1, placement: 1, matchId: lastMatchId };
+  const participant2: NewParticipant = { player: randomId2, placement: 2, matchId: lastMatchId };
   try {
     await db.insert(singleMatchParticipantsTable).values(participant1);
     await db.insert(singleMatchParticipantsTable).values(participant2);
     // error participant
-    // const participant3: NewParticipant = { player: 1, score: 5, placement: 1, matchId: 1};
-    // const participant4: NewParticipant = { player: 1, score: 5, placement: 2, matchId: 1};
+    // const participant3: NewParticipant = { player: 1, placement: 1, matchId: 1};
+    // const participant4: NewParticipant = { player: 1, placement: 2, matchId: 1};
     // await db.insert(singleMatchParticipantsTable).values(participant3);
     // await db.insert(singleMatchParticipantsTable).values(participant4);
   } catch (error) {
@@ -146,8 +153,8 @@ async function main() {
     .where(eq(singleMatchParticipantsTable.matchId, lastMatchId));
   console.log('Showing participant info for matchId: ', lastMatchId);
   console.log(participants_1);
-  console.log(`${participants_1[0].alias}: ${participant1.score}`);
-  console.log(`${participants_1[1].alias}: ${participant2.score}`);
+  console.log(`${participants_1[0].alias}: ${participant1.placement}`);
+  console.log(`${participants_1[1].alias}: ${participant2.placement}`);
   const victor = await db.select({ alias: usersTable.alias })
     .from(matchHistoryTable)
     .innerJoin(usersTable, eq(matchHistoryTable.victor, usersTable.id))

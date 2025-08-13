@@ -1,5 +1,5 @@
 import { Wall, Ball, Paddle, createWalls, createBalls,
-		createPlayers, createGround, Player, Goal, createScoreboard, GameMenu, ColorMap, Colors } from '../index';
+		createPlayers, createGround, Player, Goal, createScoreboard, GameMenu, ColorMap, Colors } from '../../lib/index';
 import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
 		Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		HavokPlugin, StandardMaterial, Layer } from '@babylonjs/core';
@@ -85,11 +85,11 @@ export class Game
 		{
 			const audioEngine = await CreateAudioEngineAsync();
 			audioEngine.volume = 0.5;
-			// const frogs = await CreateStreamingSoundAsync('music', '/sounds/frogs.mp3');
-			Game.wallhitSound = await CreateStreamingSoundAsync('wallhit', '/sounds/wallhit.wav');
-			Game.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', '/sounds/paddlehit.wav');
-			Game.playerOutSound = await CreateStreamingSoundAsync('playerout', '/sounds/playerout.wav');
-			Game.victorySound = await CreateStreamingSoundAsync('victory', '/sounds/victory.wav');
+			// const frogs = await CreateStreamingSoundAsync('music', './public/sounds/frogs.mp3');
+			Game.wallhitSound = await CreateStreamingSoundAsync('wallhit', './public/sounds/wallhit.wav');
+			Game.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', './public/sounds/paddlehit.wav');
+			Game.playerOutSound = await CreateStreamingSoundAsync('playerout', './public/sounds/playerout.wav');
+			Game.victorySound = await CreateStreamingSoundAsync('victory', './public/sounds/victory.wav');
 			Game.paddlehitSound.maxInstances = 1;
 			Game.wallhitSound.maxInstances = 1;
 	
@@ -156,7 +156,7 @@ export class Game
 		createPlayers(this.players, this.goals, this.paddles, this.playerCount, grid, scene);
 		createScoreboard(this.scoreboard, this.players);
 		
-		const background = new Layer('background', '/backgrounds/volcano.jpg', scene, true);
+		const background = new Layer('background', './public/backgrounds/volcano.jpg', scene, true);
 		background.isBackground = true;
 		this.scene = scene;
 	}

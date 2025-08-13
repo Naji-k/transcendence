@@ -1,4 +1,4 @@
-import { Wall, Ball, Paddle, Goal, Player, Colors, ColorMap } from './index';
+import { Wall, Ball, Paddle, Goal, Player, Colors, ColorMap } from '../lib/index';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from '@babylonjs/gui';
 

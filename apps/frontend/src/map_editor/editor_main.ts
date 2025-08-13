@@ -1,4 +1,4 @@
-import { Paddle, Wall, Ball, Goal, Game, Colors, ColorMap } from '../game/index';
+import { Paddle, Wall, Ball, Goal, Game, Colors, ColorMap } from '../lib/index';
 import { Editor } from './editor';
 import { Button } from '@babylonjs/gui';
 import HavokPhysics from '@babylonjs/havok';

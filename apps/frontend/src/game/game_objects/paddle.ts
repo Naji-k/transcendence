@@ -1,4 +1,4 @@
-import { Ball, Wall } from '../index';
+import { Ball, Wall } from '../../lib/index';
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh,
 	PhysicsShapeType, PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
 

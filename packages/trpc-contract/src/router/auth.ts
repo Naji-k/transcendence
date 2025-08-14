@@ -4,7 +4,7 @@
  */
 import { createRouter, publicProcedure } from "../trpc";
 import { signUpInput, loginInput } from "../schemas";
-import { Response } from "../types";
+import { LoginResponse, Response, User } from "../types";
 
 export const authRouter = createRouter({
   /**
@@ -20,12 +20,13 @@ export const authRouter = createRouter({
       //     email: input.email,
       //     password: hashedPassword,
       // });
-      const user = { id: "user-id", email: input.email }; // Mock user for demonstration
+      const user: User = {id : 1, email:input.email, name: input.name}; // Mock user for demonstration
+      const token = ctx.jwtUtils.sign("${user.id}", user.email)
       return {
         status: 201,
         message: "User created successfully",
-        data: user,
-      } as Response; // Mock response for demonstration
+        data: {user, token},
+      } as Response<LoginResponse>; // Mock response for demonstration
     }),
   /**
    * login procedure handles user login.
@@ -36,23 +37,24 @@ export const authRouter = createRouter({
     // const user = await ctx.db.findUserByEmail(input.email);
     // const validPassword = await comparePassword(input.password, user.password);
 
-    const user = { id: "2", email: input.email }; // Mock user for demonstration
+    const user = { id: 2, email: input.email, name: "user_name" }; // Mock user for demonstration
     const validPassword = true; // Mock password check
     if (!user || !validPassword) {
       console.error("Invalid email or password");
       return {
         status: 401,
         message: "Invalid email or password",
-      } as Response;
+      } as Response<LoginResponse>;
     }
     // Generate JWT token
-    const auth = ctx.jwtUtils.sign(user.id, user.email);
+    const auth = ctx.jwtUtils.sign("${user.id}", user.email);
     return {
       status: 200,
       message: "Login successful",
       data: {
+        user: user,
         token: auth, // JWT token
       },
-    } as Response; // Mock response for demonstration
+    } as Response<LoginResponse>; // Mock response for demonstration
   }),
 });

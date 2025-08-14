@@ -31,7 +31,7 @@ function verify(token: string) {
     console.error("Invalid token");
     return null;
   } catch (error) {
-    console.error("JWT verification failed:");
+    console.error("JWT verification failed: ", error);
     return null;
   }
 }

@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1754429547202,
-      "tag": "0000_omniscient_lightspeed",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1754429641094,
-      "tag": "0001_slow_next_avengers",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1754429674493,
-      "tag": "0002_lethal_randall_flagg",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1755109606230,
-      "tag": "0003_cuddly_forge",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1755114512388,
-      "tag": "0004_classy_post",
+      "when": 1755266297212,
+      "tag": "0000_clammy_longshot",
       "breakpoints": true
     },
     {

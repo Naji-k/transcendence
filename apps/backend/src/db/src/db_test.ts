@@ -2,22 +2,22 @@
 EACH SECTION HAS A COMMENT ABOVE IT, SEPARATE SECTIONS CAN BE
 COMMENTED OUT IF YOU DON'T WANT TO RUN ALL THE DIFFERENT TESTS */
 import { eq } from 'drizzle-orm';
-import { friendshipsTable, matchHistoryTable, singleMatchParticipantsTable, usersTable } from './dbSchema/schema';
+import { friendshipsTable, matchTable, singleMatchPlayersTable, usersTable } from './dbSchema/schema';
 import { reset } from 'drizzle-seed';
 import { db } from './dbClientInit';
 import { createUser, findUserByAlias, findUserByEmail } from './dbFunctions';
 
 console.log(__dirname);
 
-type NewMatch = typeof matchHistoryTable.$inferInsert;
-type NewParticipant = typeof singleMatchParticipantsTable.$inferInsert;
+type NewMatch = typeof matchTable.$inferInsert;
+type NewParticipant = typeof singleMatchPlayersTable.$inferInsert;
 
 async function main() {
 
   try {
     await db.select().from(usersTable);
-    await db.select().from(matchHistoryTable);
-    await db.select().from(singleMatchParticipantsTable);
+    await db.select().from(matchTable);
+    await db.select().from(singleMatchPlayersTable);
     await db.select().from(friendshipsTable);
     console.log('Database exists');
     // console.log(users2);
@@ -34,12 +34,12 @@ async function main() {
 
   /* Reset the tables (doesn't reset the ids) */
   // await reset(db, { usersTable });
-  // await reset(db, { matchHistoryTable });
-  // await reset(db, { singleMatchParticipantsTable });
+  // await reset(db, { matchTable });
+  // await reset(db, { singleMatchPlayersTable });
   // await reset(db, { friendshipsTable });
   /* or */
-  // await db.delete(singleMatchParticipantsTable);
-  // await db.delete(matchHistoryTable);
+  // await db.delete(singleMatchPlayersTable);
+  // await db.delete(matchTable);
   // await db.delete(usersTable);
 
   /* Test user entries */
@@ -100,13 +100,13 @@ async function main() {
 
   /* Test match history entries */
   const randomId1 = allIds[Math.floor(Math.random() * allIds.length)];
-  const match: NewMatch = { victor: randomId1, createdAt: new Date() };
+  const match: NewMatch = { victor: randomId1, date: new Date() };
   // error match
-  // match = { victor: "sec", createdAt: new Date() };
+  // match = { victor: "sec", date: new Date() };
   let allInsertedIds;
   let lastMatchId;
   try {
-    allInsertedIds = await db.insert(matchHistoryTable).values(match).returning({ id: matchHistoryTable.id });
+    allInsertedIds = await db.insert(matchTable).values(match).returning({ id: matchTable.id });
     lastMatchId = allInsertedIds[0]?.id;
     if (lastMatchId === undefined) {
       throw new Error('Failed to retrieve match id');
@@ -120,7 +120,7 @@ async function main() {
     console.log('Database error');
     process.exit(99);
   }
-  const matches_1 = await db.select().from(matchHistoryTable);
+  const matches_1 = await db.select().from(matchTable);
   console.log('Getting all matches from the database: ', matches_1);
 
   /* Test participants entries */
@@ -128,16 +128,16 @@ async function main() {
   while (randomId2 === randomId1) {
     randomId2 = allIds[Math.floor(Math.random() * allIds.length)];
   }
-  const participant1: NewParticipant = { player: randomId1, placement: 1, matchId: lastMatchId };
-  const participant2: NewParticipant = { player: randomId2, placement: 2, matchId: lastMatchId };
+  const participant1: NewParticipant = { playerId: randomId1, placement: 1, matchId: lastMatchId };
+  const participant2: NewParticipant = { playerId: randomId2, placement: 2, matchId: lastMatchId };
   try {
-    await db.insert(singleMatchParticipantsTable).values(participant1);
-    await db.insert(singleMatchParticipantsTable).values(participant2);
+    await db.insert(singleMatchPlayersTable).values(participant1);
+    await db.insert(singleMatchPlayersTable).values(participant2);
     // error participant
-    // const participant3: NewParticipant = { player: 1, placement: 1, matchId: 1};
-    // const participant4: NewParticipant = { player: 1, placement: 2, matchId: 1};
-    // await db.insert(singleMatchParticipantsTable).values(participant3);
-    // await db.insert(singleMatchParticipantsTable).values(participant4);
+    // const participant3: NewParticipant = { playerId: 1, placement: 1, matchId: 1};
+    // const participant4: NewParticipant = { playerId: 1, placement: 2, matchId: 1};
+    // await db.insert(singleMatchPlayersTable).values(participant3);
+    // await db.insert(singleMatchPlayersTable).values(participant4);
   } catch (error) {
     if (error instanceof Error && error.message.includes('Failed query: insert into "single_match_players_table"')) {
       console.log('! Failed to store participant !');
@@ -148,17 +148,17 @@ async function main() {
 
   /* Show participant info for a match, there is probably a better way to do it */
   const participants_1 = await db.select({ alias: usersTable.alias })
-    .from(singleMatchParticipantsTable)
-    .innerJoin(usersTable, eq(singleMatchParticipantsTable.player, usersTable.id))
-    .where(eq(singleMatchParticipantsTable.matchId, lastMatchId));
+    .from(singleMatchPlayersTable)
+    .innerJoin(usersTable, eq(singleMatchPlayersTable.playerId, usersTable.id))
+    .where(eq(singleMatchPlayersTable.matchId, lastMatchId));
   console.log('Showing participant info for matchId: ', lastMatchId);
   console.log(participants_1);
   console.log(`${participants_1[0].alias}: ${participant1.placement}`);
   console.log(`${participants_1[1].alias}: ${participant2.placement}`);
   const victor = await db.select({ alias: usersTable.alias })
-    .from(matchHistoryTable)
-    .innerJoin(usersTable, eq(matchHistoryTable.victor, usersTable.id))
-    .where(eq(matchHistoryTable.id, lastMatchId))
+    .from(matchTable)
+    .innerJoin(usersTable, eq(matchTable.victor, usersTable.id))
+    .where(eq(matchTable.id, lastMatchId))
   console.log(`Victor: ${victor[0]?.alias}`);
   console.log()
   // const users_4 = await db.all(sql`SELECT * FROM user_table`);

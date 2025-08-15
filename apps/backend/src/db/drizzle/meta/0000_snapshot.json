@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "8ad7d1a8-4003-4813-9e6a-69375fc016d5",
+  "id": "c784a6a5-5b44-4c42-a8e4-3aafa0ee9657",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "friendships_table": {
@@ -76,8 +76,8 @@
         }
       }
     },
-    "match_history_table": {
-      "name": "match_history_table",
+    "match_table": {
+      "name": "match_table",
       "columns": {
         "id": {
           "name": "id",
@@ -86,11 +86,11 @@
           "notNull": true,
           "autoincrement": true
         },
-        "mode": {
-          "name": "mode",
-          "type": "text",
+        "tournamentId": {
+          "name": "tournamentId",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "victor": {
@@ -100,29 +100,32 @@
           "notNull": true,
           "autoincrement": false
         },
-        "createdAt": {
-          "name": "createdAt",
+        "date": {
+          "name": "date",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         }
       },
-      "indexes": {
-        "unique_match_idx": {
-          "name": "unique_match_idx",
-          "columns": [
-            "createdAt",
-            "mode",
-            "victor"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
-        "match_history_table_victor_users_table_id_fk": {
-          "name": "match_history_table_victor_users_table_id_fk",
-          "tableFrom": "match_history_table",
+        "match_table_tournamentId_tournament_table_id_fk": {
+          "name": "match_table_tournamentId_tournament_table_id_fk",
+          "tableFrom": "match_table",
+          "tableTo": "tournament_table",
+          "columnsFrom": [
+            "tournamentId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "match_table_victor_users_table_id_fk": {
+          "name": "match_table_victor_users_table_id_fk",
+          "tableFrom": "match_table",
           "tableTo": "users_table",
           "columnsFrom": [
             "victor"
@@ -148,20 +151,19 @@
           "notNull": true,
           "autoincrement": true
         },
-        "player": {
-          "name": "player",
+        "matchId": {
+          "name": "matchId",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "score": {
-          "name": "score",
+        "playerId": {
+          "name": "playerId",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": 0
+          "autoincrement": false
         },
         "placement": {
           "name": "placement",
@@ -169,33 +171,26 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": -1
-        },
-        "matchId": {
-          "name": "matchId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+          "default": 0
         }
       },
       "indexes": {
-        "unique_participation_idx": {
-          "name": "unique_participation_idx",
+        "unique_match_participation_idx": {
+          "name": "unique_match_participation_idx",
           "columns": [
-            "player",
+            "playerId",
             "matchId"
           ],
           "isUnique": true
         }
       },
       "foreignKeys": {
-        "single_match_players_table_player_users_table_id_fk": {
-          "name": "single_match_players_table_player_users_table_id_fk",
+        "single_match_players_table_matchId_match_table_id_fk": {
+          "name": "single_match_players_table_matchId_match_table_id_fk",
           "tableFrom": "single_match_players_table",
-          "tableTo": "users_table",
+          "tableTo": "match_table",
           "columnsFrom": [
-            "player"
+            "matchId"
           ],
           "columnsTo": [
             "id"
@@ -203,12 +198,139 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "single_match_players_table_matchId_match_history_table_id_fk": {
-          "name": "single_match_players_table_matchId_match_history_table_id_fk",
+        "single_match_players_table_playerId_users_table_id_fk": {
+          "name": "single_match_players_table_playerId_users_table_id_fk",
           "tableFrom": "single_match_players_table",
-          "tableTo": "match_history_table",
+          "tableTo": "users_table",
           "columnsFrom": [
-            "matchId"
+            "playerId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "tournament_participants_table": {
+      "name": "tournament_participants_table",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tournamentId": {
+          "name": "tournamentId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "playerId": {
+          "name": "playerId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "unique_tournament_participation_idx": {
+          "name": "unique_tournament_participation_idx",
+          "columns": [
+            "tournamentId",
+            "playerId"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "tournament_participants_table_tournamentId_tournament_table_id_fk": {
+          "name": "tournament_participants_table_tournamentId_tournament_table_id_fk",
+          "tableFrom": "tournament_participants_table",
+          "tableTo": "tournament_table",
+          "columnsFrom": [
+            "tournamentId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tournament_participants_table_playerId_users_table_id_fk": {
+          "name": "tournament_participants_table_playerId_users_table_id_fk",
+          "tableFrom": "tournament_participants_table",
+          "tableTo": "users_table",
+          "columnsFrom": [
+            "playerId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "tournament_table": {
+      "name": "tournament_table",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "creator": {
+          "name": "creator",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
+        },
+        "date": {
+          "name": "date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tournament_table_creator_users_table_id_fk": {
+          "name": "tournament_table_creator_users_table_id_fk",
+          "tableFrom": "tournament_table",
+          "tableTo": "users_table",
+          "columnsFrom": [
+            "creator"
           ],
           "columnsTo": [
             "id"
@@ -256,7 +378,7 @@
           "name": "email",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "avatarPath": {
@@ -274,44 +396,6 @@
           "notNull": false,
           "autoincrement": false,
           "default": "'background_default'"
-        },
-        "lastLoginTime": {
-          "name": "lastLoginTime",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "lastActivityTime": {
-          "name": "lastActivityTime",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "totalMatches": {
-          "name": "totalMatches",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "wins": {
-          "name": "wins",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "losses": {
-          "name": "losses",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
         }
       },
       "indexes": {

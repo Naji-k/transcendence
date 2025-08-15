@@ -3,5 +3,6 @@
 
 <ul>
 	<li><a href="./game">Play pongers</a></li>
-    <li><a href="./map_editor">Edit pongers</a></li>
+  <li><a href="./map_editor">Edit pongers</a></li>
+  <li><a href="/signin">Sign In</a></li>
 </ul>

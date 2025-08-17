@@ -76,7 +76,7 @@ export const matchTable = sqliteTable(
   "match_table", {
 	id: int().primaryKey({ autoIncrement: true }),
   tournamentId: int().references((): AnySQLiteColumn => tournamentTable.id),
-	victor: int().notNull().references((): AnySQLiteColumn => usersTable.id),
+	victor: int().references((): AnySQLiteColumn => usersTable.id), // This field will contain the player with placement 1 after the end of the match
 	date: int({ mode: 'timestamp' }).notNull(),
 });
 

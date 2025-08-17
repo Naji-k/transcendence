@@ -33,6 +33,22 @@ export async function createUser(newAlias: string, newEmail: string, newPassword
   }
 }
 
+export async function findUserById(id: number): Promise<ExistingUser | null> {
+  if (!id) {
+    throw new Error('findUserById error: id must be provided');
+  }
+
+  try {
+    // Here we can decide on the selected columns to return
+    const [foundUser] = await db.select().from(usersTable).where(eq(usersTable.id, id));
+    return foundUser ?? null;
+  } catch (error) {
+    console.log('Unknown error searching for user by id');
+    console.log(error);
+    throw error;
+  }
+}
+
 /**
  * Search for an existing user with its alias
  * @param alias alias of existing user
@@ -48,7 +64,7 @@ export async function findUserByAlias(alias: string): Promise<ExistingUser | nul
     const [foundUser] = await db.select().from(usersTable).where(eq(usersTable.alias, alias));
     return foundUser ?? null;
   } catch (error) {
-    console.log('Unknown error searching for user');
+    console.log('Unknown error searching for user by alias');
     console.log(error);
     throw error;
   }
@@ -69,7 +85,7 @@ export async function findUserByEmail(email: string): Promise<ExistingUser | nul
     const [foundUser] = await db.select().from(usersTable).where(eq(usersTable.email, email));
     return foundUser ?? null;
   } catch (error) {
-    console.log('Unknown error searching for user');
+    console.log('Unknown error searching for user by email');
     console.log(error);
     throw error;
   }

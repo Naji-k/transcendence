@@ -9,14 +9,11 @@ export const usersTable = sqliteTable(
 		alias: text().notNull().unique(),
     password: text().notNull(),
 		name: text(),
-		email: text().notNull().unique(),
+		email: text().unique(), // Do we want email to be a mandatory field?
     avatarPath: text().default('avatar_default'),
     backgroundPath: text().default('background_default'),
-    lastLoginTime: int({ mode: 'timestamp' }),
-    lastActivityTime: int({ mode: 'timestamp' }), // we can use this to display last seen status, I understand that online status will come from memory
-    totalMatches: int().notNull().default(0),
-    wins: int().notNull().default(0),
-    losses: int().notNull().default(0),
+    // lastLoginTime: int({ mode: 'timestamp' }),
+    // lastActivityTime: int({ mode: 'timestamp' }), // we can use this to display last seen status, I understand that online status will come from memory
 });
 
 /* Table for all the friendships -> So that we don't have duplicates,
@@ -42,14 +39,12 @@ export const friendshipsTable = sqliteTable(
 export const matchHistoryTable = sqliteTable(
   "match_history_table", {
 	id: int().primaryKey({ autoIncrement: true }),
-	mode: text().notNull(),
 	victor: int().notNull().references((): AnySQLiteColumn => usersTable.id),
 	createdAt: int({ mode: 'timestamp' }).notNull(),
 },
 (table) => [
 	uniqueIndex("unique_match_idx").on(
 		table.createdAt,
-		table.mode,
 		table.victor,
 		)
 ]);
@@ -59,10 +54,9 @@ by also including the data from the referenced match in the matchHistoryTable */
 export const singleMatchParticipantsTable = sqliteTable(
   "single_match_players_table", {
 	id: int().primaryKey({ autoIncrement: true }),
-	player: int().notNull().references((): AnySQLiteColumn => usersTable.id),
-	score: int().notNull().default(0),
-	placement: int().notNull().default(-1),
 	matchId: int().notNull().references((): AnySQLiteColumn => matchHistoryTable.id),
+	player: int().notNull().references((): AnySQLiteColumn => usersTable.id),
+	placement: int().notNull().default(0), // This will be the the position that players finish at, only position 1 will be considered a victory 
 },
 (table) => [
 	uniqueIndex("unique_participation_idx").on(

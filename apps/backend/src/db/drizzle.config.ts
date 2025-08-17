@@ -9,7 +9,7 @@ config({ path: path.resolve(__dirname, '../../../../.env') });
 
 export default defineConfig({
 	out: 'src/db/drizzle',
-	schema: path.resolve(__dirname, 'src/db_schema/schema.ts'),
+	schema: path.resolve(__dirname, 'src/dbSchema/schema.ts'),
 	dialect: 'sqlite',
 	dbCredentials: {
 		url: path.resolve(__dirname, process.env.DB_FILE_NAME!) // This will create the database file in the apps/backend/src/db folder, easily modifiable

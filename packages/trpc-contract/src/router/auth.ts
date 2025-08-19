@@ -5,6 +5,7 @@
 import { createRouter, publicProcedure } from "../trpc";
 import { signUpInput, loginInput } from "../schemas";
 import { LoginResponse, Response, User } from "../types";
+import { TRPCError } from "@trpc/server";
 
 export const authRouter = createRouter({
   /**
@@ -38,13 +39,12 @@ export const authRouter = createRouter({
     // const validPassword = await comparePassword(input.password, user.password);
 
     const user = { id: 2, email: input.email, name: "user_name" }; // Mock user for demonstration
-    const validPassword = true; // Mock password check
+    const validPassword = false; // Mock password check
     if (!user || !validPassword) {
-      console.error("Invalid email or password");
-      return {
-        status: 401,
-        message: "Invalid email or password",
-      } as Response<LoginResponse>;
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'Invalid email or password',
+      });
     }
     // Generate JWT token
     const auth = ctx.jwtUtils.sign("${user.id}", user.email);

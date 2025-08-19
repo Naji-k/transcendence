@@ -12,7 +12,7 @@ export async function signUp(name: string, email: string, password: string) {
     }
     const res = await trpc.auth.signUp.mutate(validInput.data);
     console.log('signed up: ', res.data);
-    return res;
+    return res.data;
   } catch (e) {
     if (e instanceof ZodError) {
       const messages = e.issues.map((err) => err.message);
@@ -34,9 +34,14 @@ export async function login(email: string, password: string) {
       throw messages;
     }
     const res = await trpc.auth.login.mutate(validInput.data);
-    if (res.status == 200) setAuthToken(res.data.token);
-    console.log('logged in :', res.data);
-    return res.data.user;
+    if (res.status == 200) 
+      {
+        setAuthToken(res.data.token);
+        console.log('logged in :', res.data);
+        return res.data.user;
+      }else {
+
+        }
   } catch (e) {
     console.error('login failed: ', e);
     throw e;

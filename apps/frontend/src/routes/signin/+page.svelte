@@ -1,9 +1,16 @@
 <script lang="ts">
   let username = '';
   let password = '';
+  import { login } from '$lib/auth/auth';
 
   function handleSignIn() {
-    alert(`Username: ${username}\nPassword: ${password}`);
+    login(username, password)
+      .then((res) => {
+        alert(`Login successful! Welcome ${res?.name || ""}`);
+      })
+      .catch((error) => {
+        alert(`Login failed: ${error}`);
+      });
   }
 
   function handleGoogleLogin() {

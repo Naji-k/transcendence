@@ -1,27 +1,35 @@
 // It defines the context type used in tRPC routers
 
-export interface Context {
-  db: string; // Replace with actual database connection type
+export interface Services {
   jwtUtils: {
     sign: (userId: string, email: string) => string;
   };
-  user?: any; // Optional, if logged in
-};
+  user: {
+    findUserByEmail: (email: string) => Promise<any | null>;
+    createUser: (name: string, email: string, password: string) => Promise<any>;
+  };
+}
+
+export interface Context {
+  db: any; // Replace with actual database connection type
+  services: Services;
+  userToken?: any; // Optional, if logged in
+}
 
 // generic response type for API responses
-export interface Response <T>  {
+export interface Response<T> {
   status: number;
   message: string;
-  data: T,
-};
+  data: T;
+}
 
 export interface LoginResponse {
-  user: User,
-  token: string
+  user: User;
+  token: string;
 }
 
 export interface User {
-  id: number,
-  email: string,
-  name: string
+  id: number;
+  email: string;
+  name: string;
 }

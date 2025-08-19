@@ -24,5 +24,5 @@ export const signUpInput = z.object({
 
 export const loginInput = z.object({
   email: z.string().email(),
-  password: userPasswordSchema,
+  password: z.string().min(1, "Password is required"),
 });

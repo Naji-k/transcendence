@@ -16,17 +16,18 @@ export const authRouter = createRouter({
     .input(signUpInput)
     .mutation(async ({ ctx, input }) => {
       //   const hashedPassword = return a hashed version of input.password
-      // const user = await ctx.db.createUser({
-      //     name: input.name,
-      //     email: input.email,
-      //     password: hashedPassword,
-      // });
-      const user: User = {
-        id: 1,
-        email: input.email,
-        name: input.name,
-      }; // Mock user for demonstration
-      const token = ctx.jwtUtils.sign('${user.id}', user.email);
+      const user = await ctx.services.user.createUser(
+        input.name,
+        input.email,
+        input.password
+      );
+      if (!user) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'User creation failed',
+        });
+      }
+      const token = ctx.services.jwtUtils.sign('${user.id}', user.email);
       return {
         status: 201,
         message: 'User created successfully',
@@ -42,14 +43,12 @@ export const authRouter = createRouter({
    * If successful, it generates a JWT token and returns it.
    */
   login: publicProcedure.input(loginInput).mutation(async ({ ctx, input }) => {
-    // const user = await ctx.db.findUserByEmail(input.email);
+    const user = await ctx.services.user.findUserByEmail(input.email);
+    // return foundUser ?? null;
+
     // const validPassword = await comparePassword(input.password, user.password);
 
-    const user = {
-      id: 2,
-      email: input.email,
-      name: 'user_name',
-    }; // Mock user for testing
+    console.log('user found: ', user);
     const validPassword = true;
     if (!user || !validPassword) {
       throw new TRPCError({
@@ -58,7 +57,7 @@ export const authRouter = createRouter({
       });
     }
     // Generate JWT token
-    const auth = ctx.jwtUtils.sign('${user.id}', user.email);
+    const auth = ctx.services.jwtUtils.sign('${user.id}', user.email);
     return {
       status: 200,
       message: 'Login successful',

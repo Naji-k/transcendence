@@ -6,7 +6,7 @@
   function handleSignIn() {
     login(username, password)
       .then((res) => {
-        alert(`Login successful! Welcome ${res?.name || ""}`);
+        alert(`Login successful! Welcome ${res?.name || res?.alias}`);
       })
       .catch((error) => {
         alert(`Login failed:\n ${error}`);
@@ -87,6 +87,8 @@
     </button>
 
     <!-- Footer -->
-    <p class="mt-6 text-xs text-cyan-300 drop-shadow-md select-none">Ping. Pong. Transcend.</p>
+    <p class="mt-6 text-xs text-cyan-300 drop-shadow-md select-none">
+      Ping. Pong. Transcend.
+    </p>
   </div>
 </div>

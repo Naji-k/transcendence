@@ -5,6 +5,7 @@
   "scripts": {
     "db:generate": "drizzle-kit generate --config=./src/db/drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config=./src/db/drizzle.config.ts",
+    "db:push": "drizzle-kit push --config=./src/db/drizzle.config.ts",
     "dev": "ts-node src/index.ts",
     "dev:watch": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",

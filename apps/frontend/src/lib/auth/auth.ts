@@ -1,6 +1,5 @@
 import { loginInput, signUpInput } from '@repo/trpc/src/schemas';
 import { trpc, setAuthToken } from '../trpc';
-import { ZodError } from 'zod';
 
 export async function signUp(name: string, email: string, password: string) {
   try {
@@ -35,14 +34,14 @@ export async function login(email: string, password: string) {
       throw messages;
     }
     const res = await trpc.auth.login.mutate(validInput.data);
-    if (res.status == 200) {
-      setAuthToken(res.data.token);
-      console.log('logged in :', res.data);
-      return res.data.user;
-    } else {
+    if (res.status !== 200) {
+      console.error('login failed: ', res.message);
     }
+    setAuthToken(res.data.token);
+    console.log('logged in :', res.data);
+    return res.data.user;
   } catch (e) {
     console.error('login failed: ', e);
-    throw e;
+    throw e.message || e;
   }
 }

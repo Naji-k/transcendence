@@ -2,9 +2,16 @@
   let username = '';
   let email = '';
   let password = '';
+  import { signUp } from '$lib/auth/auth';
 
   function handleSignUp() {
-    alert(`Username: ${username}\nEmail: ${email}\nPassword: ${password}`);
+    signUp(username, email, password)
+      .then((res) => {
+        alert(`Login successful! Welcome ${res?.name || ''}`);
+      })
+      .catch((error) => {
+        alert(`Signup failed:\n ${error}`);
+      });
   }
 
   function handleGoogleSignUp() {
@@ -30,7 +37,7 @@
       class="w-full rounded-xl px-4 py-3 text-black font-bold focus:outline-none focus:ring-2 focus:ring-cyan-400"
     />
 
-     <!-- Email -->
+    <!-- Email -->
     <input
       type="email"
       placeholder="Email"
@@ -90,6 +97,8 @@
     </button>
 
     <!-- Footer -->
-    <p class="mt-1 text-xs text-cyan-300 drop-shadow-md select-none">Ping. Pong. Transcend.</p>
+    <p class="mt-1 text-xs text-cyan-300 drop-shadow-md select-none">
+      Ping. Pong. Transcend.
+    </p>
   </div>
 </div>

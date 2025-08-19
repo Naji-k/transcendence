@@ -2,10 +2,10 @@
  * authentication router
  * Handles user authentication operations such as login, logout, and registration.
  */
-import { createRouter, publicProcedure } from "../trpc";
-import { signUpInput, loginInput } from "../schemas";
-import { LoginResponse, Response, User } from "../types";
-import { TRPCError } from "@trpc/server";
+import { createRouter, publicProcedure } from '../trpc';
+import { signUpInput, loginInput } from '../schemas';
+import { LoginResponse, Response, User } from '../types';
+import { TRPCError } from '@trpc/server';
 
 export const authRouter = createRouter({
   /**
@@ -21,12 +21,19 @@ export const authRouter = createRouter({
       //     email: input.email,
       //     password: hashedPassword,
       // });
-      const user: User = {id : 1, email:input.email, name: input.name}; // Mock user for demonstration
-      const token = ctx.jwtUtils.sign("${user.id}", user.email)
+      const user: User = {
+        id: 1,
+        email: input.email,
+        name: input.name,
+      }; // Mock user for demonstration
+      const token = ctx.jwtUtils.sign('${user.id}', user.email);
       return {
         status: 201,
-        message: "User created successfully",
-        data: {user, token},
+        message: 'User created successfully',
+        data: {
+          user,
+          token,
+        },
       } as Response<LoginResponse>; // Mock response for demonstration
     }),
   /**
@@ -38,8 +45,12 @@ export const authRouter = createRouter({
     // const user = await ctx.db.findUserByEmail(input.email);
     // const validPassword = await comparePassword(input.password, user.password);
 
-    const user = { id: 2, email: input.email, name: "user_name" }; // Mock user for demonstration
-    const validPassword = false; // Mock password check
+    const user = {
+      id: 2,
+      email: input.email,
+      name: 'user_name',
+    }; // Mock user for testing
+    const validPassword = true;
     if (!user || !validPassword) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
@@ -47,10 +58,10 @@ export const authRouter = createRouter({
       });
     }
     // Generate JWT token
-    const auth = ctx.jwtUtils.sign("${user.id}", user.email);
+    const auth = ctx.jwtUtils.sign('${user.id}', user.email);
     return {
       status: 200,
-      message: "Login successful",
+      message: 'Login successful',
       data: {
         user: user,
         token: auth, // JWT token

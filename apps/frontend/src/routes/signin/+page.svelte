@@ -9,7 +9,7 @@
         alert(`Login successful! Welcome ${res?.name || ""}`);
       })
       .catch((error) => {
-        alert(`Login failed: ${error}`);
+        alert(`Login failed:\n ${error}`);
       });
   }
 

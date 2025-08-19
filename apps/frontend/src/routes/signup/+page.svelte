@@ -1,12 +1,13 @@
 <script lang="ts">
   let username = '';
+  let email = '';
   let password = '';
 
-  function handleSignIn() {
-    alert(`Username: ${username}\nPassword: ${password}`);
+  function handleSignUp() {
+    alert(`Username: ${username}\nEmail: ${email}\nPassword: ${password}`);
   }
 
-  function handleGoogleLogin() {
+  function handleGoogleSignUp() {
     alert('Google OAuth flow here');
   }
 </script>
@@ -18,7 +19,7 @@
     class="bg-gradient-to-br from-purple-700 to-indigo-900 text-white p-8 rounded-3xl shadow-2xl max-w-sm w-full space-y-8 text-center"
   >
     <h1 class="text-4xl text-cyan-400 drop-shadow-lg">PONG</h1>
-    <p class="text-sm tracking-wide">Sign in to start playing</p>
+    <p class="text-sm tracking-wide">Sign up to start playing</p>
 
     <!-- Username -->
     <input
@@ -26,6 +27,15 @@
       placeholder="Username"
       autocomplete="username"
       bind:value={username}
+      class="w-full rounded-xl px-4 py-3 text-black font-bold focus:outline-none focus:ring-2 focus:ring-cyan-400"
+    />
+
+     <!-- Email -->
+    <input
+      type="email"
+      placeholder="Email"
+      autocomplete="email"
+      bind:value={email}
       class="w-full rounded-xl px-4 py-3 text-black font-bold focus:outline-none focus:ring-2 focus:ring-cyan-400"
     />
 
@@ -38,22 +48,22 @@
       class="w-full rounded-xl px-4 py-3 text-black font-bold focus:outline-none focus:ring-2 focus:ring-cyan-400"
     />
 
-    <!-- Sign In Button -->
+    <!-- Sign Up Button -->
     <button
-      on:click={handleSignIn}
+      on:click={handleSignUp}
       class="bg-cyan-500 hover:bg-cyan-600 active:scale-95 shadow-lg active:shadow-inner transition-transform rounded-xl px-6 py-3 font-bold text-black w-full"
     >
-      Sign In
+      Sign Up
     </button>
 
-    <!-- Don't have an account? -->
+    <!-- Already have an account? -->
     <p class="text-xs drop-shadow-md select-none">
-      Don't have an account?
+      Already have an account?
       <a
-        href="/signup"
+        href="/signin"
         class="!text-cyan-200 hover:text-white font-semibold transition-colors"
       >
-        Sign up
+        Sign in
       </a>
     </p>
 
@@ -68,7 +78,7 @@
 
     <!-- Google Button -->
     <button
-      on:click={handleGoogleLogin}
+      on:click={handleGoogleSignUp}
       class="flex items-center justify-center gap-3 bg-white hover:bg-gray-100 active:scale-95 active:shadow-inner rounded-xl px-6 py-3 text-black shadow-md transition-transform mx-auto w-full"
     >
       <img
@@ -76,10 +86,10 @@
         alt="Google"
         class="w-6 h-6"
       />
-      Continue with Google
+      Sign up with Google
     </button>
 
     <!-- Footer -->
-    <p class="mt-6 text-xs text-cyan-300 drop-shadow-md select-none">Ping. Pong. Transcend.</p>
+    <p class="mt-1 text-xs text-cyan-300 drop-shadow-md select-none">Ping. Pong. Transcend.</p>
   </div>
 </div>

@@ -1,5 +1,5 @@
 import HavokPhysics from '@babylonjs/havok';
-import { Game } from '../lib/index';
+import { Game } from '../index';
 
 async function getPhysics(): Promise<any>
 {

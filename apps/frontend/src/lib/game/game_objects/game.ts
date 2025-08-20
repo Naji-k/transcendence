@@ -85,12 +85,12 @@ export class Game
 		{
 			const audioEngine = await CreateAudioEngineAsync();
 			audioEngine.volume = 0.5;
-			const frogs = await CreateStreamingSoundAsync('music', './src/lib/static/sounds/frogs.mp3');
-			Game.wallhitSound = await CreateStreamingSoundAsync('wallhit', './src/lib/static/sounds/wallhit.wav');
-			Game.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', './src/lib/static/sounds/paddlehit.wav');
-			Game.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', './src/lib/static/sounds/paddlehit.wav');
-			Game.playerOutSound = await CreateStreamingSoundAsync('playerout', './src/lib/static/sounds/playerout.wav');
-			Game.victorySound = await CreateStreamingSoundAsync('victory', './src/lib/static/sounds/victory.wav');
+			const frogs = await CreateStreamingSoundAsync('music', 'sounds/frogs.mp3');
+			Game.wallhitSound = await CreateStreamingSoundAsync('wallhit', 'sounds/wallhit.wav');
+			Game.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', 'sounds/paddlehit.wav');
+			Game.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', 'sounds/paddlehit.wav');
+			Game.playerOutSound = await CreateStreamingSoundAsync('playerout', 'sounds/playerout.wav');
+			Game.victorySound = await CreateStreamingSoundAsync('victory', 'sounds/victory.wav');
 			Game.paddlehitSound.maxInstances = 1;
 			Game.wallhitSound.maxInstances = 1;
 	
@@ -101,7 +101,7 @@ export class Game
 		{
 			console.error('Error loading audio:', error);
 		}
-		const fileText = await(loadFileText('./src/lib/static/maps/' + map));
+		const fileText = await(loadFileText('maps/' + map));
 		const grid = this.parseMapFile(fileText);
 		const eliminationMat = new StandardMaterial('eliminatedMat', this.scene);
 
@@ -157,7 +157,7 @@ export class Game
 		createPlayers(this.players, this.goals, this.paddles, this.playerCount, grid, scene);
 		createScoreboard(this.scoreboard, this.players);
 		
-		const background = new Layer('background', './src/lib/static/backgrounds/volcano.jpg', scene, true);
+		const background = new Layer('background', 'backgrounds/volcano.jpg', scene, true);
 		background.isBackground = true;
 		this.scene = scene;
 	}

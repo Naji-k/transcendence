@@ -2,11 +2,11 @@
 
 export interface Services {
   jwtUtils: {
-    sign: (userId: string, email: string) => string;
+    sign: (userId: number, email: string) => string;
   };
-  user: {
-    findUserByEmail: (email: string) => Promise<any | null>;
-    createUser: (name: string, email: string, password: string) => Promise<any>;
+  auth: {
+    signUp: (name: string, email: string, password: string) => Promise<any>;
+    signIn: (email: string, password: string) => Promise<any>;
   };
 }
 

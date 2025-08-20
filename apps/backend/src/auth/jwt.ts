@@ -7,7 +7,7 @@ if (!secret) {
   throw new Error("JWT_SECTRET is not defined in the environment variables");
 }
 
-function sign(userId: string, email: string): string {
+function sign(userId: number, email: string): string {
   const options: jwt.SignOptions = {
     algorithm: "HS256", //using SHA-256 hash algorithm (default)
     expiresIn: "5d",

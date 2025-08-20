@@ -14,8 +14,9 @@ export async function signUp(name: string, email: string, password: string) {
       throw messages;
     }
     const res = await trpc.auth.signUp.mutate(validInput.data);
-    console.log('signed up: ', res.data);
-    return res.data;
+    console.log('signed up: ', res.user);
+    setAuthToken(res.token);
+    return res.user;
   } catch (e) {
     console.error('signup failed ', e);
     throw e;
@@ -37,9 +38,9 @@ export async function login(email: string, password: string) {
     if (res.status !== 200) {
       console.error('login failed: ', res.message);
     }
-    setAuthToken(res.data.token);
-    console.log('logged in :', res.data);
-    return res.data.user;
+    setAuthToken(res.token);
+    console.log('logged in :', res.user);
+    return res.user;
   } catch (e) {
     console.error('login failed: ', e);
     throw e.message || e;

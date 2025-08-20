@@ -74,8 +74,3 @@ export async function findUserByEmail(email: string): Promise<ExistingUser | nul
     throw error;
   }
 }
-
-export const userQueries = {
-  createUser,
-  findUserByEmail,
-};

@@ -9,7 +9,7 @@ export const userRouter = createRouter({
     return {
       status: 200,
       message: "User retrieved successfully",
-      data: ctx.user,
+      data: ctx.userToken,
     };
   }),
 });

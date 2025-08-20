@@ -1,8 +1,8 @@
 import { type Context } from '@repo/trpc/src/types';
 import { jwtUtils } from '../auth/jwt'; // Adjust the import path as necessary
+import { createNewUser, signIn } from '../auth/';
 import { type CreateFastifyContextOptions } from '@trpc/server/adapters/fastify';
 import { db } from '../db/src/dbClientInit';
-import { userQueries } from '../db/src/dbFunctions';
 
 const disableJWT = true; //for development,
 
@@ -43,9 +43,9 @@ export async function createTRPCContext({
     jwtUtils: {
       sign: jwtUtils.sign,
     },
-    user: {
-      findUserByEmail: userQueries.findUserByEmail,
-      createUser: userQueries.createUser,
+    auth: {
+      signUp: createNewUser,
+      signIn: signIn,
     },
   };
   return { db, services, userToken };

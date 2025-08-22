@@ -1,17 +1,17 @@
 import { Color3 } from "babylonjs";
 
-export * from '../game/game_objects/ball';
-export * from '../game/game_objects/paddle';
-export * from '../game/game_objects/wall';
-export * from '../game/game_objects/player';
-export * from '../game/game_objects/goal';
-export * from '../game/game_objects/game';
-export * from '../game/game_objects/game_menu';
-export * from '../game/initialize';
-export * from '../game/main';
-export * from '../map_editor/editor_objects/editor';
-export * from '../map_editor/main';
-export * from '../map_editor/save_map';
+export * from './game/game_objects/ball';
+export * from './game/game_objects/paddle';
+export * from './game/game_objects/wall';
+export * from './game/game_objects/player';
+export * from './game/game_objects/goal';
+export * from './game/game_objects/game';
+export * from './game/game_objects/game_menu';
+export * from './game/initialize';
+export * from './game/main';
+export * from './map_editor/editor_objects/editor';
+export * from './map_editor/main';
+export * from './map_editor/save_map';
 
 export const Colors: { name: string, color: Color3 }[] =
 [

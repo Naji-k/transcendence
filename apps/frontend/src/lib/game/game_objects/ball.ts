@@ -1,5 +1,5 @@
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
-import { Paddle, Game, Wall } from '../../lib/index';
+import { Paddle, Game, Wall } from '../../index';
 
 export class Ball
 {
@@ -117,5 +117,11 @@ export class Ball
 	lastHit(): number
 	{
 		return this.lasthit;
+	}
+
+	setMovement(movement: Vector3)
+	{
+		this.aggregate.body.setLinearVelocity(movement.scale(this.speed));
+		this.velocity = movement.scale(this.speed);
 	}
 }

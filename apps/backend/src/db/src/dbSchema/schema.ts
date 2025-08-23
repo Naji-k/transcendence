@@ -9,7 +9,7 @@ export const usersTable = sqliteTable(
 		alias: text().notNull().unique(),
     password: text().notNull(),
 		name: text(),
-		email: text().unique(), // Do we want email to be a mandatory field?
+		email: text().notNull().unique(), // Do we want email to be a mandatory field?
     avatarPath: text().default('avatar_default'),
     backgroundPath: text().default('background_default'),
     // lastLoginTime: int({ mode: 'timestamp' }),

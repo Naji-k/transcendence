@@ -1,11 +1,11 @@
-import Fastify from "fastify";
-import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
-import { appRouter } from "@repo/trpc";
-import { createTRPCContext } from "./trpc/context";
-
+import Fastify from 'fastify';
+import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
+import { appRouter } from '@repo/trpc';
+import { createTRPCContext } from './trpc/context';
+import websocket from '@fastify/websocket';
 // Create a Fastify instance
 const fastifyInstance = Fastify({
-  logger: true,
+	logger: true,
 });
 
 /**
@@ -13,11 +13,24 @@ const fastifyInstance = Fastify({
  * and set the prefix for the tRPC routes.
  * This allows you to access the tRPC endpoints and handle all endpoints there.
  */
+fastifyInstance.register(websocket);
+
 fastifyInstance.register(fastifyTRPCPlugin, {
-  prefix: "/trpc",
-  trpcOptions: { router: appRouter, createContext: createTRPCContext },
+	prefix: '/trpc',
+	useWSS: true,
+	keepAlive: {
+		enabled: true,
+		pingMs: 30000,
+		pongWaitMs: 5000,
+	},
+	trpcOptions: { router: appRouter, createContext: createTRPCContext },
+});
+
+fastifyInstance.register(import('@fastify/cors'), {
+	origin: ['http://localhost:3000', 'http://localhost:8080'], // allow frontend origins
+	credentials: true,
 });
 
 export function buildServer() {
-  return fastifyInstance;
+	return fastifyInstance;
 }

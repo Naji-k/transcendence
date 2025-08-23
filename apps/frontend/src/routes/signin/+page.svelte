@@ -1,9 +1,16 @@
 <script lang="ts">
-  let username = '';
+  let email = '';
   let password = '';
+  import { login } from '$lib/auth/auth';
 
   function handleSignIn() {
-    alert(`Username: ${username}\nPassword: ${password}`);
+    login(email, password)
+      .then((res) => {
+        alert(`Login successful! Welcome ${res?.name || res?.alias}`);
+      })
+      .catch((error) => {
+        alert(`Login failed:\n ${error}`);
+      });
   }
 
   function handleGoogleLogin() {
@@ -20,12 +27,12 @@
     <h1 class="text-4xl text-cyan-400 drop-shadow-lg">PONG</h1>
     <p class="text-sm tracking-wide">Sign in to start playing</p>
 
-    <!-- Username -->
+    <!-- email -->
     <input
       type="text"
-      placeholder="Username"
-      autocomplete="username"
-      bind:value={username}
+      placeholder="email"
+      autocomplete="email"
+      bind:value={email}
       class="w-full rounded-xl px-4 py-3 text-black font-bold focus:outline-none focus:ring-2 focus:ring-cyan-400"
     />
 
@@ -49,10 +56,7 @@
     <!-- Don't have an account? -->
     <p class="text-xs drop-shadow-md select-none">
       Don't have an account?
-      <a
-        href="/signup"
-        class="!text-cyan-200 hover:text-white font-semibold transition-colors"
-      >
+      <a href="/signup" class="!text-cyan-200 hover:text-white font-semibold transition-colors">
         Sign up
       </a>
     </p>

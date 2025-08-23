@@ -27,5 +27,10 @@
 		"tailwindcss": "^4.0.0",
 		"typescript": "^5.0.0",
 		"vite": "^7.0.4"
+	},
+	"dependencies": {
+		"@repo/trpc": "workspace:*",
+		"@trpc/client": "^11.4.4",
+		"zod": "^4.0.5"
 	}
 }

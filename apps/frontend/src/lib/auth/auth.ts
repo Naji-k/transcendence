@@ -10,11 +10,11 @@ export async function signUp(name: string, email: string, password: string) {
     });
     if (!validInput.success) {
       const messages = validInput.error.issues.map((err) => err.message);
-      console.log('signup failed: ', messages);
+      console.error('signup failed: ', messages);
       throw messages;
     }
     const res = await trpc.auth.signUp.mutate(validInput.data);
-    console.log('signed up: ', res.user);
+    console.error('signed up: ', res.user);
     setAuthToken(res.token);
     return res.user;
   } catch (e) {
@@ -31,7 +31,7 @@ export async function login(email: string, password: string) {
     });
     if (!validInput.success) {
       const messages = validInput.error.issues.map((err) => err.message);
-      console.log('login failed: ', messages);
+      console.error('login failed: ', messages);
       throw messages;
     }
     const res = await trpc.auth.login.mutate(validInput.data);

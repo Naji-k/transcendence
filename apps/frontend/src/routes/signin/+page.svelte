@@ -56,10 +56,7 @@
     <!-- Don't have an account? -->
     <p class="text-xs drop-shadow-md select-none">
       Don't have an account?
-      <a
-        href="/signup"
-        class="!text-cyan-200 hover:text-white font-semibold transition-colors"
-      >
+      <a href="/signup" class="!text-cyan-200 hover:text-white font-semibold transition-colors">
         Sign up
       </a>
     </p>
@@ -87,8 +84,6 @@
     </button>
 
     <!-- Footer -->
-    <p class="mt-6 text-xs text-cyan-300 drop-shadow-md select-none">
-      Ping. Pong. Transcend.
-    </p>
+    <p class="mt-6 text-xs text-cyan-300 drop-shadow-md select-none">Ping. Pong. Transcend.</p>
   </div>
 </div>

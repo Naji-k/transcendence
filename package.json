@@ -8,6 +8,7 @@
     "dev": "pnpm -r dev",
     "format:backend": "prettier --write ./apps/backend/**/*.ts",
     "format:frontend": "prettier --write ./apps/frontend/**/*.ts",
+    "format:packages": "prettier --write ./packages/**/*.ts",
     "format": "prettier --write .",
     "lint:backend": "eslint --ext .ts,.tsx ./apps/backend",
     "lint:frontend": "eslint --ext .ts,.tsx ./apps/frontend",

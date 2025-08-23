@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1755266297212,
-      "tag": "0000_clammy_longshot",
-      "breakpoints": true
-    },
-    {
-<<<<<<< HEAD
-      "idx": 5,
-      "version": "6",
-      "when": 1755646855884,
-      "tag": "0005_blushing_goliath",
-=======
-      "idx": 1,
-      "version": "6",
-      "when": 1755437232338,
-      "tag": "0001_clumsy_agent_brand",
->>>>>>> 958bf55 (added findUserById, put the db tests in separate functions and implemented a user input mechanism, slight change in the db schema, regenerated schemas and migrations)
+      "when": 1755965630772,
+      "tag": "0000_spotty_swarm",
       "breakpoints": true
     }
   ]

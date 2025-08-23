@@ -3,9 +3,7 @@ import { config } from 'dotenv';
 import { defineConfig } from 'drizzle-kit';
 import path from 'path';
 
-/* This works only if the .env used is in  apps/backend/ of the project, process.cwd() can also be used with different path resolution.
-It depends on the project structure and where the .env file will be stored or if there will be multiple. */
-config({ path: path.resolve(__dirname, '../../.env') });
+config({ path: path.resolve(process.cwd(), '.env') }); // Changed it to process.cwd() because I think it makes it more clear it's at the root of the backend.
 
 export default defineConfig({
 	out: 'src/db/drizzle',

@@ -11,7 +11,7 @@ CREATE UNIQUE INDEX `unique_friendship_idx` ON `friendships_table` (`userId`,`fr
 CREATE TABLE `match_table` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`tournamentId` integer,
-	`victor` integer NOT NULL,
+	`victor` integer,
 	`date` integer NOT NULL,
 	FOREIGN KEY (`tournamentId`) REFERENCES `tournament_table`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`victor`) REFERENCES `users_table`(`id`) ON UPDATE no action ON DELETE no action
@@ -50,7 +50,7 @@ CREATE TABLE `users_table` (
 	`alias` text NOT NULL,
 	`password` text NOT NULL,
 	`name` text,
-	`email` text,
+	`email` text NOT NULL,
 	`avatarPath` text DEFAULT 'avatar_default',
 	`backgroundPath` text DEFAULT 'background_default'
 );

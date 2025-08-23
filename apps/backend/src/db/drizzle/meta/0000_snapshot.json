@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c784a6a5-5b44-4c42-a8e4-3aafa0ee9657",
+  "id": "63a6ba3f-32a2-4e39-91c4-af6d9318325f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "friendships_table": {
@@ -97,7 +97,7 @@
           "name": "victor",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "date": {
@@ -378,7 +378,7 @@
           "name": "email",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "avatarPath": {

@@ -37,5 +37,5 @@ export const PlayerActionSchema = z.object({
 });
 
 export type Player = z.infer<typeof PlayerSchema>;
-export type GameStateType = z.infer<typeof GameStateSchema>;
+export type GameState = z.infer<typeof GameStateSchema>;
 export type PlayerAction = z.infer<typeof PlayerActionSchema>;

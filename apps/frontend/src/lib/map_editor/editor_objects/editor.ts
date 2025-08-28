@@ -1,7 +1,7 @@
-import { Wall, Ball, Paddle, Goal, ColorMap, Colors } from '$lib/index';
+import { Wall, Ball, Paddle, Goal, ColorMap, Colors, type MapObject } from '$lib/index';
 import { Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType, HavokPlugin, Mesh } from '@babylonjs/core';
-import { TextBlock, AdvancedDynamicTexture } from '@babylonjs/gui';
+import { Button, Control, TextBlock, AdvancedDynamicTexture } from '@babylonjs/gui';
 
 const maxPlayerCount = 6;
 
@@ -18,7 +18,13 @@ export class Editor
 	private demoBall: Mesh;
 	private demoWall: Wall;
 	private demoGoal: Goal;
-
+	
+	private mapObjects: MapObject[] = [];
+	private loadMap: Button;
+	private saveMap: Button;
+	private reset: Button;
+	private UI: AdvancedDynamicTexture;
+	
 	constructor(havokInstance: any)
 	{
 		this.editorCanvas = document.getElementById('editorCanvas') as HTMLCanvasElement;
@@ -26,6 +32,60 @@ export class Editor
 		this.dimensions = [20, 28];
 		this.engine = new Engine(this.editorCanvas, true, {antialias: true});
 		this.scene = this.createScene();
+		this.addGui();
+	}
+
+	private addGui()
+	{
+		const buttonLoadMap = Button.CreateSimpleButton('load', 'Load Map');
+		const buttonSaveMap = Button.CreateSimpleButton('save', 'Save Map');
+		const buttonReset = Button.CreateSimpleButton('reset', 'Reset');
+		const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
+
+		advancedTexture.addControl(buttonLoadMap);
+		advancedTexture.addControl(buttonSaveMap);
+		advancedTexture.addControl(buttonReset);
+		buttonLoadMap.width = '150px';
+		buttonLoadMap.height = '40px';
+		buttonLoadMap.color = 'white';
+		buttonLoadMap.background = 'green';
+		buttonLoadMap.top = '-45px';
+		buttonLoadMap.left = '-200px';
+		buttonLoadMap.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+		buttonLoadMap.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+		buttonLoadMap.onPointerUpObservable.add(() => {
+			console.log('Load Map button clicked');
+			// Implement load map functionality here
+		});
+		buttonSaveMap.width = '150px';
+		buttonSaveMap.height = '40px';
+		buttonSaveMap.color = 'white';
+		buttonSaveMap.background = 'blue';
+		buttonSaveMap.top = '-45px';
+		buttonSaveMap.left = '0px';
+		buttonSaveMap.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+		buttonSaveMap.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+		buttonSaveMap.onPointerUpObservable.add(() => {
+			console.log('Save Map button clicked');
+			// Implement save map functionality here
+		});
+		buttonReset.width = '150px';
+		buttonReset.height = '40px';
+		buttonReset.color = 'white';
+		buttonReset.background = 'red';
+		buttonReset.top = '-45px';
+		buttonReset.left = '200px';
+		buttonReset.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+		buttonReset.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+		buttonReset.onPointerUpObservable.add(() => {
+			console.log('Reset button clicked');
+			// Implement reset functionality here
+		});
+
+		this.loadMap = buttonLoadMap;
+		this.saveMap = buttonSaveMap;
+		this.reset = buttonReset;
+		this.UI = advancedTexture;
 	}
 	
 	private createScene(): Scene

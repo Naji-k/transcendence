@@ -1,5 +1,6 @@
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PointLight, Scene } from '@babylonjs/core';
-import { Ball } from '../../index';
+import { Ball, dot2D } from '../../index';
+import { linear } from 'svelte/easing';
 
 const goalPostDiameter = 0.5;
 const goalThickness = 0.5;
@@ -114,8 +115,9 @@ export class Goal
 
 		console.log('Ball direction:', ballDirection);
 		console.log('Goal normal:', this.normal);
-		console.log('Dot product:', Vector3.Dot(ballDirection, this.normal));
-		return Vector3.Dot(ballDirection, this.normal) > 0;
+		console.log('Dot product:', dot2D(ballDirection, this.normal));
+
+		return dot2D(ballDirection, this.normal) > 0;
 	}
 
 	eliminate()

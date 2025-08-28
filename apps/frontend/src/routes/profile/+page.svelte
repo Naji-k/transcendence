@@ -1,4 +1,4 @@
-<main class="mt-[200px] mb-[200px] px-4 max-w-[1000px] mx-auto">
+<main class="my-8 sm:my-16 md:my-32 lg:my-48 px-4 max-w-[1000px] mx-auto">
 	<!-- Section of info with alias and avatar on the left and wins/losses on the right of the page -->
 	<header class="flex justify-between items-center">
 		<section class="flex items-center">

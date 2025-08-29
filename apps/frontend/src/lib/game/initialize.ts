@@ -238,7 +238,7 @@ function createGoal(scene: Scene, grid: string[][], num: number): Goal
 					goalHeight / 2,
 					x - gridHeight / 2 + adjustment
 				);
-				return new Goal(post1, post2, Colors[num - 1].color, new Vector3(0, 0, 1), scene);
+				return new Goal(post1, post2, Colors[num - 1].color, new Vector3(1, 0, 0), scene);
 			}
 		}
 	}

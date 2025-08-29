@@ -104,7 +104,7 @@ export class Goal
 			return false;
 		}
 
-		const linearVelocity = ball.getAggregate().body.getLinearVelocity();
+		const linearVelocity = ball.getDirection();
 
 		if (linearVelocity == null)
 		{
@@ -112,10 +112,25 @@ export class Goal
 		}
 		const ballDirection = linearVelocity.normalize();
 
-		console.log('Ball direction:', ballDirection);
-		console.log('Goal normal:', this.normal);
-		console.log('Dot product:', Vector3.Dot(ballDirection, this.normal));
+		// console.log('Ball direction:', ballDirection);
+		// console.log('Goal normal:', this.normal);
+		// console.log('Dot product:', Vector3.Dot(ballDirection, this.normal));
 		return Vector3.Dot(ballDirection, this.normal) > 0;
+	}
+
+	getPlateMesh(): Mesh
+	{
+		return this.plate;
+	}
+
+	getPost1Mesh(): Mesh
+	{
+		return this.post1;
+	}
+
+	getPost2Mesh(): Mesh
+	{
+		return this.post2;
 	}
 
 	eliminate()

@@ -1,6 +1,7 @@
 import { Wall, Ball, Paddle, Goal, ColorMap, Colors } from '$lib/index';
 import { Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
-		StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType, HavokPlugin, Mesh } from '@babylonjs/core';
+		 StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType,
+		 HavokPlugin, Mesh, PointerEventTypes, HighlightLayer } from '@babylonjs/core';
 import { TextBlock, AdvancedDynamicTexture } from '@babylonjs/gui';
 
 const maxPlayerCount = 6;
@@ -18,14 +19,17 @@ export class Editor
 	private demoBall: Mesh;
 	private demoWall: Wall;
 	private demoGoal: Goal;
+	private highlight: HighlightLayer;
+	private highlightedMeshes: Mesh[] = null;
 
 	constructor(havokInstance: any)
 	{
 		this.editorCanvas = document.getElementById('editorCanvas') as HTMLCanvasElement;
 		this.havokInstance = havokInstance;
-		this.dimensions = [20, 28];
+		this.dimensions = [5, 8];
 		this.engine = new Engine(this.editorCanvas, true, {antialias: true});
 		this.scene = this.createScene();
+		console.log('Editor started');
 	}
 	
 	private createScene(): Scene
@@ -36,24 +40,76 @@ export class Editor
 
 		scene.enablePhysics(new Vector3(0, -9.81, 0), havokPlugin);
 		camera.setTarget(Vector3.Zero());
-		camera.attachControl(this.editorCanvas, true);
+		// camera.attachControl(this.editorCanvas, true);
 		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
 		hemiLight.intensity = 0.6;
 
 		this.createGround(scene, this.dimensions);
+
 		this.demoBall = MeshBuilder.CreateSphere('sphere', {diameter: 0.5}, scene);
-		this.demoBall.position = new Vector3(0, 0.5, 0);
+
+		this.demoBall.position = new Vector3(13, 0.5, 0);
 
 		const mat = new StandardMaterial('demoMat', scene);
 		
-		console.log('assigning color to demo ball');
-		mat.diffuseColor = Colors['green'];
-		mat.ambientColor = Colors['green'];
+		mat.diffuseColor = Color3.Gray();
 		
 		this.demoBall.material = mat;
-		this.demoWall = new Wall(new Vector3(1, 1, 1), new Vector3(-15, 3, 5), ColorMap['red'], 1, scene);
-		this.demoGoal = new Goal(new Vector3(-15, 0, -5), new Vector3(-15, 0, 5), ColorMap['blue'], new Vector3(1, 0, 0), scene);
+		this.demoWall = new Wall(new Vector3(0.5, 1, 5), new Vector3(12, 0, 0), Color3.Gray(), 1, scene);
+		this.demoGoal = new Goal(new Vector3(15, 0, -5), new Vector3(15, 0, 5), Color3.Gray(), new Vector3(1, 0, 0), scene);
+		this.highlight = new HighlightLayer('hl', scene);
 
+		scene.onPointerObservable.add((pointerInfo) =>
+		{
+			switch (pointerInfo.type)
+			{
+				case PointerEventTypes.POINTERDOWN:
+				const pickResult = pointerInfo.pickInfo;
+				if (this.highlightedMeshes != null)
+				{
+					for (const mesh of this.highlightedMeshes)
+					{
+						this.highlight.removeMesh(mesh);
+					}
+					this.highlightedMeshes = null;
+				}
+				if (pickResult && pickResult.hit == true && pickResult.pickedMesh)
+				{
+					const pickedMesh = pickResult.pickedMesh as Mesh;
+					this.highlight.addMesh(pickedMesh, Color3.Yellow());
+					if (pickedMesh == this.demoGoal.getPlateMesh() ||
+						pickedMesh == this.demoGoal.getPost1Mesh() ||
+						pickedMesh == this.demoGoal.getPost2Mesh())
+					{
+						this.highlight.addMesh(this.demoGoal.getPlateMesh(), Color3.Yellow());
+						this.highlight.addMesh(this.demoGoal.getPost1Mesh(), Color3.Yellow());
+						this.highlight.addMesh(this.demoGoal.getPost2Mesh(), Color3.Yellow());
+						this.highlightedMeshes = [this.demoGoal.getPlateMesh(),
+												 this.demoGoal.getPost1Mesh(),
+												 this.demoGoal.getPost2Mesh()];
+					}
+					else
+						this.highlightedMeshes = [pickedMesh];
+				}
+				break;
+				// case PointerEventTypes.POINTERUP:
+				// switch (this.highlightedMeshes[0])
+				// {
+				// 	case this.demoBall:
+				// 		this.balls.push(new Ball(this.demoBall.position.clone(), ColorMap['green'], 0.5, scene));
+				// 		break;
+				// 	case this.demoWall.getMesh():
+				// 		this.walls.push(new Wall(this.demoWall.getMesh().position, this.demoWall.getMesh().position, ColorMap['blue'], 1, scene));
+				// 		break;
+				// 	case this.demoGoal.getPlateMesh():
+				// 		this.goals.push(new Goal(this.demoGoal.getPost1Mesh().position, this.demoGoal.getPost2Mesh().position, ColorMap['red'], new Vector3(1, 0, 0), scene));
+				// 		break;
+				// }
+				// break;
+				case PointerEventTypes.POINTERMOVE: break;
+				default: break;
+			}
+		});
 		return scene;
 	}
 
@@ -64,23 +120,16 @@ export class Editor
 			{width: dimensions[1], height: dimensions[0], updatable: true},
 			scene
 		);
-		new PhysicsAggregate(
-			ground,
-			PhysicsShapeType.BOX,
-			{ mass: 0, restitution: 0.5 },
-			scene
-		);
 		const mat = new StandardMaterial('floor', ground.getScene());
 		mat.diffuseColor = Color3.Gray();
-		mat.ambientColor = Color3.Gray();
 		ground.material = mat;
 	}
 
+		
 	start()
 	{
 		this.engine.runRenderLoop(() =>
 		{
-			console.log('Rendering a frame');
 			this.scene.render();
 		});
 	}
@@ -100,7 +149,7 @@ export class Editor
 		this.demoBall = null;
 		this.demoWall = null;
 		this.demoGoal = null;
-		console.log('Editor disposed successfully.');
+		console.log('Editor stopped.');
 	}
 
 	getBalls(): Ball[] {return this.balls;}
@@ -115,5 +164,4 @@ export class Editor
 export async function destroyEditor(editor: Editor)
 {
 	editor.dispose();
-	console.log('Editor destroyed successfully.');
 }

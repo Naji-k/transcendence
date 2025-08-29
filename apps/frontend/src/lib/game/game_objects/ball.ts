@@ -119,6 +119,11 @@ export class Ball
 		return this.lasthit;
 	}
 
+	getDirection(): Vector3
+	{
+		return this.velocity.normalize();
+	}
+
 	setMovement(movement: Vector3)
 	{
 		this.aggregate.body.setLinearVelocity(movement.scale(this.speed));

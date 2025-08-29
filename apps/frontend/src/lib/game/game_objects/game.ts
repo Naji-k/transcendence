@@ -4,6 +4,7 @@ import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
 		Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		HavokPlugin, StandardMaterial, Layer } from '@babylonjs/core';
 import { TextBlock, AdvancedDynamicTexture } from '@babylonjs/gui';
+import type { AudioEngineV2 } from '@babylonjs/core';
 
 const maxPlayerCount = 6;
 
@@ -29,6 +30,8 @@ export class Game
 	private static paddlehitSound: StreamingSound;
 	private static playerOutSound: StreamingSound;
 	private static victorySound: StreamingSound;
+	private static audioEngine: AudioEngineV2;
+	private static music: StreamingSound;
 
 	constructor(havokInstance: any)
 	{
@@ -41,6 +44,7 @@ export class Game
 		this.gameIsRunning = true;
 		this.engine = new Engine(this.gameCanvas, true, {antialias: true});
 		this.scene = new Scene(this.engine);
+		console.log('Game started');
 	}
 
 	keyEvents()
@@ -83,9 +87,9 @@ export class Game
 	{
 		try
 		{
-			const audioEngine = await CreateAudioEngineAsync();
-			audioEngine.volume = 0.5;
-			const frogs = await CreateStreamingSoundAsync('music', 'sounds/frogs.mp3');
+			Game.audioEngine = await CreateAudioEngineAsync();
+			Game.audioEngine.volume = 0.5;
+			Game.music = await CreateStreamingSoundAsync('music', 'sounds/frogs.mp3');
 			Game.wallhitSound = await CreateStreamingSoundAsync('wallhit', 'sounds/wallhit.wav');
 			Game.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', 'sounds/paddlehit.wav');
 			Game.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', 'sounds/paddlehit.wav');
@@ -93,9 +97,13 @@ export class Game
 			Game.victorySound = await CreateStreamingSoundAsync('victory', 'sounds/victory.wav');
 			Game.paddlehitSound.maxInstances = 1;
 			Game.wallhitSound.maxInstances = 1;
-	
-			await audioEngine.unlockAsync();
-			frogs.play();
+
+			Game.paddlehitSound.setVolume(0.6);
+			Game.wallhitSound.setVolume(0.6);
+			Game.playerOutSound.setVolume(0.6);
+			Game.music.play();
+
+			await Game.audioEngine.unlockAsync();
 		}
 		catch (error)
 		{
@@ -291,12 +299,9 @@ export class Game
 		this.walls = [];
 		this.goals = [];
 		this.scoreboard = [];
-		Game.wallhitSound.dispose();
-		Game.paddlehitSound.dispose();
-		Game.playerOutSound.dispose();
-		Game.victorySound.dispose();
+		Game.audioEngine.dispose();
 		this.gameIsRunning = false;
-		console.log('Game disposed successfully.');
+		console.log('Game data deleted.');
 	}
 
 	getPaddles(): Paddle[] {return this.paddles;}
@@ -330,5 +335,4 @@ async function loadFileText(filePath: string): Promise<string>
 export async function destroyGame(game: Game)
 {
 	game.dispose();
-	console.log('Game destroyed successfully.');
 }

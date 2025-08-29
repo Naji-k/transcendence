@@ -1,5 +1,5 @@
-<div class= "min-h-screen bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
-	<main class="py-8 sm:py-16 md:py-32 lg:py-48 px-4 min-h-screen max-w-[1000px] mx-auto font-['Press_Start_2P']">
+<div class= "min-h-screen p-24 bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
+	<main class="py-2 sm:py-4 md:py-6 lg:py-10 px-4 max-w-[1000px] mx-auto font-['Press_Start_2P'] bg-gradient-to-br from-purple-700 to-indigo-900 rounded-3xl shadow-2xl">
 		<!-- Section of info with alias and avatar on the left and wins/losses on the right of the page -->
 		<header class="flex justify-between items-center text-gray-300">
 			<section class="flex items-center">

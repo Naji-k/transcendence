@@ -3,6 +3,7 @@ import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { appRouter } from '@repo/trpc';
 import { createTRPCContext } from './trpc/context';
 import websocket from '@fastify/websocket';
+import { setupGoogleAuthRoutes } from './auth/google';
 // Create a Fastify instance
 const fastifyInstance = Fastify({
 	logger: true,
@@ -30,6 +31,8 @@ fastifyInstance.register(import('@fastify/cors'), {
 	origin: ['http://localhost:3000', 'http://localhost:8080'], // allow frontend origins
 	credentials: true,
 });
+
+setupGoogleAuthRoutes(fastifyInstance);
 
 export function buildServer() {
 	return fastifyInstance;

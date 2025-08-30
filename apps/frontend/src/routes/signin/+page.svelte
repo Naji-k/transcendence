@@ -14,7 +14,7 @@
   }
 
   function handleGoogleLogin() {
-    alert('Google OAuth flow here');
+    window.location.href = 'http://localhost:3000/api/auth/google';
   }
 </script>
 

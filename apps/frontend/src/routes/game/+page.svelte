@@ -1,13 +1,12 @@
-<!-- src/routes/pong/+page.svelte -->
+<!-- src/routes/game/+page.svelte -->
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { Game } from '$lib/index';
 
 	let game: Game;
-	onMount(async () =>
-	{
-		const { startGame } = await import('$lib');
-		game = await startGame();
+	onMount(async () => {
+	  const { startGame } = await import('$lib');
+	  game = await startGame();
 	});
 	onDestroy(async () =>
 	{

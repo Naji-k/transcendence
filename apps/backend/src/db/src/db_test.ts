@@ -1,32 +1,45 @@
-
-import { config } from 'dotenv';
-import { drizzle } from 'drizzle-orm/libsql';
-import { createClient } from '@libsql/client';
+/* THIS FILE CONTAINS SEVERAL SEPARATE TESTS,
+EACH SECTION HAS A COMMENT ABOVE IT, SEPARATE SECTIONS CAN BE
+COMMENTED OUT IF YOU DON'T WANT TO RUN ALL THE DIFFERENT TESTS */
 import { eq } from 'drizzle-orm';
-import { friendshipsTable, matchHistoryTable, singleMatchParticipantsTable, usersTable } from './db_schema/schema';
+import { friendshipsTable, matchTable, singleMatchPlayersTable, tournamentPlayersTable, tournamentTable, usersTable } from './dbSchema/schema';
 import { reset } from 'drizzle-seed';
-import path from 'path';
+import { db } from './dbClientInit';
+import { createUser, findUserByAlias, findUserByEmail, findUserById } from './dbFunctions';
+import * as readline from 'readline/promises';
+import { lutimesSync } from 'fs';
 
 console.log(__dirname);
 
-config({ path: path.resolve(__dirname, '../../../../../.env') }); // This works only if the .env used is in the root of the project, process.cwd() can also be used with different path resolution. It depends on the project structure and where the .env file will be stored or if there will be multiple.
+type NewMatch = typeof matchTable.$inferInsert;
+type NewParticipant = typeof singleMatchPlayersTable.$inferInsert;
 
-const dbFilePath = path.resolve(__dirname, '../', process.env.DB_FILE_NAME!);
+interface functionEntry {
+  name: string,
+  fn: () => Promise<void>
+}
 
-const client = createClient({
-  url: `file:${dbFilePath}`
-});
 
-const db = drizzle(client);
-type NewMatch = typeof matchHistoryTable.$inferInsert;
-type NewParticipant = typeof singleMatchParticipantsTable.$inferInsert;
+const rl = readline.createInterface(
+  {
+    input: process.stdin,
+    output: process.stdout
+  }
+)
 
-async function main() {
+async function getTestInput(input: string): Promise<string> {
+  const answer = await rl.question(input);
+  return answer;
+}
 
+async function testDbExistence() {
   try {
     await db.select().from(usersTable);
-    await db.select().from(matchHistoryTable);
-    await db.select().from(singleMatchParticipantsTable);
+    await db.select().from(matchTable);
+    await db.select().from(singleMatchPlayersTable);
+    await db.select().from(friendshipsTable);
+    await db.select().from(tournamentTable);
+    await db.select().from(tournamentPlayersTable);
     console.log('Database exists');
     // console.log(users2);
   } catch (error) {
@@ -39,42 +52,56 @@ async function main() {
       process.exit(2);
     }
   }
+}
 
-  /* Reset the tables (doesn't reset the ids) */
-  // await reset(db, { usersTable });
-  // await reset(db, {matchHistoryTable });
-  // await reset(db, { singleMatchParticipantsTable });
-  /* or */
-  // await db.delete(singleMatchParticipantsTable);
-  // await db.delete(matchHistoryTable);
-  // await db.delete(usersTable);
-
-  /* Test user entries */
+/* Test user entries */
+async function testUserEntries() {
+  console.log('-------------Testing user entries------------');
   try {
-    await db.insert(usersTable).values({ alias: `first${Date.now()}`, password: `pass${Date.now()}`, name: "name_1", email: `example1${Date.now()}@example.com` });
-    await db.insert(usersTable).values({ alias: `second${Date.now()}`, password: `pass${Date.now()}`, name: "name_2", email: `example2${Date.now()}@example.com` });
-    await db.insert(usersTable).values({ alias: `third${Date.now()}`, password: `pass${Date.now()}`, name: "name_3", email: `example3${Date.now()}@example.com` });
-    await db.insert(usersTable).values({ alias: `fourth${Date.now()}`, password: `pass${Date.now()}`, name: "name_4", email: `example4${Date.now()}@example.com` });
-    // error user
-    // await db.insert(usersTable).values({ alias: "fifth", password: `pass${Date.now()}`, name: "name_5", email: "example@example.com"});
-    // await db.insert(usersTable).values({ alias: "sixth", password: `pass${Date.now()}`, name: "name_6", email: "example@example.com"});
+    await createUser(`first${Date.now()}`, `example1${Date.now()}@example.com`, `pass${Date.now()}`);
+    await createUser(`second${Date.now()}`, `example2${Date.now()}@example.com`, `pass${Date.now()}`);
+    await createUser(`third${Date.now()}`, `example3${Date.now()}@example.com`, `pass${Date.now()}`);
+    await createUser(`fourth${Date.now()}`, `example4${Date.now()}@example.com`, `pass${Date.now()}`);
   } catch (error) {
-    if (error instanceof Error && error.message.includes('Failed query: insert into "users_table"')) {
-      console.log('! Failed to store user !');
-      console.log(error.message);
-      process.exit(3);
-    }
+    process.exit(3);
   }
+  
   const users_3 = await db.select().from(usersTable);
   console.log('Getting all users from the database: ', users_3);
+  console.log('---------------------------------------------');
+}
 
+/* Another test user entry to test dbFuctions*/
+async function testDbFunctions() {
+  console.log('-------------Testing db functions------------');
+  const testUserAlias =  `testUser${Date.now()}`;
+  const testUserEmail = `exampleEmail${Date.now()}`;
+  const testUserPassword = `pass${Date.now()}`;
+  const createdUser = await createUser(testUserAlias, testUserEmail, testUserPassword);
+  console.log('createdUser: ', createdUser.id);
+  /* Test findUser */
+  console.log('-------findUserByAlias---------');
+  let foundUser = await findUserByAlias(testUserAlias);
+  console.log(foundUser);
+  console.log('-------------------------------');
+  console.log('-------findUserByEmail---------');
+  foundUser = await findUserByEmail(testUserEmail);
+  console.log(foundUser);
+  console.log('-------------------------------');
+  console.log('-------findUserById---------');
+  if (foundUser) {
+    const foundUserId = await findUserById(foundUser.id);
+    console.log(foundUserId);
+  }
+  console.log('---------------------------------------------');
+}
 
-  // Capture all user ids in an array
+/* Test friendships, it creates a friendship between the 2 last added users, in this case we don't delete so it shouldn't break.
+It then shows all friendships */
+async function testFriendships() {
+  console.log('-------------Testing friendships------------');
   const allIds = (await db.select({ id: usersTable.id }).from(usersTable).orderBy(usersTable.id)).map(u => u.id);
   const allIdsLength = allIds.length;
-
-  /* Test friendships, it creates a friendship between the 2 last added users, in this case we don't delete so it shouldn't break.
-  It then shows all friendships */
   try {
     await db.insert(friendshipsTable).values({ userId: allIds[allIdsLength - 1], friendId: allIds[allIdsLength - 2] });
     // error friendship
@@ -91,17 +118,21 @@ async function main() {
   }
   const friendships = await db.select().from(friendshipsTable);
   console.log('Getting all friendships from the database: ', friendships);
+  console.log('---------------------------------------------');
+}
 
-
-  /* Test match history entries */
+/* Test match history entries */
+async function testMatchHistory() {
+  console.log('-------------Testing match history------------');
+  const allIds = (await db.select({ id: usersTable.id }).from(usersTable).orderBy(usersTable.id)).map(u => u.id);
   const randomId1 = allIds[Math.floor(Math.random() * allIds.length)];
-  const match: NewMatch = { mode: "2v2", victor: randomId1, createdAt: new Date() };
+  const match: NewMatch = { victor: randomId1, date: new Date() };
   // error match
-  // match = { mode: "3v3", victor: "sec", createdAt: new Date() };
+  // match = { victor: "sec", date: new Date() };
   let allInsertedIds;
   let lastMatchId;
   try {
-    allInsertedIds = await db.insert(matchHistoryTable).values(match).returning({ id: matchHistoryTable.id });
+    allInsertedIds = await db.insert(matchTable).values(match).returning({ id: matchTable.id });
     lastMatchId = allInsertedIds[0]?.id;
     if (lastMatchId === undefined) {
       throw new Error('Failed to retrieve match id');
@@ -115,24 +146,33 @@ async function main() {
     console.log('Database error');
     process.exit(99);
   }
-  const matches_1 = await db.select().from(matchHistoryTable);
+  const matches_1 = await db.select().from(matchTable);
   console.log('Getting all matches from the database: ', matches_1);
+  console.log('---------------------------------------------');
+}
 
-  /* Test participants entries */
-  let randomId2 = allIds[Math.floor(Math.random() * allIds.length)];
+/* Test participants entries */
+async function testMatchPlayers() {
+  console.log('-------------Testing match players------------');
+  const allIds = (await db.select({ id: usersTable.id }).from(usersTable).orderBy(usersTable.id)).map(u => u.id);
+  const allIdsLength = allIds.length;
+  const randomId1 = allIds[Math.floor(Math.random() * allIdsLength)];
+  let randomId2 = allIds[Math.floor(Math.random() * allIdsLength)];
+  const matches = await db.select().from(matchTable);
+  const lastMatchId = matches[matches.length - 1].id;
   while (randomId2 === randomId1) {
-    randomId2 = allIds[Math.floor(Math.random() * allIds.length)];
+    randomId2 = allIds[Math.floor(Math.random() * allIdsLength)];
   }
-  const participant1: NewParticipant = { player: randomId1, score: 5, placement: 1, matchId: lastMatchId };
-  const participant2: NewParticipant = { player: randomId2, score: 3, placement: 2, matchId: lastMatchId };
+  const participant1: NewParticipant = { playerId: randomId1, placement: 1, matchId: lastMatchId };
+  const participant2: NewParticipant = { playerId: randomId2, placement: 2, matchId: lastMatchId };
   try {
-    await db.insert(singleMatchParticipantsTable).values(participant1);
-    await db.insert(singleMatchParticipantsTable).values(participant2);
+    await db.insert(singleMatchPlayersTable).values(participant1);
+    await db.insert(singleMatchPlayersTable).values(participant2);
     // error participant
-    // const participant3: NewParticipant = { player: 1, score: 5, placement: 1, matchId: 1};
-    // const participant4: NewParticipant = { player: 1, score: 5, placement: 2, matchId: 1};
-    // await db.insert(singleMatchParticipantsTable).values(participant3);
-    // await db.insert(singleMatchParticipantsTable).values(participant4);
+    // const participant3: NewParticipant = { playerId: 1, placement: 1, matchId: 1};
+    // const participant4: NewParticipant = { playerId: 1, placement: 2, matchId: 1};
+    // await db.insert(singleMatchPlayersTable).values(participant3);
+    // await db.insert(singleMatchPlayersTable).values(participant4);
   } catch (error) {
     if (error instanceof Error && error.message.includes('Failed query: insert into "single_match_players_table"')) {
       console.log('! Failed to store participant !');
@@ -140,24 +180,74 @@ async function main() {
       process.exit(6);
     }
   }
-
+  
   /* Show participant info for a match, there is probably a better way to do it */
   const participants_1 = await db.select({ alias: usersTable.alias })
-    .from(singleMatchParticipantsTable)
-    .innerJoin(usersTable, eq(singleMatchParticipantsTable.player, usersTable.id))
-    .where(eq(singleMatchParticipantsTable.matchId, lastMatchId));
-  console.log('Showing participant info for matchId: ', lastMatchId);
+    .from(singleMatchPlayersTable)
+    .innerJoin(usersTable, eq(singleMatchPlayersTable.playerId, usersTable.id))
+    .where(eq(singleMatchPlayersTable.matchId, lastMatchId));
+    console.log('Showing participant info for matchId: ', lastMatchId);
   console.log(participants_1);
-  console.log(`${participants_1[0].alias}: ${participant1.score}`);
-  console.log(`${participants_1[1].alias}: ${participant2.score}`);
+  console.log(`${participants_1[0].alias}: ${participant1.placement}`);
+  console.log(`${participants_1[1].alias}: ${participant2.placement}`);
   const victor = await db.select({ alias: usersTable.alias })
-    .from(matchHistoryTable)
-    .innerJoin(usersTable, eq(matchHistoryTable.victor, usersTable.id))
-    .where(eq(matchHistoryTable.id, lastMatchId))
+  .from(matchTable)
+  .innerJoin(usersTable, eq(matchTable.victor, usersTable.id))
+  .where(eq(matchTable.id, lastMatchId))
   console.log(`Victor: ${victor[0]?.alias}`);
   console.log()
   // const users_4 = await db.all(sql`SELECT * FROM user_table`);
   // console.log('Result from SQL-like query: ', users_4);
+  console.log('---------------------------------------------');
+}
+
+const dbTests: Record<string, functionEntry> = {
+  '1': { name: 'Test user entries', fn: testUserEntries},
+  '2': { name: 'Test db functions', fn: testDbFunctions },
+  '3': { name: 'Test friendships', fn: testFriendships },
+  '4': { name: 'Test match history', fn: testMatchHistory },
+  '5': { name: 'Test match players', fn: testMatchPlayers },
+  'all': { name: 'All tests', fn: async() => {
+    await testUserEntries();
+    await testDbFunctions();
+    await testFriendships();
+    await testMatchHistory();
+    await testMatchPlayers();
+  }}
+}
+
+async function testMenu() {
+  console.log('-------------db tests------------');
+  Object.entries(dbTests).forEach(([key, test]) => {
+    console.log(`${key}: ${test.name}`);
+  });
+  console.log('---------------------------------');
+}
+
+async function main() {
+  await testDbExistence();
+  /* Reset the tables (doesn't reset the ids) */
+  await reset(db, { usersTable });
+  await reset(db, { matchTable });
+  await reset(db, { singleMatchPlayersTable });
+  await reset(db, { friendshipsTable });
+  await reset(db, { tournamentTable });
+  await reset(db, { tournamentPlayersTable });
+  /* or */
+  // await db.delete(singleMatchPlayersTable);
+  // await db.delete(matchTable);
+  // await db.delete(usersTable);
+  
+  await testMenu();
+  const input = await getTestInput('Choose a test: ');
+  const test = dbTests[input];
+  if (test) {
+    console.log(`Executing: ${test.name}`);
+    await test.fn();
+  } else {
+    console.log('Invalid option');
+  }
+  rl.close();
 };
 
 main();

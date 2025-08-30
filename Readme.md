@@ -13,7 +13,7 @@ We use [pnpm](https://pnpm.io/) as our package manager for its speed, workspace 
 You only need to do this once:
 
 ```bash
-npm install -g pnpm #at codam we don't have the rights to install pnpm
+npm install -g pnpm #at Codam we don't have the rights to install pnpm
 ```
 
    ### 🚨 At Codam 
@@ -42,7 +42,7 @@ pnpm install
 
 ### Project Structure
 ``` bash
-/Trancendence
+/Transcendence
 │
 ├── /apps
 │   ├── /frontend
@@ -80,9 +80,9 @@ Always use pnpm install from the root directory.
     ```
 
 
-4. How to use shared(packges) <package-name>: (ex: will use `trpc` as shared package)
+4. How to use shared(packages) <package-name>: (ex: will use `trpc` as shared package)
 
-    create a sub-dir for the packge with it's name, 
+    create a sub-dir for the package with it's name, 
     ``` bash
     mkdir -p packages/trpc
     cd packages/trpc

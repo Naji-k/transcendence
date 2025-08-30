@@ -7,7 +7,7 @@ if (!secret) {
   throw new Error("JWT_SECTRET is not defined in the environment variables");
 }
 
-function sign(userId: string, email: string): string {
+function sign(userId: number, email: string): string {
   const options: jwt.SignOptions = {
     algorithm: "HS256", //using SHA-256 hash algorithm (default)
     expiresIn: "5d",
@@ -31,7 +31,7 @@ function verify(token: string) {
     console.error("Invalid token");
     return null;
   } catch (error) {
-    console.error("JWT verification failed:");
+    console.error("JWT verification failed: ", error);
     return null;
   }
 }

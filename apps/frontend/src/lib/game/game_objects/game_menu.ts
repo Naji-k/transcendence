@@ -14,8 +14,8 @@ export class GameMenu
 	private menuTextures: AdvancedDynamicTexture []= [];
 	private menuContainer: Rectangle[] = [];
 	private buttons: Button[] = [];
-	private selectedIndex;
-	private isVisible;
+	private selectedIndex: number;
+	private isVisible: boolean;
 	private scene: Scene;
 	private game: Game;
 

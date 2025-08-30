@@ -1,5 +1,6 @@
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PointLight, Scene } from '@babylonjs/core';
-import { Ball } from '../../index';
+import { Ball, dot2D } from '../../index';
+import { linear } from 'svelte/easing';
 
 const goalPostDiameter = 0.5;
 const goalThickness = 0.5;

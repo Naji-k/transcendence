@@ -1,4 +1,4 @@
-import { Color3 } from "babylonjs";
+import { Color3, Vector3 } from "babylonjs";
 
 export * from './game/game_objects/ball';
 export * from './game/game_objects/paddle';
@@ -26,3 +26,7 @@ export const Colors: { name: string, color: Color3 }[] =
 export const ColorMap: Record<string, Color3> = 
 	Object.fromEntries(Colors.map(entry => [entry.name, entry.color]));
 
+export function dot2D(a: Vector3, b: Vector3): number
+{
+	return a.x * b.x + a.z * b.z;
+}

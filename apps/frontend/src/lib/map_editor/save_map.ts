@@ -6,4 +6,3 @@ export interface MapObject
 	surfaceNormal: { x: number; y: number; z: number };
 	color: { r: number; g: number; b: number; a: number };
 }
-const mapObjects: MapObject[] = [];

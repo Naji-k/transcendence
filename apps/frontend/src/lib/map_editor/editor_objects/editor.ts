@@ -1,4 +1,4 @@
-import { ColorMap, saveMap, loadMap, EditorObject } from '$lib/index';
+import { ColorMap, saveMap, loadMap, EditorObject, startEditor } from '$lib/index';
 import { Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		 StandardMaterial, MeshBuilder, HavokPlugin, Mesh, 
 		 PointerEventTypes, HighlightLayer, LinesMesh } from '@babylonjs/core';
@@ -62,24 +62,26 @@ export class Editor
 		const dimensions = this.dimensions;
 		window.addEventListener('keydown', (event) =>
 		{
-			// if (this.highlightedMesh != this.ground) return;
-			switch (event.key)
+			if (this.highlightedMesh == null || this.highlightedMesh == this.ground)
 			{
-				case "ArrowLeft": dimensions[0] = Math.max(1, dimensions[0] - 1); break;
-				case "ArrowRight": dimensions[0] += 1; break;
-				case "ArrowUp": dimensions[1] += 1;	break;
-				case "ArrowDown": dimensions[1] = Math.max(1, dimensions[1] - 1); break;
-				default: return;
+				switch (event.key)
+				{
+					case "ArrowLeft": dimensions[0] = Math.max(1, dimensions[0] - 1); break;
+					case "ArrowRight": dimensions[0] += 1; break;
+					case "ArrowUp": dimensions[1] += 1;	break;
+					case "ArrowDown": dimensions[1] = Math.max(1, dimensions[1] - 1); break;
+					default: return;
+				}
+				this.sizeText.text = `Map Size: ${dimensions[0]} x ${dimensions[1]}`;
+				this.ground.dispose();
+				this.ground = this.createGround(this.scene, dimensions);
+				for (const line of this.lines)
+				{
+					line.dispose();
+				}
+				this.lines = [];
+				this.lines = drawGrid(this.scene, dimensions);
 			}
-			this.sizeText.text = `Map Size: ${dimensions[0]} x ${dimensions[1]}`;
-			this.ground.dispose();
-			this.ground = this.createGround(this.scene, dimensions);
-			for (const line of this.lines)
-			{
-				line.dispose();
-			}
-			this.lines = [];
-			drawGrid(this.scene, dimensions);
 		});
 	}
 
@@ -166,7 +168,7 @@ export class Editor
 		buttonReset.onPointerUpObservable.add(() =>
 		{
 			console.log('Reset button clicked');
-			this.restart();
+			restartEditor(this);
 		});
 		this.reset = buttonReset;
 		advancedTexture.addControl(buttonReset);
@@ -281,7 +283,6 @@ export class Editor
 					case this.demoGoal.getPost2Mesh():
 						this.goals.push(new EditorObject('goal', placePosition, new Vector3(1, 0, 0), ColorMap['red'], scene, new Vector3(0.5, 2, 5)));
 						break;
-					
 				}
 				break;
 				case PointerEventTypes.POINTERMOVE: break;
@@ -311,16 +312,6 @@ export class Editor
 		});
 	}
 
-	restart()
-	{
-		this.scene.dispose();
-		this.balls = [];
-		this.walls = [];
-		this.goals = [];
-		this.scene = this.createScene();
-		this.addGui();
-	}
-
 	dispose()
 	{
 		if (this.engine == null || this.scene == null) return;
@@ -334,6 +325,7 @@ export class Editor
 		this.reset = null;
 		this.engine = null;
 		this.scene = null;
+		this.highlightedMesh = null;
 		this.havokInstance = null;
 		this.editorCanvas = null;
 		this.balls = [];
@@ -351,16 +343,6 @@ export class Editor
 	getScene(): Scene {return this.scene;}
 }
 
-
-/*	Destroys the resources associated with the editor	*/
-
-export async function destroyEditor(editor: Editor)
-{
-	editor.dispose();
-}
-
-
-// Draws a grid of lines from (-size/2,0,-size/2) to (size/2,0,size/2)
 function drawGrid(scene: Scene, dimensions: [number, number]): LinesMesh[]
 {
 	const verticalHalf = dimensions[0] / 2;
@@ -394,4 +376,15 @@ function drawGrid(scene: Scene, dimensions: [number, number]): LinesMesh[]
 		lines[lines.length - 1].color = Color3.Black();
 	}
 	return lines;
+}
+
+export async function destroyEditor(editor: Editor)
+{
+	editor.dispose();
+}
+
+export async function restartEditor(editor: Editor): Promise<Editor>
+{
+	destroyEditor(editor);
+	return await startEditor();
 }

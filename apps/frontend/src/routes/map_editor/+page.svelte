@@ -7,14 +7,15 @@
 
 	onMount(async () =>
 	{
-		const { startEditor, destroyEditor } = await import('$lib');
-		if (editor != null)
+		const { startEditor, restartEditor } = await import('$lib');
+		if (editor == null)
 		{
-			console.warn('Editor already had instance, deleting and renewing');
-			await destroyEditor(editor);
-			editor = null;
+			editor = await startEditor();
 		}
-		editor = await startEditor();
+		else
+		{
+			editor = await restartEditor(editor);
+		}
 	});
 	onDestroy(async () =>
 	{

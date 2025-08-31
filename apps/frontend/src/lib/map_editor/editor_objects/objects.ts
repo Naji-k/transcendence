@@ -85,7 +85,7 @@ export class EditorObject
 		}
 	}
 	
-	createPost(position: Vector3, scene: Scene): Mesh
+	private createPost(position: Vector3, scene: Scene): Mesh
 	{
 		const post = MeshBuilder.CreateCylinder('goalPost', { diameter: goalPostDiameter, height: this.dimensions.y }, scene);
 		post.position = position;
@@ -98,6 +98,33 @@ export class EditorObject
 			scene
 		);
 		return post;
+	}
+
+	changePosition(posChange: Vector3)
+	{
+		this.position = this.position.add(posChange);
+		this.mesh.position = this.mesh.position.add(posChange);
+		if (this.type == 'goal')
+		{
+			this.post1.position = this.post1.position.addInPlace(posChange);
+			this.post2.position = this.post2.position.addInPlace(posChange);
+		}
+	}
+
+	rotate(angle: number)
+	{
+		const rotationMatrix = Matrix.RotationY(angle);
+
+		this.surfaceNormal = Vector3.TransformNormal(this.surfaceNormal, rotationMatrix).normalize();
+		this.mesh.rotate(Vector3.Up(), angle);
+		
+		if (this.type == 'goal')
+		{
+			const post1dir = this.post1.position.subtract(this.position);
+			const post2dir = this.post2.position.subtract(this.position);
+			this.post1.position = this.position.add(Vector3.TransformNormal(post1dir, rotationMatrix));
+			this.post2.position = this.position.add(Vector3.TransformNormal(post2dir, rotationMatrix));
+		}
 	}
 
 	getMesh(): Mesh

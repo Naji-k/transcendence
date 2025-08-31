@@ -54,7 +54,7 @@ export class Editor
 		this.lines = drawGrid(this.scene, this.dimensions);
 		console.log('Editor started');
 	}
-	
+
 	/*	These methods create, initialize and add buttons to the UI	*/
 
 	private updateMapSize()
@@ -66,10 +66,20 @@ export class Editor
 			{
 				switch (event.key)
 				{
-					case "ArrowLeft": dimensions[0] = Math.max(1, dimensions[0] - 1); break;
-					case "ArrowRight": dimensions[0] += 1; break;
-					case "ArrowUp": dimensions[1] += 1;	break;
-					case "ArrowDown": dimensions[1] = Math.max(1, dimensions[1] - 1); break;
+					case "ArrowUp": dimensions[0] += 1;	break;
+					case "ArrowDown": dimensions[0] = Math.max(1, dimensions[0] - 1); break;
+					case "ArrowLeft":
+						dimensions[1] = Math.max(1, dimensions[1] - 1);
+						this.demoBall.changePosition(new Vector3(-0.5, 0, 0));
+						this.demoWall.changePosition(new Vector3(-0.5, 0, 0));
+						this.demoGoal.changePosition(new Vector3(-0.5, 0, 0));
+						break;
+					case "ArrowRight":
+						dimensions[1] += 1;
+						this.demoBall.changePosition(new Vector3(0.5, 0, 0));
+						this.demoWall.changePosition(new Vector3(0.5, 0, 0));
+						this.demoGoal.changePosition(new Vector3(0.5, 0, 0));
+						break;
 					default: return;
 				}
 				this.sizeText.text = `Map Size: ${dimensions[0]} x ${dimensions[1]}`;
@@ -81,6 +91,24 @@ export class Editor
 				}
 				this.lines = [];
 				this.lines = drawGrid(this.scene, dimensions);
+			}
+			else
+			{
+				for (const obj of [...this.walls, ...this.goals])
+				{
+					if (obj.getMesh() == this.highlightedMesh)
+					{
+						const rotationStep = 360 / 16 * Math.PI / 180;
+						switch (event.key)
+						{
+							case "ArrowUp":
+							case "ArrowRight": obj.rotate(rotationStep); break;
+							case "ArrowDown":
+							case "ArrowLeft": obj.rotate(-rotationStep); break;
+							default: return;
+						}
+					}
+				}
 			}
 		});
 	}
@@ -182,7 +210,6 @@ export class Editor
 
 		scene.enablePhysics(new Vector3(0, -9.81, 0), havokPlugin);
 		camera.setTarget(Vector3.Zero());
-		// camera.attachControl(this.editorCanvas, true);
 		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
 		hemiLight.intensity = 0.6;
 
@@ -192,7 +219,7 @@ export class Editor
 			'sphere',
 			new Vector3(this.dimensions[1] / 2 + 3, 0.5, 0),
 			new Vector3(-1, 0, 0),
-			ColorMap['green'],
+			Color3.Black(),
 			scene,
 			undefined,
 			0.3
@@ -202,7 +229,7 @@ export class Editor
 			'wall',
 			new Vector3(this.dimensions[1] / 2 + 2, 0, 0),
 			new Vector3(-1, 0, 0),
-			Color3.Gray(),
+			Color3.Black(),
 			scene,
 			new Vector3(0.5, 1, 5),
 			undefined
@@ -211,7 +238,7 @@ export class Editor
 			'goal',
 			new Vector3(this.dimensions[1] / 2 + 5, 0, 0),
 			new Vector3(-1, 0, 0),
-			Color3.Gray(),
+			Color3.Black(),
 			scene,
 			new Vector3(0.5, 1, 5),
 			undefined
@@ -227,65 +254,69 @@ export class Editor
 
 		scene.onPointerObservable.add((pointerInfo) =>
 		{
+			const evt = pointerInfo.event;
+			const mouseLocation = scene.pick(evt.clientX, evt.clientY);
+			const placePosition = mouseLocation.pickedPoint;
+			if (placePosition == null)
+			{
+				return;
+			}
+
 			switch (pointerInfo.type)
 			{
 				case PointerEventTypes.POINTERDOWN:
-				this.highlight.removeAllMeshes();
-				this.highlightedMesh = null;
-				const pickResult = pointerInfo.pickInfo;
-				if (pickResult && pickResult.hit == true && pickResult.pickedMesh)
-				{
-					const pickedMesh = pickResult.pickedMesh as Mesh;
-					this.highlight.addMesh(pickedMesh, Color3.Yellow());
-					if (pickedMesh == this.demoGoal.getMesh() ||
-						pickedMesh == this.demoGoal.getPost1Mesh() ||
-						pickedMesh == this.demoGoal.getPost2Mesh())
+					this.highlight.removeAllMeshes();
+					this.highlightedMesh = null;
+					const pickResult = pointerInfo.pickInfo;
+					if (pickResult && pickResult.hit == true && pickResult.pickedMesh)
 					{
-						this.highlight.addMesh(this.demoGoal.getMesh(), Color3.Yellow());
-						this.highlight.addMesh(this.demoGoal.getPost1Mesh(), Color3.Yellow());
-						this.highlight.addMesh(this.demoGoal.getPost2Mesh(), Color3.Yellow());
-						this.highlightedMesh = this.demoGoal.getMesh();
+						const pickedMesh = pickResult.pickedMesh as Mesh;
+						this.highlight.addMesh(pickedMesh, Color3.Yellow());
+						if (pickedMesh == this.demoGoal.getMesh() ||
+							pickedMesh == this.demoGoal.getPost1Mesh() ||
+							pickedMesh == this.demoGoal.getPost2Mesh())
+						{
+							this.highlight.addMesh(this.demoGoal.getMesh(), Color3.Yellow());
+							this.highlight.addMesh(this.demoGoal.getPost1Mesh(), Color3.Yellow());
+							this.highlight.addMesh(this.demoGoal.getPost2Mesh(), Color3.Yellow());
+							this.highlightedMesh = this.demoGoal.getMesh();
+						}
+						else
+						{
+							this.highlightedMesh = pickedMesh;
+						}
 					}
-					else
-					{
-						this.highlightedMesh = pickedMesh;
-					}
-				}
-				break;
-				case PointerEventTypes.POINTERUP:
-				const evt = pointerInfo.event;
-				const mouseLocation = scene.pick(evt.clientX, evt.clientY,	mesh => mesh.name === "ground");
-				const placePosition = mouseLocation.pickedPoint;
+					break;
 
-				if (placePosition == null) break;
-				placePosition.y = 0.25;
-				placePosition.x = Math.floor(placePosition.x);
-				placePosition.z = Math.floor(placePosition.z);
-				if (this.dimensions[0] % 2 == 0)
-				{
-					placePosition.z += 0.5;
-				}
-				if (this.dimensions[1] % 2 == 0)
-				{
-					placePosition.x += 0.5;
-				}
-				switch (this.highlightedMesh)
-				{
-					case null: break;
-					case this.demoBall.getMesh():
-						this.balls.push(new EditorObject('sphere', placePosition, new Vector3(1, 0, 0), ColorMap['green'], scene, undefined, 0.5));
-						break;
-					case this.demoWall.getMesh():
-						this.walls.push(new EditorObject('wall', placePosition, new Vector3(1, 0, 0), ColorMap['blue'], scene, new Vector3(0.5, 2, 5)));
-						break;
-					case this.demoGoal.getMesh():
-					case this.demoGoal.getPost1Mesh():
-					case this.demoGoal.getPost2Mesh():
-						this.goals.push(new EditorObject('goal', placePosition, new Vector3(1, 0, 0), ColorMap['red'], scene, new Vector3(0.5, 2, 5)));
-						break;
-				}
-				break;
-				case PointerEventTypes.POINTERMOVE: break;
+				case PointerEventTypes.POINTERUP:
+					placePosition.y = 0.25;
+					placePosition.x = Math.floor(placePosition.x);
+					placePosition.z = Math.floor(placePosition.z);
+					if (this.dimensions[0] % 2 == 0)
+					{
+						placePosition.z += 0.5;
+					}
+					if (this.dimensions[1] % 2 == 0)
+					{
+						placePosition.x += 0.5;
+					}
+					switch (this.highlightedMesh)
+					{
+						case null: break;
+						case this.demoBall.getMesh():
+							this.balls.push(new EditorObject('sphere', placePosition, new Vector3(-1, 0, 0), ColorMap['green'], scene, undefined, 0.5));
+							break;
+						case this.demoWall.getMesh():
+							this.walls.push(new EditorObject('wall', placePosition, new Vector3(-1, 0, 0), ColorMap['blue'], scene, new Vector3(0.5, 2, 5)));
+							break;
+						case this.demoGoal.getMesh():
+						case this.demoGoal.getPost1Mesh():
+						case this.demoGoal.getPost2Mesh():
+							this.goals.push(new EditorObject('goal', placePosition, new Vector3(-1, 0, 0), ColorMap['red'], scene, new Vector3(0.5, 2, 5)));
+							break;
+					}
+					break;
+
 				default: break;
 			}
 		});

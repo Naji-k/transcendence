@@ -1,7 +1,7 @@
-import { Wall, Ball, Paddle, Goal, ColorMap, Colors, type MapObject } from '$lib/index';
+import { ColorMap, saveMap, loadMap, EditorObject } from '$lib/index';
 import { Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
-		 StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType,
-		 HavokPlugin, Mesh, PointerEventTypes, HighlightLayer } from '@babylonjs/core';
+		 StandardMaterial, MeshBuilder, HavokPlugin, Mesh, 
+		 PointerEventTypes, HighlightLayer, LinesMesh } from '@babylonjs/core';
 import { TextBlock, AdvancedDynamicTexture, Button, Control } from '@babylonjs/gui';
 
 const maxPlayerCount = 6;
@@ -13,85 +13,165 @@ export class Editor
 	private havokInstance: any;
 	private dimensions: [number, number];
 	private	editorCanvas: HTMLCanvasElement;
-	private balls: Ball[] = [];
-	private walls: Wall[] = [];
-	private goals: Goal[] = [];
-	private demoBall: Mesh;
-	private demoWall: Wall;
-	private demoGoal: Goal;
+	private ground: Mesh;
+	private demoBall: EditorObject;
+	private demoWall: EditorObject;
+	private demoGoal: EditorObject;
 	private highlight: HighlightLayer;
-	private highlightedMeshes: Mesh[] = null;
+	private highlightedMesh: Mesh;
 	
-	private mapObjects: MapObject[] = [];
+	private goals: EditorObject[] = [];
+	private balls: EditorObject[] = [];
+	private walls: EditorObject[] = [];
 	private loadMap: Button;
 	private saveMap: Button;
 	private reset: Button;
+	private lines: LinesMesh[] = [];
+	private sizeText: TextBlock;
 	private UI: AdvancedDynamicTexture;
 	
 	constructor(havokInstance: any)
 	{
 		this.editorCanvas = document.getElementById('editorCanvas') as HTMLCanvasElement;
 		this.havokInstance = havokInstance;
-		this.dimensions = [5, 8];
+		this.dimensions = [15, 10];
 		this.engine = new Engine(this.editorCanvas, true, {antialias: true});
 		this.scene = this.createScene();
-		// this.addGui();
+		this.handleSelectionLogic();
+		this.addGui();
 	}
 
-	// private addGui()
-	// {
-	// 	const buttonLoadMap = Button.CreateSimpleButton('load', 'Load Map');
-	// 	const buttonSaveMap = Button.CreateSimpleButton('save', 'Save Map');
-	// 	const buttonReset = Button.CreateSimpleButton('reset', 'Reset');
-	// 	const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
+	private addGui()
+	{
+		const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
 
-	// 	advancedTexture.addControl(buttonLoadMap);
-	// 	advancedTexture.addControl(buttonSaveMap);
-	// 	advancedTexture.addControl(buttonReset);
-	// 	buttonLoadMap.width = '150px';
-	// 	buttonLoadMap.height = '40px';
-	// 	buttonLoadMap.color = 'white';
-	// 	buttonLoadMap.background = 'green';
-	// 	buttonLoadMap.top = '-45px';
-	// 	buttonLoadMap.left = '-200px';
-	// 	buttonLoadMap.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
-	// 	buttonLoadMap.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-	// 	buttonLoadMap.onPointerUpObservable.add(() => {
-	// 		console.log('Load Map button clicked');
-	// 		// Implement load map functionality here
-	// 	});
-	// 	buttonSaveMap.width = '150px';
-	// 	buttonSaveMap.height = '40px';
-	// 	buttonSaveMap.color = 'white';
-	// 	buttonSaveMap.background = 'blue';
-	// 	buttonSaveMap.top = '-45px';
-	// 	buttonSaveMap.left = '0px';
-	// 	buttonSaveMap.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
-	// 	buttonSaveMap.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-	// 	buttonSaveMap.onPointerUpObservable.add(() => {
-	// 		console.log('Save Map button clicked');
-	// 		// Implement save map functionality here
-	// 	});
-	// 	buttonReset.width = '150px';
-	// 	buttonReset.height = '40px';
-	// 	buttonReset.color = 'white';
-	// 	buttonReset.background = 'red';
-	// 	buttonReset.top = '-45px';
-	// 	buttonReset.left = '200px';
-	// 	buttonReset.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
-	// 	buttonReset.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-	// 	buttonReset.onPointerUpObservable.add(() => {
-	// 		console.log('Reset button clicked');
-	// 		// Implement reset functionality here
-	// 	});
-
-	// 	this.loadMap = buttonLoadMap;
-	// 	this.saveMap = buttonSaveMap;
-	// 	this.reset = buttonReset;
-	// 	this.UI = advancedTexture;
-	// 	console.log('Editor started');
-	// }
+		this.initSizeText(advancedTexture);
+		this.loadButton(advancedTexture);
+		this.saveButton(advancedTexture);
+		this.resetButton(advancedTexture);
+		this.updateMapSize();
+		this.UI = advancedTexture;
+		this.lines = drawGrid(this.scene, this.dimensions);
+		console.log('Editor started');
+	}
 	
+	/*	These methods create, initialize and add buttons to the UI	*/
+
+	private updateMapSize()
+	{
+		const dimensions = this.dimensions;
+		window.addEventListener('keydown', (event) =>
+		{
+			// if (this.highlightedMesh != this.ground) return;
+			switch (event.key)
+			{
+				case "ArrowLeft": dimensions[0] = Math.max(1, dimensions[0] - 1); break;
+				case "ArrowRight": dimensions[0] += 1; break;
+				case "ArrowUp": dimensions[1] += 1;	break;
+				case "ArrowDown": dimensions[1] = Math.max(1, dimensions[1] - 1); break;
+				default: return;
+			}
+			this.sizeText.text = `Map Size: ${dimensions[0]} x ${dimensions[1]}`;
+			this.ground.dispose();
+			this.ground = this.createGround(this.scene, dimensions);
+			for (const line of this.lines)
+			{
+				line.dispose();
+			}
+			this.lines = [];
+			drawGrid(this.scene, dimensions);
+		});
+	}
+
+	private initSizeText(advancedTexture: AdvancedDynamicTexture)
+	{
+		const sizeText = new TextBlock();
+	
+		sizeText.text = `Map Size: ${this.dimensions[0]} x ${this.dimensions[1]}`;
+		sizeText.color = 'white';
+		sizeText.fontSize = 24;
+		sizeText.top = '-45%';
+		sizeText.left = '0px';
+		sizeText.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+		sizeText.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+		advancedTexture.addControl(sizeText);
+		this.sizeText = sizeText;
+	}
+
+	private loadButton(advancedTexture: AdvancedDynamicTexture)
+	{
+		const buttonLoadMap = Button.CreateSimpleButton('load', 'Load Map');
+		
+		buttonLoadMap.width = '150px';
+		buttonLoadMap.height = '40px';
+		buttonLoadMap.color = 'white';
+		buttonLoadMap.background = 'green';
+		buttonLoadMap.top = '-45px';
+		buttonLoadMap.left = '-200px';
+		buttonLoadMap.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+		buttonLoadMap.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+		buttonLoadMap.onPointerUpObservable.add(async () =>
+		{
+			console.log('Load Map button clicked');
+			const mapObjects = await loadMap();
+			for (const obj of mapObjects)
+			{
+				switch (obj.objType())
+				{
+					case 'sphere': this.balls.push(obj); break;
+					case 'wall': this.walls.push(obj); break;
+					case 'goal': this.goals.push(obj); break;
+					default: throw new Error(`Unknown type: ${obj.objType()}`);
+				}				
+			}
+		});
+		this.loadMap = buttonLoadMap;
+		advancedTexture.addControl(buttonLoadMap);
+	}
+
+	private saveButton(advancedTexture: AdvancedDynamicTexture)
+	{
+		const buttonSaveMap = Button.CreateSimpleButton('save', 'Save Map');
+
+		buttonSaveMap.width = '150px';
+		buttonSaveMap.height = '40px';
+		buttonSaveMap.color = 'white';
+		buttonSaveMap.background = 'blue';
+		buttonSaveMap.top = '-45px';
+		buttonSaveMap.left = '0px';
+		buttonSaveMap.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+		buttonSaveMap.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+		buttonSaveMap.onPointerUpObservable.add(async () =>
+		{
+			console.log('Save Map button clicked');
+			saveMap(this.balls, this.walls, this.goals, this.dimensions);
+		});
+		advancedTexture.addControl(buttonSaveMap);
+		this.saveMap = buttonSaveMap;
+
+	}
+
+	private resetButton(advancedTexture: AdvancedDynamicTexture)
+	{
+		const buttonReset = Button.CreateSimpleButton('reset', 'Reset');
+
+		buttonReset.width = '150px';
+		buttonReset.height = '40px';
+		buttonReset.color = 'white';
+		buttonReset.background = 'red';
+		buttonReset.top = '-45px';
+		buttonReset.left = '200px';
+		buttonReset.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+		buttonReset.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+		buttonReset.onPointerUpObservable.add(() =>
+		{
+			console.log('Reset button clicked');
+			this.restart();
+		});
+		this.reset = buttonReset;
+		advancedTexture.addControl(buttonReset);
+	}
+
 	private createScene(): Scene
 	{
 		const scene = new Scene(this.engine);
@@ -104,76 +184,113 @@ export class Editor
 		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
 		hemiLight.intensity = 0.6;
 
-		this.createGround(scene, this.dimensions);
+		this.ground = this.createGround(scene, this.dimensions);
 
-		this.demoBall = MeshBuilder.CreateSphere('sphere', {diameter: 0.5}, scene);
+		this.demoBall = new EditorObject(
+			'sphere',
+			new Vector3(this.dimensions[1] / 2 + 3, 0.5, 0),
+			new Vector3(-1, 0, 0),
+			ColorMap['green'],
+			scene,
+			undefined,
+			0.3
+		);
 
-		this.demoBall.position = new Vector3(13, 0.5, 0);
-
-		const mat = new StandardMaterial('demoMat', scene);
-		
-		mat.diffuseColor = Color3.Gray();
-		
-		this.demoBall.material = mat;
-		this.demoWall = new Wall(new Vector3(0.5, 1, 5), new Vector3(12, 0, 0), Color3.Gray(), 1, scene);
-		this.demoGoal = new Goal(new Vector3(15, 0, -5), new Vector3(15, 0, 5), Color3.Gray(), new Vector3(1, 0, 0), scene);
+		this.demoWall = new EditorObject(
+			'wall',
+			new Vector3(this.dimensions[1] / 2 + 2, 0, 0),
+			new Vector3(-1, 0, 0),
+			Color3.Gray(),
+			scene,
+			new Vector3(0.5, 1, 5),
+			undefined
+		);
+		this.demoGoal = new EditorObject(
+			'goal',
+			new Vector3(this.dimensions[1] / 2 + 5, 0, 0),
+			new Vector3(-1, 0, 0),
+			Color3.Gray(),
+			scene,
+			new Vector3(0.5, 1, 5),
+			undefined
+		);
 		this.highlight = new HighlightLayer('hl', scene);
+
+		return scene;
+	}
+	
+	private handleSelectionLogic()
+	{
+		const scene = this.scene;
 
 		scene.onPointerObservable.add((pointerInfo) =>
 		{
 			switch (pointerInfo.type)
 			{
 				case PointerEventTypes.POINTERDOWN:
+				this.highlight.removeAllMeshes();
+				this.highlightedMesh = null;
 				const pickResult = pointerInfo.pickInfo;
-				if (this.highlightedMeshes != null)
-				{
-					for (const mesh of this.highlightedMeshes)
-					{
-						this.highlight.removeMesh(mesh);
-					}
-					this.highlightedMeshes = null;
-				}
 				if (pickResult && pickResult.hit == true && pickResult.pickedMesh)
 				{
 					const pickedMesh = pickResult.pickedMesh as Mesh;
 					this.highlight.addMesh(pickedMesh, Color3.Yellow());
-					if (pickedMesh == this.demoGoal.getPlateMesh() ||
+					if (pickedMesh == this.demoGoal.getMesh() ||
 						pickedMesh == this.demoGoal.getPost1Mesh() ||
 						pickedMesh == this.demoGoal.getPost2Mesh())
 					{
-						this.highlight.addMesh(this.demoGoal.getPlateMesh(), Color3.Yellow());
+						this.highlight.addMesh(this.demoGoal.getMesh(), Color3.Yellow());
 						this.highlight.addMesh(this.demoGoal.getPost1Mesh(), Color3.Yellow());
 						this.highlight.addMesh(this.demoGoal.getPost2Mesh(), Color3.Yellow());
-						this.highlightedMeshes = [this.demoGoal.getPlateMesh(),
-												 this.demoGoal.getPost1Mesh(),
-												 this.demoGoal.getPost2Mesh()];
+						this.highlightedMesh = this.demoGoal.getMesh();
 					}
 					else
-						this.highlightedMeshes = [pickedMesh];
+					{
+						this.highlightedMesh = pickedMesh;
+					}
 				}
 				break;
-				// case PointerEventTypes.POINTERUP:
-				// switch (this.highlightedMeshes[0])
-				// {
-				// 	case this.demoBall:
-				// 		this.balls.push(new Ball(this.demoBall.position.clone(), ColorMap['green'], 0.5, scene));
-				// 		break;
-				// 	case this.demoWall.getMesh():
-				// 		this.walls.push(new Wall(this.demoWall.getMesh().position, this.demoWall.getMesh().position, ColorMap['blue'], 1, scene));
-				// 		break;
-				// 	case this.demoGoal.getPlateMesh():
-				// 		this.goals.push(new Goal(this.demoGoal.getPost1Mesh().position, this.demoGoal.getPost2Mesh().position, ColorMap['red'], new Vector3(1, 0, 0), scene));
-				// 		break;
-				// }
-				// break;
+				case PointerEventTypes.POINTERUP:
+				const evt = pointerInfo.event;
+				const mouseLocation = scene.pick(evt.clientX, evt.clientY,	mesh => mesh.name === "ground");
+				const placePosition = mouseLocation.pickedPoint;
+
+				if (placePosition == null) break;
+				placePosition.y = 0.25;
+				placePosition.x = Math.floor(placePosition.x);
+				placePosition.z = Math.floor(placePosition.z);
+				if (this.dimensions[0] % 2 == 0)
+				{
+					placePosition.z += 0.5;
+				}
+				if (this.dimensions[1] % 2 == 0)
+				{
+					placePosition.x += 0.5;
+				}
+				switch (this.highlightedMesh)
+				{
+					case null: break;
+					case this.demoBall.getMesh():
+						this.balls.push(new EditorObject('sphere', placePosition, new Vector3(1, 0, 0), ColorMap['green'], scene, undefined, 0.5));
+						break;
+					case this.demoWall.getMesh():
+						this.walls.push(new EditorObject('wall', placePosition, new Vector3(1, 0, 0), ColorMap['blue'], scene, new Vector3(0.5, 2, 5)));
+						break;
+					case this.demoGoal.getMesh():
+					case this.demoGoal.getPost1Mesh():
+					case this.demoGoal.getPost2Mesh():
+						this.goals.push(new EditorObject('goal', placePosition, new Vector3(1, 0, 0), ColorMap['red'], scene, new Vector3(0.5, 2, 5)));
+						break;
+					
+				}
+				break;
 				case PointerEventTypes.POINTERMOVE: break;
 				default: break;
 			}
 		});
-		return scene;
 	}
 
-	createGround(scene: Scene, dimensions: number[])
+	private createGround(scene: Scene, dimensions: number[]): Mesh
 	{
 		const ground = MeshBuilder.CreateGround(
 			'ground',
@@ -183,15 +300,25 @@ export class Editor
 		const mat = new StandardMaterial('floor', ground.getScene());
 		mat.diffuseColor = Color3.Gray();
 		ground.material = mat;
+		return ground;
 	}
 
-		
 	start()
 	{
 		this.engine.runRenderLoop(() =>
 		{
 			this.scene.render();
 		});
+	}
+
+	restart()
+	{
+		this.scene.dispose();
+		this.balls = [];
+		this.walls = [];
+		this.goals = [];
+		this.scene = this.createScene();
+		this.addGui();
 	}
 
 	dispose()
@@ -201,6 +328,12 @@ export class Editor
 		this.engine.stopRenderLoop();
 		this.engine.dispose();
 		this.scene.dispose();
+		this.UI.dispose();
+		this.loadMap = null;
+		this.saveMap = null;
+		this.reset = null;
+		this.engine = null;
+		this.scene = null;
 		this.havokInstance = null;
 		this.editorCanvas = null;
 		this.balls = [];
@@ -212,9 +345,9 @@ export class Editor
 		console.log('Editor stopped.');
 	}
 
-	getBalls(): Ball[] {return this.balls;}
-	getWalls(): Wall[] {return this.walls;}
-	getGoals(): Goal[] {return this.goals;}
+	getBalls(): EditorObject[] {return this.balls;}
+	getWalls(): EditorObject[] {return this.walls;}
+	getGoals(): EditorObject[] {return this.goals;}
 	getScene(): Scene {return this.scene;}
 }
 
@@ -224,4 +357,41 @@ export class Editor
 export async function destroyEditor(editor: Editor)
 {
 	editor.dispose();
+}
+
+
+// Draws a grid of lines from (-size/2,0,-size/2) to (size/2,0,size/2)
+function drawGrid(scene: Scene, dimensions: [number, number]): LinesMesh[]
+{
+	const verticalHalf = dimensions[0] / 2;
+	const horizontalHalf = dimensions[1] / 2;
+	const height = 0.01;
+	const lines: LinesMesh[] = [];
+
+	for (let i = -horizontalHalf + 1; i < horizontalHalf; i++)
+	{
+		lines.push(MeshBuilder.CreateLines(`grid_v_${i}`,
+		{
+			points:
+			[
+				new Vector3(i, height, -verticalHalf),
+				new Vector3(i, height, verticalHalf)
+			]
+		}, scene));
+		lines[lines.length - 1].color = Color3.Black();
+	}
+
+	for (let i = -verticalHalf + 1; i < verticalHalf; i++)
+	{
+		lines.push(MeshBuilder.CreateLines(`grid_h_${i}`,
+		{
+			points:
+			[
+				new Vector3(-horizontalHalf, height, i),
+				new Vector3(horizontalHalf, height, i)
+			]
+		}, scene));
+		lines[lines.length - 1].color = Color3.Black();
+	}
+	return lines;
 }

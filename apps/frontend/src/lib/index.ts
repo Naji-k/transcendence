@@ -1,4 +1,4 @@
-import { Color3, Vector3 } from "babylonjs";
+import { Color3, Vector3 } from "@babylonjs/core";
 
 export * from './game/game_objects/ball';
 export * from './game/game_objects/paddle';
@@ -12,6 +12,7 @@ export * from './game/main';
 export * from './map_editor/editor_objects/editor';
 export * from './map_editor/main';
 export * from './map_editor/save_map';
+export * from './map_editor/editor_objects/objects';
 
 export const Colors: { name: string, color: Color3 }[] =
 [

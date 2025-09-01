@@ -60,7 +60,7 @@ export async function createTRPCContext({
 			matchExists: matchExists,
 		},
 		gameStateManager: {
-      subscribe: gameStateManager.subscribe.bind(gameStateManager),
+			subscribe: gameStateManager.subscribe.bind(gameStateManager),
 			initGameState: gameStateManager.initGameState.bind(gameStateManager),
 			getGameState: gameStateManager.getGameState.bind(gameStateManager),
 			handlePlayerAction:

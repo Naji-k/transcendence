@@ -1,23 +1,31 @@
 import { TRPCError } from '@trpc/server';
-import { createRouter, protectedProcedure } from '../trpc';
+import { createRouter, protectedProcedure, publicProcedure } from '../trpc';
 import { PlayerAction, PlayerActionSchema } from '../types/gameState';
 import { z } from 'zod';
 import { GameState } from '../types/gameState';
 import { observable } from '@trpc/server/observable';
 
 export const gameRouter = createRouter({
-	initializeMatch: protectedProcedure
+	initializeMatch: publicProcedure
 		.input(z.object({ matchId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
+			try {
+				const players = await ctx.services.dbServices.getMatchPlayers(
+					input.matchId
+				);
+				const gameState = ctx.services.gameStateManager.initGameState(
+					input.matchId,
+					players
+				);
+				return { success: true, gameState };
+			} catch (error) {
+				console.error('Error initializing match:', error);
+				throw new TRPCError({
+					code: 'INTERNAL_SERVER_ERROR',
+					message: 'Failed to initialize match',
+				});
+			}
 			// Get real players from database
-			const players = await ctx.services.dbServices.getMatchPlayers(
-				input.matchId
-			);
-			const gameState = ctx.services.gameStateManager.initGameState(
-				input.matchId,
-				players
-			);
-			return { success: true, gameState };
 		}),
 
 	/**
@@ -30,16 +38,23 @@ export const gameRouter = createRouter({
 		.input(z.object({ matchId: z.string() }))
 		.subscription(({ input, ctx }) => {
 			return observable<GameState>((emit) => {
+				console.log(`Client subscribed to game state`);
+				// Immediately send the current game state upon subscription
 				try {
 					const gameState = ctx.services.gameStateManager.getGameState(
 						input.matchId
 					);
 					if (gameState) {
+						console.log("emitting initial game state");
 						emit.next(gameState);
+					}
+					else {
+						console.log("there is a game state");
 					}
 					const unsubscribe = ctx.services.gameStateManager.subscribe(
 						input.matchId,
 						(gameState) => {
+							console.log(`Emitting game state update for match ${input.matchId}`);
 							emit.next(gameState);
 						}
 					);
@@ -58,7 +73,7 @@ export const gameRouter = createRouter({
 			const action: PlayerAction = {
 				...input,
 				// playerId: ctx.userToken.id,
-				playerId: '1', // Temporary hardcoded playerId for testing
+				playerId: input.playerId, // Temporary hardcoded playerId for testing
 			};
 			const playerExists = await ctx.services.dbServices.playerExistsInMatch(
 				action.matchId,

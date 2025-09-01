@@ -17,7 +17,7 @@ export class GameStateManager extends EventEmitter {
 
 	notifySubs(matchId: string, gameState: GameState) {
 		console.log(`Notifying subscribers of match ${matchId}`);
-		this.emit(`gameState: ${matchId}`, gameState);
+		this.emit(`gameState:${matchId}`, gameState);
 	}
 
 	getGameState(matchId: string): GameState | null {
@@ -32,7 +32,7 @@ export class GameStateManager extends EventEmitter {
 	 */
 	initGameState(
 		matchId: string,
-		players: Array<{ id: string; name: string }>
+		players: { id: string; name: string }[]
 	): GameState {
 		const initialState: GameState = {
 			matchId,

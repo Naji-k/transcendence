@@ -7,7 +7,6 @@ import {
 	wsLink,
 } from '@trpc/client';
 import superjson from 'superjson';
-import App from '../svelte_objects/app.svelte';
 
 const API_URL = 'http://localhost:3000/trpc';
 
@@ -42,21 +41,23 @@ const wsClient = createWSClient({
 });
 
 export const trpc = createTRPCProxyClient<AppRouter>({
-  links: [
-    splitLink({
-      condition: (op) => op.type === 'subscription',
-      true: wsLink({
-        client: wsClient,
-      }),
-      false: httpBatchLink({
-        url: API_URL,
-        async headers() {
-          const currentToken = getAuthToken();
-          return currentToken
-            ? { authorization: `Bearer ${currentToken}` }
-            : {};
-        },
-      }),
-    }),
-  ],
+	links: [
+		splitLink({
+			condition: (op) => op.type === 'subscription',
+			true: wsLink({
+				client: wsClient,
+				transformer: superjson,
+			}),
+			false: httpBatchLink({
+				url: API_URL,
+				transformer: superjson,
+				async headers() {
+					const currentToken = getAuthToken();
+					return currentToken
+						? { authorization: `Bearer ${currentToken}` }
+						: {};
+				},
+			}),
+		}),
+	],
 });

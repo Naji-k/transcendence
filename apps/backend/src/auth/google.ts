@@ -1,5 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { request } from 'https';
+import { findUserByEmail, createUser } from '../db/src/dbFunctions';
+import { jwtUtils } from './jwt';
+import { TRPCError } from '@trpc/server';
 
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -75,10 +78,38 @@ export function setupGoogleAuthRoutes(app: FastifyInstance) {
         },
       });
 
-      // Handle user login/signup logic here
-      console.log('Google User:', userInfoResponse);
+      const { email, name, sub: googleId, picture } = userInfoResponse;
 
-      reply.send({ message: 'Google Sign-In successful', user: userInfoResponse });
+      // Check if user exists
+      let user = await findUserByEmail(email);
+
+      if (!user) {
+        // Create user (no password for Google users)
+        // TODO: update db functions to store google id too, for preventing users from logining with password
+        // Do we want picture from google as the avatar?
+        const dummyPassword = `google_${googleId}_${Date.now()}`;
+        await createUser(name, email, dummyPassword);
+        user = await findUserByEmail(email);
+      }
+
+      if (!user || !user.id) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Google user creation failed',
+        });
+      }
+
+      // Issue JWT
+      const token = jwtUtils.sign(user.id, user.email);
+
+      reply.send({
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.alias || user.name
+        },
+        token,
+    });
     } catch (error) {
       console.error('Google Sign-In failed:', error);
       reply.status(500).send({ error: 'Google Sign-In failed' });

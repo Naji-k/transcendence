@@ -1,4 +1,3 @@
-<!-- /apps/frontend/src/routes/test/+page.svelte -->
 <script lang="ts">
 	import { trpc } from '$lib/trpc';
 	import type { GameState } from '@repo/trpc/src/types/gameState';
@@ -7,28 +6,27 @@
 	let matchId = 'test_match_123';
 	let gameState: GameState | null = null;
 	let subscription: any = null;
-	let messages: string[] = [];
 	let isSubscribed = false;
 	let connectionStatus = 'Disconnected';
-  let playerID :string = '';
+	let playerID: string = '';
 
 	// Initialize game
 	async function initGame() {
 		try {
-			addMessage('Initializing game...');
+			console.log('Initializing game...');
 			const result = await trpc.game.initializeMatch.mutate({
 				matchId: 'test_match_123',
 			});
-			addMessage(`Game initialized: ${JSON.stringify(result)}`);
+			console.log(`Game initialized: ${JSON.stringify(result)}`);
 		} catch (error) {
-			addMessage(`Error initializing: ${error.message}`);
+			console.log(`Error initializing: ${error.message}`);
 		}
 	}
 
 	// Subscribe to game updates
 	function subscribeToGame() {
 		try {
-			addMessage('Subscribing to game updates...');
+			console.log('Subscribing to game updates...');
 			connectionStatus = 'Connecting...';
 
 			subscription = trpc.game.subscribeToGameState.subscribe(
@@ -38,32 +36,33 @@
 						gameState = data;
 						connectionStatus = 'Connected';
 						isSubscribed = true;
-						addMessage(`Received update: ${JSON.stringify(data)}`);
+						console.log(`Received update: ${JSON.stringify(data)}`);
 					},
 					onError: (error) => {
 						connectionStatus = 'Error';
-						addMessage(`Subscription error: ${error.message}`);
+						console.log(`Subscription error: ${error.message}`);
 					},
 				}
 			);
 		} catch (error) {
-			addMessage(`Subscribe error: ${error.message}`);
+			console.log(`Subscribe error: ${error.message}`);
 		}
 	}
 
 	// Send ready action
-	async function sendReady(id : string) {
-
+	async function sendReady(id: string) {
 		try {
-			addMessage('Sending ready action...');
+			console.log('Sending ready action...');
 			const result = await trpc.game.sentPlayerAction.mutate({
-        matchId,
-        playerId: id,
-        action:  'ready',
+				matchId,
+				playerId: id,
+				action: 'ready',
 			});
-			addMessage(`Ready action sent for player ${id}: ${JSON.stringify(result)}`);
+			console.log(
+				`Ready action sent for player ${id}: ${JSON.stringify(result)}`
+			);
 		} catch (error) {
-			addMessage(`Error sending ready: ${error.message}`);
+			console.log(`Error sending ready: ${error.message}`);
 		}
 	}
 
@@ -74,24 +73,13 @@
 			subscription = null;
 			isSubscribed = false;
 			connectionStatus = 'Disconnected';
-			addMessage('Disconnected from game updates');
+			console.log('Disconnected from game updates');
 		}
-	}
-
-	// Helper function
-	function addMessage(msg: string) {
-		const timestamp = new Date().toLocaleTimeString();
-		messages = [`[${timestamp}] ${msg}`, ...messages];
-	}
-
-	// Clear messages
-	function clearMessages() {
-		messages = [];
 	}
 </script>
 
 <div class="container">
-	<h1>🏓 Pong Game Testing Dashboard</h1>
+	<h1>🏓 Pong Game Testing websockets</h1>
 
 	<!-- Connection Status -->
 	<div class="status-bar">
@@ -109,9 +97,14 @@
 		<button on:click={subscribeToGame} disabled={isSubscribed}
 			>📡 Subscribe to Updates</button
 		>
-	<input type="text" bind:value={playerID} placeholder="Player ID" style="width: 100px;" />
-	<button on:click={() => sendReady(playerID)}>✅ Send Ready</button>
-	<p>Current Player ID: {playerID}</p>
+		<input
+			type="text"
+			bind:value={playerID}
+			placeholder="Player ID"
+			style="width: 100px;"
+		/>
+		<button on:click={() => sendReady(playerID)}>✅ Send Ready</button>
+		<p>Current Player ID: {playerID}</p>
 		<button on:click={disconnect} disabled={!isSubscribed}>🔌 Disconnect</button
 		>
 	</div>
@@ -142,19 +135,6 @@
 			</p>
 		</div>
 	{/if}
-
-	<!-- Messages Log -->
-	<div class="messages">
-		<div class="messages-header">
-			<h2>Messages</h2>
-			<button on:click={clearMessages}>Clear</button>
-		</div>
-		<div class="message-list">
-			{#each messages as message}
-				<div class="message">{message}</div>
-			{/each}
-		</div>
-	</div>
 </div>
 
 <style>

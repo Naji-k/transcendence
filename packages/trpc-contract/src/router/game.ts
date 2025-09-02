@@ -6,6 +6,13 @@ import { GameState } from '../types/gameState';
 import { observable } from '@trpc/server/observable';
 
 export const gameRouter = createRouter({
+	/**
+	 * Initializes a new match with the given matchId.
+	 * This sets up the initial game state and notifies all subscribed clients.
+	 * @input { matchId: string } - The ID of the match to initialize.
+	 * @returns { success: boolean, gameState: GameState } - The result of the initialization and the initial game state.
+	 */
+	//temporary make it publicProcedure
 	initializeMatch: publicProcedure
 		.input(z.object({ matchId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
@@ -65,10 +72,15 @@ export const gameRouter = createRouter({
 			});
 		}),
 
+	/**
+	 * Handles a player's action within a match.
+	 * Validates the action and updates the game state accordingly.
+	 * @input { matchId: string, playerId: string, actionType: string} - The player's action details.
+	 * @returns { success: boolean } - The result of the action handling.
+	 */
 	sentPlayerAction: protectedProcedure
 		.input(PlayerActionSchema)
 		.mutation(async ({ ctx, input }) => {
-			// Validate the player action input
 			//here should check if the game is exist
 			const action: PlayerAction = {
 				...input,

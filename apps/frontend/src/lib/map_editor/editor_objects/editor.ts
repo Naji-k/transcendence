@@ -1,9 +1,8 @@
-import { ColorMap, saveMap, loadMap, EditorObject, startEditor, parseMap, jsonToVector3 } from '$lib/index';
+import { ColorMap, saveMap, loadMap, EditorObject, startEditor, jsonToVector2, jsonToVector3 } from '$lib/index';
 import { Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		 StandardMaterial, MeshBuilder, HavokPlugin, Mesh, 
 		 PointerEventTypes, HighlightLayer, LinesMesh } from '@babylonjs/core';
 import { TextBlock, AdvancedDynamicTexture, Button, Control } from '@babylonjs/gui';
-import { json } from 'zod';
 
 const maxPlayerCount = 6;
 
@@ -61,6 +60,7 @@ export class Editor
 	private updateMapSize()
 	{
 		const dimensions = this.dimensions;
+
 		window.addEventListener('keydown', (event) =>
 		{
 			if (this.highlightedMesh == null || this.highlightedMesh == this.ground)
@@ -86,12 +86,7 @@ export class Editor
 				this.sizeText.text = `Map Size: ${dimensions[0]} x ${dimensions[1]}`;
 				this.ground.dispose();
 				this.ground = this.createGround(this.scene, dimensions);
-				for (const line of this.lines)
-				{
-					line.dispose();
-				}
-				this.lines = [];
-				this.lines = drawGrid(this.scene, dimensions);
+				this.redrawGrid();
 			}
 			else
 			{
@@ -133,67 +128,67 @@ export class Editor
 
 	private loadButton(advancedTexture: AdvancedDynamicTexture)
 	{
-		const buttonLoadMap = Button.CreateSimpleButton('load', 'Load Map');
+		const button = Button.CreateSimpleButton('load', 'Load Map');
 		
-		buttonLoadMap.width = '150px';
-		buttonLoadMap.height = '40px';
-		buttonLoadMap.color = 'white';
-		buttonLoadMap.background = 'green';
-		buttonLoadMap.top = '-45px';
-		buttonLoadMap.left = '-200px';
-		buttonLoadMap.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
-		buttonLoadMap.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-		buttonLoadMap.onPointerUpObservable.add(async () =>
+		button.width = '150px';
+		button.height = '40px';
+		button.color = 'white';
+		button.background = 'green';
+		button.top = '-45px';
+		button.left = '0px';
+		button.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+		button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+		button.onPointerUpObservable.add(async () =>
 		{
 			console.log('Load Map button clicked');
 			const mapObjects = await loadMap();
-			this.loadMapFromFile(JSON.stringify(mapObjects));
+			this.loadMapFromFile(mapObjects);
 		});
-		this.loadMap = buttonLoadMap;
-		advancedTexture.addControl(buttonLoadMap);
+		this.loadMap = button;
+		advancedTexture.addControl(button);
 	}
 
 	private saveButton(advancedTexture: AdvancedDynamicTexture)
 	{
-		const buttonSaveMap = Button.CreateSimpleButton('save', 'Save Map');
+		const button = Button.CreateSimpleButton('save', 'Save Map');
 
-		buttonSaveMap.width = '150px';
-		buttonSaveMap.height = '40px';
-		buttonSaveMap.color = 'white';
-		buttonSaveMap.background = 'blue';
-		buttonSaveMap.top = '-45px';
-		buttonSaveMap.left = '0px';
-		buttonSaveMap.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
-		buttonSaveMap.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-		buttonSaveMap.onPointerUpObservable.add(async () =>
+		button.width = '150px';
+		button.height = '40px';
+		button.color = 'white';
+		button.background = 'blue';
+		button.top = '-45px';
+		button.left = '-200px';
+		button.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+		button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+		button.onPointerUpObservable.add(async () =>
 		{
 			console.log('Save Map button clicked');
 			saveMap(this.balls, this.walls, this.goals, this.dimensions);
 		});
-		advancedTexture.addControl(buttonSaveMap);
-		this.saveMap = buttonSaveMap;
+		advancedTexture.addControl(button);
+		this.saveMap = button;
 
 	}
 
 	private resetButton(advancedTexture: AdvancedDynamicTexture)
 	{
-		const buttonReset = Button.CreateSimpleButton('reset', 'Reset');
+		const button = Button.CreateSimpleButton('reset', 'Reset');
 
-		buttonReset.width = '150px';
-		buttonReset.height = '40px';
-		buttonReset.color = 'white';
-		buttonReset.background = 'red';
-		buttonReset.top = '-45px';
-		buttonReset.left = '200px';
-		buttonReset.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
-		buttonReset.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-		buttonReset.onPointerUpObservable.add(() =>
+		button.width = '150px';
+		button.height = '40px';
+		button.color = 'white';
+		button.background = 'red';
+		button.top = '-45px';
+		button.left = '200px';
+		button.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+		button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+		button.onPointerUpObservable.add(() =>
 		{
 			console.log('Reset button clicked');
 			restartEditor(this);
 		});
-		this.reset = buttonReset;
-		advancedTexture.addControl(buttonReset);
+		this.reset = button;
+		advancedTexture.addControl(button);
 	}
 
 	private createScene(): Scene
@@ -242,55 +237,58 @@ export class Editor
 		return scene;
 	}
 
-	private loadMapFromFile(mapFile: string)
+	private loadMapFromFile(mapObjects: any)
 	{
-		const mapObjects = parseMap(mapFile);
+		this.dimensions = jsonToVector2(mapObjects.dimensions);
+		this.balls = [];
+		this.walls = [];
+		this.goals = [];
+		this.redrawGrid();
+		this.ground.dispose();
 
-		for (const obj of mapObjects)
+		this.ground = this.createGround(this.scene, [this.dimensions[0], this.dimensions[1]]);
+
+		for (const ball of mapObjects.balls)
 		{
-			switch (obj.objType())
-			{
-				case 'ball':
-					this.balls.push(new EditorObject
-					(
-						'sphere',
-						jsonToVector3(obj.location),
-						new Vector3(-1, 0, 0),
-						ColorMap['green'],
-						this.scene,
-						undefined,
-						obj.diameter
-					));
-					break;
-				case 'wall':
-					this.walls.push(new EditorObject
-					(
-						'wall',
-						jsonToVector3(obj.location),
-						jsonToVector3(obj.surfaceNormal),
-						Color3.Black(),
-						this.scene,
-						new Vector3(obj.dimensions.width, obj.dimensions.height, obj.dimensions.depth),
-						undefined
-					));
-					break;
-				case 'goal':
-					this.goals.push(new EditorObject
-					(
-						'goal',
-						jsonToVector3(obj.location),
-						jsonToVector3(obj.surfaceNormal),
-						Color3.Red(),
-						this.scene,
-						new Vector3(obj.dimensions.width, obj.dimensions.height, obj.dimensions.depth),
-						undefined
-					));
-					break;
-				default: throw new Error(`Unknown type: ${obj.objType()}`);
-			}				
+			this.balls.push(new EditorObject
+			(
+				'sphere',
+				jsonToVector3(ball.location),
+				new Vector3(-1, 0, 0),
+				ColorMap['green'],
+				this.scene,
+				undefined,
+				ball.diameter
+			));
+		}
+		for (const wall of mapObjects.walls)
+		{
+			this.walls.push(new EditorObject
+			(
+				'wall',
+				jsonToVector3(wall.location),
+				jsonToVector3(wall.surfaceNormal),
+				Color3.Black(),
+				this.scene,
+				jsonToVector3(wall.dimensions),
+				undefined
+			));
+		}
+		for (const obj of mapObjects.goals)
+		{
+			this.goals.push(new EditorObject
+			(
+				'goal',
+				jsonToVector3(obj.location),
+				jsonToVector3(obj.surfaceNormal),
+				Color3.Red(),
+				this.scene,
+				jsonToVector3(obj.dimensions),
+				undefined
+			));
 		}
 	}
-	
+
 	private handleSelectionLogic()
 	{
 		const scene = this.scene;
@@ -347,15 +345,40 @@ export class Editor
 					{
 						case null: break;
 						case this.demoBall.getMesh():
-							this.balls.push(new EditorObject('sphere', placePosition, new Vector3(-1, 0, 0), ColorMap['green'], scene, undefined, 0.5));
+							this.balls.push(new EditorObject
+							(
+								'sphere',
+								placePosition,
+								new Vector3(-1, 0, 0),
+								ColorMap['green'],
+								scene,
+								undefined,
+								0.3)
+							);
 							break;
 						case this.demoWall.getMesh():
-							this.walls.push(new EditorObject('wall', placePosition, new Vector3(-1, 0, 0), ColorMap['blue'], scene, new Vector3(0.5, 2, 5)));
+							this.walls.push(new EditorObject
+							(
+								'wall',
+								placePosition,
+								new Vector3(-1, 0, 0),
+								Color3.Black(),
+								scene,
+								new Vector3(0.5, 1, 3))
+							);
 							break;
 						case this.demoGoal.getMesh():
 						case this.demoGoal.getPost1Mesh():
 						case this.demoGoal.getPost2Mesh():
-							this.goals.push(new EditorObject('goal', placePosition, new Vector3(-1, 0, 0), ColorMap['red'], scene, new Vector3(0.5, 2, 5)));
+							this.goals.push(new EditorObject
+							(
+								'goal',
+								placePosition,
+								new Vector3(-1, 0, 0),
+								ColorMap['red'],
+								scene,
+								new Vector3(0.5, 2, 5))
+							);
 							break;
 					}
 					break;
@@ -365,6 +388,16 @@ export class Editor
 		});
 	}
 
+	redrawGrid()
+	{
+		for (const line of this.lines)
+		{
+			line.dispose();
+		}
+		this.lines = [];
+		this.lines = drawGrid(this.scene, this.dimensions);
+	}
+	
 	private createGround(scene: Scene, dimensions: number[]): Mesh
 	{
 		const ground = MeshBuilder.CreateGround(
@@ -388,7 +421,10 @@ export class Editor
 
 	dispose()
 	{
-		if (this.engine == null || this.scene == null) return;
+		if (this.engine == null || this.scene == null)
+		{
+			return;
+		}
 
 		this.engine.stopRenderLoop();
 		this.engine.dispose();

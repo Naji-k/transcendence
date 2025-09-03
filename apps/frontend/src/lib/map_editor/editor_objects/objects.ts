@@ -1,6 +1,6 @@
 import { Vector3, Color3, Mesh, MeshBuilder, Scene, StandardMaterial, 
 		 Matrix, PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
-import { type BallExport, type WallExport, type GoalExport } from "$lib/index";
+import { type BallExport, type WallExport, type GoalExport, vector3ToJson } from "$lib/index";
 
 const goalPostDiameter = 0.5;
 
@@ -180,7 +180,7 @@ export class EditorObject
 		const data =
 		{
 			type: this.type,
-			location: this.position,
+			location: vector3ToJson(this.position),
 			diameter: this.diameter
 		};
 		return data;
@@ -191,9 +191,9 @@ export class EditorObject
 		const data =
 		{
 			type: this.type,
-			location: this.position,
-			dimensions: { width: this.dimensions.x, height: this.dimensions.y, depth: this.dimensions.z },
-			surfaceNormal: this.surfaceNormal
+			location: vector3ToJson(this.position),
+			dimensions: vector3ToJson(this.dimensions),
+			surfaceNormal: vector3ToJson(this.surfaceNormal)
 		};
 		return data;
 	}
@@ -203,9 +203,9 @@ export class EditorObject
 		const data = 
 		{
 			type: this.type,
-			location: this.position,
-			dimensions: { width: this.dimensions.x, height: this.dimensions.y, depth: this.dimensions.z },
-			surfaceNormal: this.surfaceNormal
+			location: vector3ToJson(this.position),
+			dimensions: vector3ToJson(this.dimensions),
+			surfaceNormal: vector3ToJson(this.surfaceNormal)
 		};
 		return data;
 	}

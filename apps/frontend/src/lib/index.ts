@@ -31,3 +31,8 @@ export function dot2D(a: Vector3, b: Vector3): number
 {
 	return a.x * b.x + a.z * b.z;
 }
+
+export function jsonToVector3(obj: { x: number; y: number; z: number }): Vector3
+{
+    return new Vector3(obj.x, obj.y, obj.z);
+}

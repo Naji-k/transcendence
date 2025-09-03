@@ -1,8 +1,9 @@
-import { ColorMap, saveMap, loadMap, EditorObject, startEditor } from '$lib/index';
+import { ColorMap, saveMap, loadMap, EditorObject, startEditor, parseMap, jsonToVector3 } from '$lib/index';
 import { Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		 StandardMaterial, MeshBuilder, HavokPlugin, Mesh, 
 		 PointerEventTypes, HighlightLayer, LinesMesh } from '@babylonjs/core';
 import { TextBlock, AdvancedDynamicTexture, Button, Control } from '@babylonjs/gui';
+import { json } from 'zod';
 
 const maxPlayerCount = 6;
 
@@ -34,7 +35,7 @@ export class Editor
 	{
 		this.editorCanvas = document.getElementById('editorCanvas') as HTMLCanvasElement;
 		this.havokInstance = havokInstance;
-		this.dimensions = [15, 10];
+		this.dimensions = [10, 15];
 		this.engine = new Engine(this.editorCanvas, true, {antialias: true});
 		this.scene = this.createScene();
 		this.handleSelectionLogic();
@@ -66,15 +67,15 @@ export class Editor
 			{
 				switch (event.key)
 				{
-					case "ArrowUp": dimensions[0] += 1;	break;
-					case "ArrowDown": dimensions[0] = Math.max(1, dimensions[0] - 1); break;
-					case "ArrowLeft":
+					case 'ArrowUp': dimensions[0] += 1;	break;
+					case 'ArrowDown': dimensions[0] = Math.max(1, dimensions[0] - 1); break;
+					case 'ArrowLeft':
 						dimensions[1] = Math.max(1, dimensions[1] - 1);
 						this.demoBall.changePosition(new Vector3(-0.5, 0, 0));
 						this.demoWall.changePosition(new Vector3(-0.5, 0, 0));
 						this.demoGoal.changePosition(new Vector3(-0.5, 0, 0));
 						break;
-					case "ArrowRight":
+					case 'ArrowRight':
 						dimensions[1] += 1;
 						this.demoBall.changePosition(new Vector3(0.5, 0, 0));
 						this.demoWall.changePosition(new Vector3(0.5, 0, 0));
@@ -101,10 +102,12 @@ export class Editor
 						const rotationStep = 360 / 16 * Math.PI / 180;
 						switch (event.key)
 						{
-							case "ArrowUp":
-							case "ArrowRight": obj.rotate(rotationStep); break;
-							case "ArrowDown":
-							case "ArrowLeft": obj.rotate(-rotationStep); break;
+							case 'ArrowUp':
+							case 'ArrowRight': obj.rotate(rotationStep); break;
+							case 'ArrowDown':
+							case 'ArrowLeft': obj.rotate(-rotationStep); break;
+							case '+': obj.increaseSize(); break;
+							case '-': obj.decreaseSize(); break;
 							default: return;
 						}
 					}
@@ -144,16 +147,7 @@ export class Editor
 		{
 			console.log('Load Map button clicked');
 			const mapObjects = await loadMap();
-			for (const obj of mapObjects)
-			{
-				switch (obj.objType())
-				{
-					case 'sphere': this.balls.push(obj); break;
-					case 'wall': this.walls.push(obj); break;
-					case 'goal': this.goals.push(obj); break;
-					default: throw new Error(`Unknown type: ${obj.objType()}`);
-				}				
-			}
+			this.loadMapFromFile(JSON.stringify(mapObjects));
 		});
 		this.loadMap = buttonLoadMap;
 		advancedTexture.addControl(buttonLoadMap);
@@ -231,7 +225,7 @@ export class Editor
 			new Vector3(-1, 0, 0),
 			Color3.Black(),
 			scene,
-			new Vector3(0.5, 1, 5),
+			new Vector3(0.5, 1, 3),
 			undefined
 		);
 		this.demoGoal = new EditorObject(
@@ -240,12 +234,61 @@ export class Editor
 			new Vector3(-1, 0, 0),
 			Color3.Black(),
 			scene,
-			new Vector3(0.5, 1, 5),
+			new Vector3(0.5, 1, 7),
 			undefined
 		);
 		this.highlight = new HighlightLayer('hl', scene);
 
 		return scene;
+	}
+
+	private loadMapFromFile(mapFile: string)
+	{
+		const mapObjects = parseMap(mapFile);
+
+		for (const obj of mapObjects)
+		{
+			switch (obj.objType())
+			{
+				case 'ball':
+					this.balls.push(new EditorObject
+					(
+						'sphere',
+						jsonToVector3(obj.location),
+						new Vector3(-1, 0, 0),
+						ColorMap['green'],
+						this.scene,
+						undefined,
+						obj.diameter
+					));
+					break;
+				case 'wall':
+					this.walls.push(new EditorObject
+					(
+						'wall',
+						jsonToVector3(obj.location),
+						jsonToVector3(obj.surfaceNormal),
+						Color3.Black(),
+						this.scene,
+						new Vector3(obj.dimensions.width, obj.dimensions.height, obj.dimensions.depth),
+						undefined
+					));
+					break;
+				case 'goal':
+					this.goals.push(new EditorObject
+					(
+						'goal',
+						jsonToVector3(obj.location),
+						jsonToVector3(obj.surfaceNormal),
+						Color3.Red(),
+						this.scene,
+						new Vector3(obj.dimensions.width, obj.dimensions.height, obj.dimensions.depth),
+						undefined
+					));
+					break;
+				default: throw new Error(`Unknown type: ${obj.objType()}`);
+			}				
+		}
 	}
 	
 	private handleSelectionLogic()

@@ -1,5 +1,6 @@
 import { Vector3, Color3, Mesh, MeshBuilder, Scene, StandardMaterial, 
 		 Matrix, PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
+import { type BallExport, type WallExport, type GoalExport } from "$lib/index";
 
 const goalPostDiameter = 0.5;
 
@@ -127,6 +128,25 @@ export class EditorObject
 		}
 	}
 
+	increaseSize()
+	{
+		switch (this.type)
+		{
+			case 'wall': this.dimensions.x += 1;
+			case 'goal': this.dimensions.x += 1;
+		}
+	}
+
+	decreaseSize()
+	{
+		switch (this.type)
+		{
+			case 'wall': this.dimensions.x = Math.min(this.dimensions.x - 1, 1); break;
+			case 'goal': this.dimensions.x = Math.min(this.dimensions.x - 1, 1); break;
+			default: break;
+		}
+	}
+
 	getMesh(): Mesh
 	{
 		return this.mesh;
@@ -155,6 +175,40 @@ export class EditorObject
 		return this.type;
 	}
 
+	getBallExport(): BallExport
+	{
+		const data =
+		{
+			type: this.type,
+			location: this.position,
+			diameter: this.diameter
+		};
+		return data;
+	}
+
+	getWallExport(): WallExport
+	{
+		const data =
+		{
+			type: this.type,
+			location: this.position,
+			dimensions: { width: this.dimensions.x, height: this.dimensions.y, depth: this.dimensions.z },
+			surfaceNormal: this.surfaceNormal
+		};
+		return data;
+	}
+
+	getGoalExport(): GoalExport
+	{
+		const data = 
+		{
+			type: this.type,
+			location: this.position,
+			dimensions: { width: this.dimensions.x, height: this.dimensions.y, depth: this.dimensions.z },
+			surfaceNormal: this.surfaceNormal
+		};
+		return data;
+	}
 }
 
 export function rotateVector(vector: Vector3, angle: number): Vector3

@@ -1,21 +1,16 @@
-import { EditorObject } from '$lib/map_editor/editor_objects/objects';
+import { EditorObject } from '$lib/index';
 import { Vector3, Color3 } from '@babylonjs/core';
+import Editor from '../../svelte_objects/editor.svelte';
 
-export async function saveMap(
-	balls: EditorObject[],
-	walls: EditorObject[],
-	goals: EditorObject[],
-	dimensions: [number, number])
+export function parseMap(inputFile: string): any
 {
-	
-}
+	const map = JSON.parse(inputFile);
 
-export function parseMap(map: string): EditorObject[]
-{
-	const mapItems: EditorObject[] = [];
-
-
-	return [];
+	if (!map.dimensions || !map.balls || !map.walls || !map.goals)
+	{
+		throw new Error('Invalid map format');
+	}
+	return map;
 }
 
 async function displayMapList(maps: string[], onOpen: (mapName: string) => void)
@@ -86,4 +81,61 @@ export async function loadMap(): Promise<EditorObject[]>
 			}
 		});
 	});
+}
+
+export interface BallExport
+{
+	type: string;
+	location: { x: number; y: number; z: number };
+	diameter: number;
+}
+
+export interface WallExport
+{
+	type: string;
+	location: { x: number; y: number; z: number };
+	dimensions: { width: number; height: number; depth: number };
+	surfaceNormal: { x: number; y: number; z: number };
+}
+
+export interface GoalExport
+{
+	type: string;
+	location: { x: number; y: number; z: number };
+	dimensions: { width: number; height: number; depth: number };
+	surfaceNormal: { x: number; y: number; z: number };
+}
+
+export async function saveMap(
+	balls: EditorObject[],
+	walls: EditorObject[],
+	goals: EditorObject[],
+	dimensions: [number, number]
+	)
+	{
+	const ballsExport: BallExport[] = balls.map(ball => ball.getBallExport());
+	const wallsExport: WallExport[] = walls.map(wall => wall.getWallExport());
+	const goalsExport: GoalExport[] = goals.map(goal => goal.getGoalExport());
+	const mapExport =
+	{
+		dimensions:
+		{
+			width: dimensions[0],
+			height: dimensions[1]
+		},
+		balls: ballsExport,
+		walls: wallsExport,
+		goals: goalsExport
+	};
+
+	const json = JSON.stringify(mapExport, null, 2);
+	const blob = new Blob([json], { type: "application/json" });
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = "map.map";
+	document.body.appendChild(a);
+	a.click();
+	document.body.removeChild(a);
+	URL.revokeObjectURL(url);
 }

@@ -3,6 +3,7 @@
   let email = '';
   let password = '';
   import { login } from '$lib/auth/auth';
+//   import { goto } from '$app/navigation';
 
   function handleSignIn() {
     login(email, password)

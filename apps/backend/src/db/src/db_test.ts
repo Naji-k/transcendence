@@ -322,12 +322,12 @@ async function testMenu() {
 async function main() {
   await testDbExistence();
   /* Reset the tables (doesn't reset the ids) */
-  await reset(db, { usersTable });
-  await reset(db, { matchTable });
-  await reset(db, { singleMatchPlayersTable });
-  await reset(db, { friendshipsTable });
-  await reset(db, { tournamentTable });
-  await reset(db, { tournamentPlayersTable });
+  // await reset(db, { usersTable });
+  // await reset(db, { matchTable });
+  // await reset(db, { singleMatchPlayersTable });
+  // await reset(db, { friendshipsTable });
+  // await reset(db, { tournamentTable });
+  // await reset(db, { tournamentPlayersTable });
   /* or */
   // await db.delete(singleMatchPlayersTable);
   // await db.delete(matchTable);

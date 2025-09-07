@@ -1,47 +1,17 @@
-import { Wall, Ball, Paddle, Goal, Player, Colors, ColorMap } from '../index';
+import { Wall, Ball, Paddle, Goal, Player, Colors,
+		 ColorMap, jsonToVector2, jsonToVector3 } from '../index';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from '@babylonjs/gui';
 
 const ballDiameter = 0.5;
 
-function getBlockSize(x: number, y: number, grid: string[][]): [number, number]
-{
-	const char = grid[x][y];
-	let height = 1;
-	let width = 1;
-
-	grid[x][y] = '.';
-	if (y + 1 < grid[x].length && grid[x][y + 1] == char)
-	{
-		while (y + width < grid[x].length && grid[x][y + width] == char)
-		{
-			grid[x][y + width] = '.';
-			width++;
-		}
-	}
-	if (x + 1 < grid.length && grid[x + 1][y] == char)
-	{
-		if (width != 1)
-		{
-			throw new Error(`Invalid grid: element at (${x}, ${y}) is part of a horizontal and vertical element.`);
-		}
-		while (x + height < grid.length && grid[x + height][y] == char)
-		{
-			grid[x + height][y] = '.';
-			height++;
-		}
-	}
-	return [height, width];
-}
-
-function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: number[])
+export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: number[])
 {
 	const height = dimensions[0];
 	const width = dimensions[1];
 	const wallThickness = 0.5;
 	const wallHeight = ballDiameter * 8;
 	const wallOpacity = 0.3;
-	const blackColor = Color3.Black();
 	const whiteColor = Color3.White();
 
 	/* | on right */
@@ -79,195 +49,78 @@ function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: number[
 	);
 }
 
-export function createWalls(scene: Scene, walls: Wall[], dimensions: number[], grid: string[][])
+export function createWalls(scene: Scene, walls: Wall[], map: any)
 {
-	createSurroundingWalls(scene, walls, dimensions);
-
-	const gridWidth = grid[0].length;
-	const gridHeight = grid.length;
-	
-	for (let x = 0; x < grid.length; x++)
+	for (let i = 0; i < map.walls.length; i++)
 	{
-		for (let y = 0; y < grid[x].length; y++)
-		{
-			if (grid[x][y] == 'W')
-			{
-				const [height, width] = getBlockSize(x, y, grid);
-				const dimensions = new Vector3(width, ballDiameter * 2, height);
-				const position = new Vector3(
-					(y - gridWidth / 2 + width / 2),
-					ballDiameter,
-					(x - gridHeight / 2 + height / 2)
-				);
-				walls.push(new Wall(dimensions,	position, Color3.Black(), 1, scene));
-			}
-		}
+		walls.push(new Wall
+		(
+			jsonToVector3(map.walls[i].dimensions),
+			jsonToVector3(map.walls[i].position),
+			ColorMap[map.walls[i].color] || ColorMap['white'],
+			map.walls[i].opacity || 1,
+			scene
+		));
 	}
 }
 
-function setGoalToPlayerNum(grid: string[][], x: number, y: number, num: string)
+export function createGoals(scene: Scene, goals: Goal[], map: any)
 {
-	let height = 1;
-	let width = 1;
+	if (map.goals.length > 6)
+	{
+		throw new Error('Map cannot have more than 6 players.');
+	}
+	for (let i = 0; i < map.goals.length; i++)
+	{
+		const dimensions = jsonToVector3(map.goals[i].dimensions);
+		const goalPos = jsonToVector3(map.goals[i].position);
+		const normal = jsonToVector3(map.goals[i].normal);
+		// needs fix later to get 90 degree rotation
+		// currently assumes all goals are vertical on x axis
+		const post1Pos = goalPos.add(new Vector3(0, 0, -dimensions.z / 2));
+		const post2Pos = goalPos.add(new Vector3(0, 0, dimensions.z / 2));
 
-	while (y - 1 >= 0 && grid[x][y - 1] == 'G')
-	{
-		y--;
-	}
-	while (x - 1 >= 0 && grid[x - 1][y] == 'G')
-	{
-		x--;
-	}
-	grid[x][y] = num;
-	if (y + 1 < grid[x].length && grid[x][y + 1] == 'G')
-	{
-		while (y + width < grid[x].length && grid[x][y + width] == 'G')
-		{
-			grid[x][y + width] = num;
-			width++;
-		}
-	}
-	if (x + 1 < grid.length && grid[x + 1][y] == 'G')
-	{
-		if (width != 1)
-		{
-			throw new Error(`Invalid grid: element at (${x}, ${y}) is part of a horizontal and vertical element.`);
-		}
-		while (x + height < grid.length && grid[x + height][y] == 'G')
-		{
-			grid[x + height][y] = num;
-			height++;
-		}
+		goals.push(new Goal
+		(
+			goalPos,
+			post1Pos,
+			post2Pos,
+			Colors[i].color,
+			normal,
+			scene
+		));
 	}
 }
 
-function findNearestGoal(x: number, y: number, grid: string[][], playerNum: number): Vector3
+export function createBalls(scene: Scene, balls: Ball[], map: any)
 {
-	const gridWidth = grid[0].length;
-	const gridHeight = grid.length;
-	let nearestGoal = Vector3.Zero();
-	let count = 0;
-
-	while (x - count >= 0 && x + count < gridHeight && y - count >= 0 && y + count < gridWidth)
+	for (let i = 0; i < map.balls.length; i++)
 	{
-		if (grid[x - count][y] == 'G')
-		{
-			nearestGoal.x = x - count;
-			nearestGoal.y = y;
-			break;
-		}
-		else if (grid[x + count][y] == 'G')
-		{
-			nearestGoal.x = x + count;
-			nearestGoal.y = y;
-			break;
-		}
-		else if (grid[x][y - count] == 'G')
-		{
-			nearestGoal.x = x;
-			nearestGoal.y = y - count;
-			break;
-		}
-		else if (grid[x][y + count] == 'G')
-		{
-			nearestGoal.x = x;
-			nearestGoal.y = y + count;
-			break;
-		}
-		count++;
-	}
-	if (nearestGoal.equals(Vector3.Zero()))
-	{
-		throw new Error(`No goal found for player at (${x}, ${y})`);
-	}
-	setGoalToPlayerNum(grid, nearestGoal.x, nearestGoal.y, playerNum.toString());
-	nearestGoal.x -= x;
-	nearestGoal.y -= y;
-	return nearestGoal;
-}
-
-function createPaddle(scene: Scene, grid: string[][], player: number): Paddle
-{
-	const playerChar = player.toString();
-	const gridWidth = grid[0].length;
-	const gridHeight = grid.length;
-
-	for (let x = 0; x < grid.length; x++)
-	{
-		for (let y = 0; y < grid[x].length; y++)
-		{
-			if (grid[x][y] == playerChar)
-			{
-				const orientation = findNearestGoal(x, y, grid, player);
-				const [height, width] = getBlockSize(x, y, grid);
-				const dimensions = new Vector3(width, ballDiameter * 2, height);
-				const position = new Vector3(
-					(y - gridWidth / 2 + width / 2),
-					ballDiameter,
-					(x - gridHeight / 2 + height / 2)
-				);
-				return new Paddle(dimensions, position, Colors[player - 1].color, scene);
-			}
-		}
-	}
-	throw new Error(`Player ${player} not found in grid.`);
-}
-
-function createGoal(scene: Scene, grid: string[][], num: number): Goal
-{
-	const goalHeight = Goal.getHeight();
-	const gridWidth = grid[0].length;
-	const gridHeight = grid.length;
-	const playerChar = num.toString();
-
-	for (let x = 0; x < grid.length; x++)
-	{
-		for (let y = 0; y < grid[x].length; y++)
-		{
-			if (grid[x][y] == playerChar)
-			{
-				const [height, width] = getBlockSize(x, y, grid);
-				const adjustment = Math.max(height, width);
-				const post1 = new Vector3(
-					y - gridWidth / 2,
-					goalHeight / 2,
-					x - gridHeight / 2
-				);
-				const post2 = new Vector3(
-					y - gridWidth / 2,
-					goalHeight / 2,
-					x - gridHeight / 2 + adjustment
-				);
-				return new Goal(post1, post2, Colors[num - 1].color, new Vector3(1, 0, 0), scene);
-			}
-		}
-	}
-	throw new Error(`Goal for player ${num} not found in grid.`);
-}
-
-function createPlayerAttributes(scene: Scene, paddles: Paddle[], goals: Goal[], grid: string[][], player: number)
-{
-	paddles.push(createPaddle(scene, grid, player));
-	goals.push(createGoal(scene, grid, player));
-}
-
-export function createBalls(scene: Scene, balls: Ball[], amount: number)
-{
-	for (let i = 0; i < amount; i++)
-	{
-		balls.push(new Ball(
-			new Vector3(0, ballDiameter, 0),
-			ColorMap['green'],
-			0.5, scene)
-		);
+		balls.push(new Ball
+		(
+			jsonToVector3(map.balls[i].position),
+			ColorMap[map.balls[i].color] || ColorMap['green'],
+			0.5, scene
+		));
 	}
 }
 
-export function createPlayers(players: Player[], goals: Goal[], paddles: Paddle[], numPlayers: number, grid: string[][], scene: Scene)
+export function createPaddles(scene: Scene, paddles: Paddle[], mapGoals: any[])
+{
+	for (let i = 0; i < mapGoals.length; i++)
+	{
+		const goalPos = jsonToVector3(mapGoals[i].position);
+		const normal = jsonToVector3(mapGoals[i].normal);
+		const paddlePos = goalPos.add(normal.scale(2));
+
+		paddles.push(new Paddle(paddlePos, normal, Colors[i].color, scene));
+	}
+}
+
+export function createPlayers(players: Player[], goals: Goal[], paddles: Paddle[], numPlayers: number)
 {
 	for (let i = 0; i < numPlayers; i++)
 	{
-		createPlayerAttributes(scene, paddles, goals, grid, i + 1);
 		const player = new Player(`Player ${i + 1}`, i + 1, goals[i], paddles[i]);
 		switch (i)
 		{
@@ -285,7 +138,7 @@ export function	createGround(scene: Scene, dimensions: number[])
 {
 	const ground = MeshBuilder.CreateGround(
 		'ground',
-		{width: dimensions[1], height: dimensions[0], updatable: true},
+		{width: dimensions[1], height: dimensions[0], updatable: false},
 		scene
 	);
 	new PhysicsAggregate(

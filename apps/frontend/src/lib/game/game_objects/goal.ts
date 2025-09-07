@@ -1,6 +1,5 @@
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PointLight, Scene } from '@babylonjs/core';
 import { Ball, dot2D } from '../../index';
-import { linear } from 'svelte/easing';
 
 const goalPostDiameter = 0.5;
 const goalThickness = 0.5;
@@ -21,7 +20,7 @@ export class Goal
 
 	private static height = 4;
 
-	constructor(loc1: Vector3, loc2: Vector3, clr: Color3, normalDir: Vector3, scene: Scene)
+	constructor(goalpos: Vector3, loc1: Vector3, loc2: Vector3, clr: Color3, normalDir: Vector3, scene: Scene)
 	{
 		this.isAlive = true;
 		this.scoringCooldown = 0;
@@ -34,7 +33,7 @@ export class Goal
 			{ width: goalThickness, height: Goal.height, depth: loc2.subtract(loc1).length() },
 			scene
 		);
-		this.plate.position = Vector3.Lerp(loc1, loc2, 0.5);
+		this.plate.position = goalpos;
 
 		if (this.post1.position.x < 0)
 		{
@@ -113,10 +112,7 @@ export class Goal
 		}
 		const ballDirection = linearVelocity.normalize();
 
-		// console.log('Ball direction:', ballDirection);
-		// console.log('Goal normal:', this.normal);
-		// console.log('Dot product:', Vector3.Dot(ballDirection, this.normal));
-		return Vector3.Dot(ballDirection, this.normal) > 0;
+		return dot2D(ballDirection, this.normal) > 0;
 	}
 
 	getPlateMesh(): Mesh

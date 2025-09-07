@@ -17,7 +17,7 @@ export async function startGame(): Promise<Game>
 	}
 	const game = new Game(havokInstance);
 	
-	await game.loadMap('crazy1v1.map');
+	await game.loadMap('maptest.map');
 	game.run();
 	return game;
 }

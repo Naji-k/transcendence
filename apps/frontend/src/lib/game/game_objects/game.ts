@@ -1,5 +1,7 @@
-import { Wall, Ball, Paddle, createWalls, createBalls,
-		createPlayers, createGround, Player, Goal, createScoreboard, GameMenu, ColorMap, Colors } from '../../index';
+import { Wall, Ball, Paddle, createSurroundingWalls,
+		createWalls, createBalls, createPlayers, createGoals,
+		createGround, createPaddles, createScoreboard, Player, Goal, jsonToVector2,
+		jsonToVector3, GameMenu, ColorMap, Colors } from '../../index';
 import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
 		Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		HavokPlugin, StandardMaterial, Layer } from '@babylonjs/core';
@@ -55,35 +57,7 @@ export class Game
 		}
 	}
 
-	private parseMapFile(mapText: string): string[][]
-	{
-		const lines = mapText.split('\n');
-		const sizeMatch = lines[0].match(/^size:\s*(\d+)x(\d+)$/);
-		const playersMatch = lines[1].match(/^players:\s*(\d+)$/);
-		
-		if (!sizeMatch || !playersMatch || lines[2] != '')
-		{
-			throw new Error('Lines 1-3 format: size: <rows>x<columns>, players: <number>, empty line');
-		}
-		this.dimensions = [parseInt(sizeMatch[1]), parseInt(sizeMatch[2])];
-		this.playerCount = parseInt(playersMatch[1]);
-
-		if (this.playerCount < 1 || this.playerCount > maxPlayerCount)
-		{
-			throw new Error(`Invalid player count: ${this.playerCount}. Must be between 1 and ${maxPlayerCount}.`);
-		}
-
-		lines.splice(0, 3);
-		if (lines.length != this.dimensions[0] ||
-			lines.some(line => line.length != this.dimensions[1]))
-		{
-			console.error(`Map size: ${lines.length}x${lines[0].length}`);
-			throw new Error(`Map size does not match expected size: ${this.dimensions[0]}x${this.dimensions[1]}`);
-		}
-		return lines.map(lines => lines.split(''));
-	}
-
-	async loadMap(map: string)
+	private async loadSounds()
 	{
 		try
 		{
@@ -109,8 +83,21 @@ export class Game
 		{
 			console.error('Error loading audio:', error);
 		}
-		const fileText = await(loadFileText('maps/' + map));
-		const grid = this.parseMapFile(fileText);
+	}
+
+	async loadMap(inputFile: string)
+	{
+		await this.loadSounds();
+		await loadFileText(inputFile);
+
+		const map = JSON.parse(inputFile);
+		
+		if (!map.dimensions || !map.balls || !map.goals)
+		{
+			throw new Error('Invalid map format');
+		}
+		this.createScene(map);
+
 		const eliminationMat = new StandardMaterial('eliminatedMat', this.scene);
 
 		eliminationMat.diffuseColor = new Color3(0.5, 0.5, 0.5);
@@ -120,7 +107,33 @@ export class Game
 		Paddle.setEliminatedMaterial(eliminationMat);
 		Goal.setEliminatedMaterial(eliminationMat);
 		Goal.createGoalPostMaterial(this.scene);
-		this.createScene(grid);
+	}
+
+	private createScene(map: any)
+	{
+		const scene = this.scene;
+		const havokPlugin = new HavokPlugin(true, this.havokInstance);
+		const camera = new FreeCamera('camera1', new Vector3(0, 30, 5), scene);
+		
+		scene.enablePhysics(new Vector3(0, -10, 0), havokPlugin);
+		camera.setTarget(Vector3.Zero());
+		// camera.attachControl(this.gameCanvas, true);
+		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
+		hemiLight.intensity = 0.6;
+
+		this.dimensions = jsonToVector2(map.dimensions);
+		createGround(scene, this.dimensions);
+		createBalls(scene, this.balls, map);
+		createSurroundingWalls(scene, this.walls, this.dimensions);
+		createWalls(scene, this.walls, map.walls);
+		createGoals(scene, this.goals, map);
+		createPaddles(scene, this.paddles, map.goals);
+		createPlayers(this.players, this.goals, this.paddles, this.playerCount);
+		createScoreboard(this.scoreboard, this.players);
+		
+		const background = new Layer('background', 'backgrounds/volcano.jpg', scene, true);
+		background.isBackground = true;
+		this.scene = scene;
 	}
 
 	private victory()
@@ -145,29 +158,6 @@ export class Game
 		victoryText.outlineColor = 'black';
 		advancedTexture.addControl(victoryText);
 		this.scene.render();
-	}
-
-	private createScene(grid: string[][])
-	{
-		const scene = this.scene;
-		const havokPlugin = new HavokPlugin(true, this.havokInstance);
-		const camera = new FreeCamera('camera1', new Vector3(0, 30, 5), scene);
-		
-		scene.enablePhysics(new Vector3(0, -10, 0), havokPlugin);
-		camera.setTarget(Vector3.Zero());
-		// camera.attachControl(this.gameCanvas, true);
-		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
-		hemiLight.intensity = 0.6;
-
-		createGround(scene, this.dimensions);
-		createWalls(scene, this.walls, this.dimensions, grid);
-		createBalls(scene, this.balls, 1);
-		createPlayers(this.players, this.goals, this.paddles, this.playerCount, grid, scene);
-		createScoreboard(this.scoreboard, this.players);
-		
-		const background = new Layer('background', 'backgrounds/volcano.jpg', scene, true);
-		background.isBackground = true;
-		this.scene = scene;
 	}
 
 	private pauseGame()

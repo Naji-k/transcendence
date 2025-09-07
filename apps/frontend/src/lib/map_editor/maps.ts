@@ -27,7 +27,7 @@ export function parseMap(inputFile: string): any
 {
 	const map = JSON.parse(inputFile);
 
-	if (!map.dimensions || !map.balls || !map.walls || !map.goals)
+	if (!map.dimensions || !map.balls || !map.goals)
 	{
 		throw new Error('Invalid map format');
 	}

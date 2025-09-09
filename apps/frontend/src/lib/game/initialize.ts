@@ -2,6 +2,7 @@ import { Wall, Ball, Paddle, Goal, Player, Colors,
 		 ColorMap, jsonToVector2, jsonToVector3 } from '../index';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from '@babylonjs/gui';
+import { json } from 'zod';
 
 const ballDiameter = 0.5;
 
@@ -51,12 +52,16 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 
 export function createWalls(scene: Scene, walls: Wall[], map: any)
 {
+	if (!map.walls)
+	{
+		return;
+	}
 	for (let i = 0; i < map.walls.length; i++)
 	{
 		walls.push(new Wall
 		(
 			jsonToVector3(map.walls[i].dimensions),
-			jsonToVector3(map.walls[i].position),
+			jsonToVector3(map.walls[i].location),
 			ColorMap[map.walls[i].color] || ColorMap['white'],
 			map.walls[i].opacity || 1,
 			scene
@@ -72,21 +77,14 @@ export function createGoals(scene: Scene, goals: Goal[], map: any)
 	}
 	for (let i = 0; i < map.goals.length; i++)
 	{
-		const dimensions = jsonToVector3(map.goals[i].dimensions);
-		const goalPos = jsonToVector3(map.goals[i].position);
-		const normal = jsonToVector3(map.goals[i].normal);
-		// needs fix later to get 90 degree rotation
-		// currently assumes all goals are vertical on x axis
-		const post1Pos = goalPos.add(new Vector3(0, 0, -dimensions.z / 2));
-		const post2Pos = goalPos.add(new Vector3(0, 0, dimensions.z / 2));
-
 		goals.push(new Goal
 		(
-			goalPos,
-			post1Pos,
-			post2Pos,
+			jsonToVector3(map.goals[i].location),
+			jsonToVector3(map.goals[i].dimensions),
+			jsonToVector3(map.goals[i].post1),
+			jsonToVector3(map.goals[i].post2),
 			Colors[i].color,
-			normal,
+			jsonToVector3(map.goals[i].surfaceNormal),
 			scene
 		));
 	}
@@ -94,12 +92,12 @@ export function createGoals(scene: Scene, goals: Goal[], map: any)
 
 export function createBalls(scene: Scene, balls: Ball[], map: any)
 {
-	for (let i = 0; i < map.balls.length; i++)
+	for (let i = 0; map.balls[i]; i++)
 	{
 		balls.push(new Ball
 		(
-			jsonToVector3(map.balls[i].position),
-			ColorMap[map.balls[i].color] || ColorMap['green'],
+			jsonToVector3(map.balls[i].location),
+			ColorMap['green'],
 			0.5, scene
 		));
 	}
@@ -109,17 +107,21 @@ export function createPaddles(scene: Scene, paddles: Paddle[], mapGoals: any[])
 {
 	for (let i = 0; i < mapGoals.length; i++)
 	{
-		const goalPos = jsonToVector3(mapGoals[i].position);
-		const normal = jsonToVector3(mapGoals[i].normal);
+		const dimensions = jsonToVector3(mapGoals[i].dimensions);
+		dimensions.x = 0.3;
+		dimensions.y = 1.5;
+		dimensions.z = dimensions.z / 4;
+		const goalPos = jsonToVector3(mapGoals[i].location);
+		const normal = jsonToVector3(mapGoals[i].surfaceNormal);
 		const paddlePos = goalPos.add(normal.scale(2));
 
-		paddles.push(new Paddle(paddlePos, normal, Colors[i].color, scene));
+		paddles.push(new Paddle(dimensions, paddlePos, Colors[i].color, scene));
 	}
 }
 
-export function createPlayers(players: Player[], goals: Goal[], paddles: Paddle[], numPlayers: number)
+export function createPlayers(players: Player[], goals: Goal[], paddles: Paddle[])
 {
-	for (let i = 0; i < numPlayers; i++)
+	for (let i = 0; i < paddles.length; i++)
 	{
 		const player = new Player(`Player ${i + 1}`, i + 1, goals[i], paddles[i]);
 		switch (i)

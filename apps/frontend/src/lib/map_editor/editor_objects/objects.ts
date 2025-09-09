@@ -1,13 +1,16 @@
 import { Vector3, Color3, Mesh, MeshBuilder, Scene, StandardMaterial, 
-		 Matrix, PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
+		 PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
 import { type BallExport, type WallExport, type GoalExport, vector3ToJson } from "$lib/index";
 
 const goalPostDiameter = 0.5;
+const middle = new Vector3(0.5, 0.25, 0.5);
 
 export class EditorObject
 {
 	private position:			Vector3;
 	private surfaceNormal:		Vector3;
+	private orientationUp:		Vector3;
+	private orientationDown:	Vector3;
 	private color:				Color3;
 	private type:				string;
 	private diameter:			number;
@@ -23,6 +26,8 @@ export class EditorObject
 	{
 		this.position = position;
 		this.surfaceNormal = surfaceNormal;
+		this.orientationUp = new Vector3(0, 0, -1);
+		this.orientationDown = new Vector3(0, 0, 1);
 		this.color = color;
 		this.type = type;
 		const mat = new StandardMaterial('objectMat', scene);
@@ -64,7 +69,7 @@ export class EditorObject
 			case 'goal':
 				if (dimensions == undefined)
 				{
-					throw new Error('Dimensions must be defined for wall type');
+					throw new Error('Dimensions must be defined for goal type');
 				}
 				this.dimensions = dimensions;
 				this.mesh = MeshBuilder.CreateBox('box', {width: dimensions.x, height: dimensions.y, depth: dimensions.z}, scene);
@@ -86,7 +91,7 @@ export class EditorObject
 		}
 	}
 	
-	private createPost(position: Vector3, scene: Scene): Mesh
+	createPost(position: Vector3, scene: Scene): Mesh
 	{
 		const post = MeshBuilder.CreateCylinder('goalPost', { diameter: goalPostDiameter, height: this.dimensions.y }, scene);
 		post.position = position;
@@ -112,39 +117,69 @@ export class EditorObject
 		}
 	}
 
+	moveToPosition(newPos: Vector3)
+	{
+		const posChange = newPos.subtract(this.position);
+		
+		this.changePosition(posChange);
+	}
+
 	rotate(angle: number)
 	{
-		const rotationMatrix = Matrix.RotationY(angle);
+		// const rotationMatrix = Matrix.RotationY(angle);
 
-		this.surfaceNormal = Vector3.TransformNormal(this.surfaceNormal, rotationMatrix).normalize();
+		this.orientationDown = rotateVector(this.orientationDown, -angle);
+		this.orientationUp = rotateVector(this.orientationUp, -angle);
+		this.surfaceNormal = rotateVector(this.surfaceNormal, -angle);
 		this.mesh.rotate(Vector3.Up(), angle);
-		
+
 		if (this.type == 'goal')
 		{
-			const post1dir = this.post1.position.subtract(this.position);
-			const post2dir = this.post2.position.subtract(this.position);
-			this.post1.position = this.position.add(Vector3.TransformNormal(post1dir, rotationMatrix));
-			this.post2.position = this.position.add(Vector3.TransformNormal(post2dir, rotationMatrix));
+			const directionP1 = this.orientationUp.scale(this.dimensions.z / 2).add(this.surfaceNormal.scale(0.5));
+			const directionP2 = this.orientationDown.scale(this.dimensions.z / 2).add(this.surfaceNormal.scale(0.5));
+			this.post1.position = this.position.add(directionP1);
+			this.post2.position = this.position.add(directionP2);
 		}
 	}
 
-	increaseSize()
+	increaseSize(maxSize: number)
 	{
 		switch (this.type)
 		{
-			case 'wall': this.dimensions.x += 1;
-			case 'goal': this.dimensions.x += 1;
+			case 'wall': this.dimensions.z = Math.min(this.dimensions.z + 1, maxSize); break;
+			case 'goal':
+				this.dimensions.z += 1;
+				if (this.dimensions.z > maxSize)
+				{
+					this.dimensions.z = maxSize;
+					return;
+				}
+				this.post1.position = this.post1.position.add(this.orientationUp.scale(0.5));
+				this.post2.position = this.post2.position.add(this.orientationDown.scale(0.5));
+				break;
+			default: break;
 		}
+		this.mesh.scaling.z = this.dimensions.z / this.mesh.getBoundingInfo().boundingBox.extendSize.z / 2;
 	}
 
 	decreaseSize()
 	{
 		switch (this.type)
 		{
-			case 'wall': this.dimensions.x = Math.min(this.dimensions.x - 1, 1); break;
-			case 'goal': this.dimensions.x = Math.min(this.dimensions.x - 1, 1); break;
+			case 'wall': this.dimensions.z = Math.max(this.dimensions.z - 1, 1); break;
+			case 'goal':
+				this.dimensions.z -= 1;
+				if (this.dimensions.z < 1)
+				{
+					this.dimensions.z = 1;
+					return;
+				}
+				this.post1.position = this.post1.position.add(this.orientationDown.scale(0.5));
+				this.post2.position = this.post2.position.add(this.orientationUp.scale(0.5));
+				break;
 			default: break;
 		}
+		this.mesh.scaling.z = this.dimensions.z / this.mesh.getBoundingInfo().boundingBox.extendSize.z / 2;
 	}
 
 	getMesh(): Mesh
@@ -173,6 +208,27 @@ export class EditorObject
 	objType(): string
 	{
 		return this.type;
+	}
+
+	clone(scene: Scene): EditorObject
+	{
+		const copy = new EditorObject
+		(
+			this.type,
+			this.position.clone(),
+			this.surfaceNormal.clone(),
+			this.color,
+			scene,
+			this.dimensions ? this.dimensions.clone() : undefined,
+			this.diameter ? this.diameter : undefined
+		);
+		// if (this.type == 'goal')
+		// {
+		// 	copy.post1 = copy.createPost(this.post1.position.clone(), scene);
+		// 	copy.post2 = copy.createPost(this.post2.position.clone(), scene);
+		// }
+		copy.moveToPosition(middle);
+		return copy;
 	}
 
 	getBallExport(): BallExport
@@ -204,18 +260,36 @@ export class EditorObject
 		{
 			type: this.type,
 			location: vector3ToJson(this.position),
+			post1: vector3ToJson(this.post1.position),
+			post2: vector3ToJson(this.post2.position),
 			dimensions: vector3ToJson(this.dimensions),
 			surfaceNormal: vector3ToJson(this.surfaceNormal)
 		};
 		return data;
 	}
+
+	getPosition(): Vector3
+	{
+		return this.position;
+	}
+
+	dispose()
+	{
+		this.mesh.dispose();
+		this.physicsAggregate.dispose();
+		if (this.type == 'goal')
+		{
+			this.post1.dispose();
+			this.post2.dispose();
+		}
+	}
 }
 
 export function rotateVector(vector: Vector3, angle: number): Vector3
 {
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    const x = vector.x * cos - vector.z * sin;
-    const z = vector.x * sin + vector.z * cos;
-    return new Vector3(x, vector.y, z);
+	const cos = Math.cos(angle);
+	const sin = Math.sin(angle);
+	const x = vector.x * cos - vector.z * sin;
+	const z = vector.x * sin + vector.z * cos;
+	return new Vector3(x, vector.y, z);
 }

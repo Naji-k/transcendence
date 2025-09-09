@@ -19,6 +19,7 @@ export class Game
 	private gameIsRunning: boolean;
 	private	gameCanvas: HTMLCanvasElement;
 	
+	private jsonMap: any;
 	private keys: Record<string, boolean> = {};
 	private scoreboard: TextBlock[] = [];
 	private players: Player[] = [];	
@@ -87,26 +88,27 @@ export class Game
 
 	async loadMap(inputFile: string)
 	{
-		await this.loadSounds();
-		await loadFileText(inputFile);
-
-		const map = JSON.parse(inputFile);
+		const fileText = await loadFileText(inputFile);
+		
+		const map = JSON.parse(fileText);
 		
 		if (!map.dimensions || !map.balls || !map.goals)
 		{
 			throw new Error('Invalid map format');
 		}
 		this.createScene(map);
-
+		
 		const eliminationMat = new StandardMaterial('eliminatedMat', this.scene);
-
+		
 		eliminationMat.diffuseColor = new Color3(0.5, 0.5, 0.5);
 		eliminationMat.alpha = 0.5;
 		eliminationMat.maxSimultaneousLights = 16;
-
+		
 		Paddle.setEliminatedMaterial(eliminationMat);
 		Goal.setEliminatedMaterial(eliminationMat);
 		Goal.createGoalPostMaterial(this.scene);
+		await this.loadSounds();
+		this.jsonMap = map;
 	}
 
 	private createScene(map: any)
@@ -128,12 +130,13 @@ export class Game
 		createWalls(scene, this.walls, map.walls);
 		createGoals(scene, this.goals, map);
 		createPaddles(scene, this.paddles, map.goals);
-		createPlayers(this.players, this.goals, this.paddles, this.playerCount);
+		createPlayers(this.players, this.goals, this.paddles);
 		createScoreboard(this.scoreboard, this.players);
 		
 		const background = new Layer('background', 'backgrounds/volcano.jpg', scene, true);
 		background.isBackground = true;
 		this.scene = scene;
+		this.playerCount = this.players.length;
 	}
 
 	private victory()
@@ -268,7 +271,7 @@ export class Game
 					{
 						this.paddles[j].reset();
 					}
-					createBalls(this.scene, this.balls, 1);
+					createBalls(this.scene, this.balls, this.jsonMap);
 				}
 				scored = false;
 			}

@@ -20,31 +20,24 @@ export class Goal
 
 	private static height = 4;
 
-	constructor(goalpos: Vector3, loc1: Vector3, loc2: Vector3, clr: Color3, normalDir: Vector3, scene: Scene)
+	constructor(goalpos: Vector3, dimensions: Vector3, post1: Vector3, post2: Vector3, clr: Color3, normalDir: Vector3, scene: Scene)
 	{
 		this.isAlive = true;
 		this.scoringCooldown = 0;
 		this.normal = normalDir;
 		this.color = clr;
-		this.post1 = this.createPost(loc1, scene);
-		this.post2 = this.createPost(loc2, scene);
+		this.post1 = this.createPost(post1, scene);
+		this.post2 = this.createPost(post2, scene);
 		
 		this.plate = MeshBuilder.CreateBox('goalplate',
-			{ width: goalThickness, height: Goal.height, depth: loc2.subtract(loc1).length() },
+			{ width: dimensions.x, height: Goal.height, depth: dimensions.z },
 			scene
 		);
 		this.plate.position = goalpos;
 
-		if (this.post1.position.x < 0)
-		{
-			this.post1.position.x += goalThickness;
-			this.post2.position.x += goalThickness;
-		}
-		else
-		{
-			this.post1.position.x -= goalThickness;
-			this.post2.position.x -= goalThickness;
-		}
+		this.post1.position = this.post1.position.add(this.normal.scale(goalThickness / 2));
+		this.post2.position = this.post2.position.add(this.normal.scale(goalThickness / 2));
+
 		new PhysicsAggregate(
 			this.plate,
 			PhysicsShapeType.BOX,
@@ -112,7 +105,7 @@ export class Goal
 		}
 		const ballDirection = linearVelocity.normalize();
 
-		return dot2D(ballDirection, this.normal) > 0;
+		return Vector3.Dot(ballDirection, this.normal) < 0;
 	}
 
 	getPlateMesh(): Mesh

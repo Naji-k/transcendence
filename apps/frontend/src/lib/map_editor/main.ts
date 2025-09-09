@@ -15,8 +15,6 @@ export async function startEditor(): Promise<Editor>
 		console.error('Failed to initialize HavokPhysics.');
 		return;
 	}
-	const editor = new Editor(havokInstance);
 
-	editor.start();
-	return editor;
+	return new Editor(havokInstance);
 }

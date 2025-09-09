@@ -1,10 +1,14 @@
 import { ColorMap, saveMap, loadMap, EditorObject, startEditor, jsonToVector2, jsonToVector3 } from '$lib/index';
 import { Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		 StandardMaterial, MeshBuilder, HavokPlugin, Mesh, 
-		 PointerEventTypes, HighlightLayer, LinesMesh } from '@babylonjs/core';
+		 PointerEventTypes, HighlightLayer, LinesMesh, PickingInfo } from '@babylonjs/core';
 import { TextBlock, AdvancedDynamicTexture, Button, Control } from '@babylonjs/gui';
 
-const maxPlayerCount = 6;
+const rotationStep = 6 * Math.PI / 180;
+const leftStep = new Vector3(-0.5, 0, 0);
+const rightStep = new Vector3(0.5, 0, 0);
+const upStep = new Vector3(0, 0, -0.5);
+const downStep = new Vector3(0, 0, 0.5);
 
 export class Editor
 {
@@ -12,33 +16,47 @@ export class Editor
 	private scene: Scene;
 	private havokInstance: any;
 	private dimensions: [number, number];
-	private	editorCanvas: HTMLCanvasElement;
+	private	editorCanvas: HTMLCanvasElement = null;
 	private ground: Mesh;
 	private demoBall: EditorObject;
 	private demoWall: EditorObject;
 	private demoGoal: EditorObject;
 	private highlight: HighlightLayer;
 	private highlightedMesh: Mesh;
-	
+	private isDragging: boolean = false;
+	private keydownListener: (event: KeyboardEvent) => void;
+	private pointerObserver: any;
+
 	private goals: EditorObject[] = [];
 	private balls: EditorObject[] = [];
 	private walls: EditorObject[] = [];
-	private loadMap: Button;
-	private saveMap: Button;
-	private reset: Button;
 	private lines: LinesMesh[] = [];
 	private sizeText: TextBlock;
 	private UI: AdvancedDynamicTexture;
+
+	private load: Button;
+	private save: Button;
+	private reset: Button;
 	
 	constructor(havokInstance: any)
 	{
+		this.start(havokInstance);
+	}
+
+	start(havokInstance: any)
+	{
 		this.editorCanvas = document.getElementById('editorCanvas') as HTMLCanvasElement;
 		this.havokInstance = havokInstance;
-		this.dimensions = [10, 15];
+		this.ground = null;
+		this.lines = [];
 		this.engine = new Engine(this.editorCanvas, true, {antialias: true});
 		this.scene = this.createScene();
-		this.handleSelectionLogic();
+		this.handleMouseActions();
 		this.addGui();
+		this.engine.runRenderLoop(() =>
+		{
+			this.scene.render();
+		});
 	}
 
 	private addGui()
@@ -49,67 +67,13 @@ export class Editor
 		this.loadButton(advancedTexture);
 		this.saveButton(advancedTexture);
 		this.resetButton(advancedTexture);
-		this.updateMapSize();
+		this.handleKeyPresses();
 		this.UI = advancedTexture;
-		this.lines = drawGrid(this.scene, this.dimensions);
+		this.drawGrid();
 		console.log('Editor started');
 	}
 
 	/*	These methods create, initialize and add buttons to the UI	*/
-
-	private updateMapSize()
-	{
-		const dimensions = this.dimensions;
-
-		window.addEventListener('keydown', (event) =>
-		{
-			if (this.highlightedMesh == null || this.highlightedMesh == this.ground)
-			{
-				switch (event.key)
-				{
-					case 'ArrowUp': dimensions[0] += 1;	break;
-					case 'ArrowDown': dimensions[0] = Math.max(1, dimensions[0] - 1); break;
-					case 'ArrowLeft':
-						dimensions[1] = Math.max(1, dimensions[1] - 1);
-						this.demoBall.changePosition(new Vector3(-0.5, 0, 0));
-						this.demoWall.changePosition(new Vector3(-0.5, 0, 0));
-						this.demoGoal.changePosition(new Vector3(-0.5, 0, 0));
-						break;
-					case 'ArrowRight':
-						dimensions[1] += 1;
-						this.demoBall.changePosition(new Vector3(0.5, 0, 0));
-						this.demoWall.changePosition(new Vector3(0.5, 0, 0));
-						this.demoGoal.changePosition(new Vector3(0.5, 0, 0));
-						break;
-					default: return;
-				}
-				this.sizeText.text = `Map Size: ${dimensions[0]} x ${dimensions[1]}`;
-				this.ground.dispose();
-				this.ground = this.createGround(this.scene, dimensions);
-				this.redrawGrid();
-			}
-			else
-			{
-				for (const obj of [...this.walls, ...this.goals])
-				{
-					if (obj.getMesh() == this.highlightedMesh)
-					{
-						const rotationStep = 360 / 16 * Math.PI / 180;
-						switch (event.key)
-						{
-							case 'ArrowUp':
-							case 'ArrowRight': obj.rotate(rotationStep); break;
-							case 'ArrowDown':
-							case 'ArrowLeft': obj.rotate(-rotationStep); break;
-							case '+': obj.increaseSize(); break;
-							case '-': obj.decreaseSize(); break;
-							default: return;
-						}
-					}
-				}
-			}
-		});
-	}
 
 	private initSizeText(advancedTexture: AdvancedDynamicTexture)
 	{
@@ -140,12 +104,11 @@ export class Editor
 		button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
 		button.onPointerUpObservable.add(async () =>
 		{
-			console.log('Load Map button clicked');
 			const mapObjects = await loadMap();
 			this.loadMapFromFile(mapObjects);
 		});
-		this.loadMap = button;
 		advancedTexture.addControl(button);
+		this.load = button;
 	}
 
 	private saveButton(advancedTexture: AdvancedDynamicTexture)
@@ -162,12 +125,10 @@ export class Editor
 		button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
 		button.onPointerUpObservable.add(async () =>
 		{
-			console.log('Save Map button clicked');
 			saveMap(this.balls, this.walls, this.goals, this.dimensions);
 		});
 		advancedTexture.addControl(button);
-		this.saveMap = button;
-
+		this.save = button;
 	}
 
 	private resetButton(advancedTexture: AdvancedDynamicTexture)
@@ -184,11 +145,11 @@ export class Editor
 		button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
 		button.onPointerUpObservable.add(() =>
 		{
-			console.log('Reset button clicked');
-			restartEditor(this);
+			this.dispose();
+			this.start(this.havokInstance);
 		});
-		this.reset = button;
 		advancedTexture.addControl(button);
+		this.reset = button;
 	}
 
 	private createScene(): Scene
@@ -202,7 +163,8 @@ export class Editor
 		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
 		hemiLight.intensity = 0.6;
 
-		this.ground = this.createGround(scene, this.dimensions);
+		this.dimensions = [20, 28];
+		this.createGround(scene, this.dimensions);
 
 		this.demoBall = new EditorObject(
 			'sphere',
@@ -211,7 +173,7 @@ export class Editor
 			Color3.Black(),
 			scene,
 			undefined,
-			0.3
+			0.5
 		);
 
 		this.demoWall = new EditorObject(
@@ -243,10 +205,8 @@ export class Editor
 		this.balls = [];
 		this.walls = [];
 		this.goals = [];
-		this.redrawGrid();
-		this.ground.dispose();
-
-		this.ground = this.createGround(this.scene, [this.dimensions[0], this.dimensions[1]]);
+		this.drawGrid();
+		this.createGround(this.scene, [this.dimensions[0], this.dimensions[1]]);
 
 		for (const ball of mapObjects.balls)
 		{
@@ -289,11 +249,128 @@ export class Editor
 		}
 	}
 
-	private handleSelectionLogic()
+	/*	These methods handle the selection and manipulation of objects in the scene	*/
+
+	private handleKeyPresses()
+	{
+		const dimensions = this.dimensions;
+
+		this.keydownListener = (event) =>
+		{
+			if (this.isDemoObject(this.highlightedMesh) == true)
+			{
+				if (event.key == '+')
+				{
+					switch (this.highlightedMesh)
+					{
+						case this.demoBall.getMesh(): this.balls.push(this.demoBall.clone(this.scene)); break;
+						case this.demoWall.getMesh(): this.walls.push(this.demoWall.clone(this.scene)); break;
+						case this.demoGoal.getMesh(): this.goals.push(this.demoGoal.clone(this.scene)); break;
+						default: break;
+					}
+				}
+			}
+			else if (this.highlightedMesh == null || this.highlightedMesh == this.ground)
+			{
+				switch (event.key)
+				{
+					case 'ArrowUp': dimensions[0] += 1;	break;
+					case 'ArrowDown': dimensions[0] = Math.max(1, dimensions[0] - 1); break;
+					case 'ArrowLeft':
+						dimensions[1] -= 1;
+						if (dimensions[1] < 1)
+						{
+							dimensions[1] = 1;
+							return;
+						}
+						this.demoBall.changePosition(leftStep);
+						this.demoWall.changePosition(leftStep);
+						this.demoGoal.changePosition(leftStep);
+						break;
+					case 'ArrowRight':
+						dimensions[1] += 1;
+						this.demoBall.changePosition(rightStep);
+						this.demoWall.changePosition(rightStep);
+						this.demoGoal.changePosition(rightStep);
+						break;
+					default: break;
+				}
+				this.sizeText.text = `Map Size: ${dimensions[0]} x ${dimensions[1]}`;
+				this.createGround(this.scene, dimensions);
+				this.drawGrid();
+			}
+			else
+			{
+				for (const obj of [...this.balls, ...this.walls, ...this.goals])
+				{
+					if (obj.getMesh() == this.highlightedMesh)
+					{
+						switch (event.key)
+						{
+							case 'ArrowUp':
+							case 'ArrowRight': obj.rotate(rotationStep); break;
+							case 'ArrowDown':
+							case 'ArrowLeft': obj.rotate(-rotationStep); break;
+							case '+': obj.increaseSize(Math.min(dimensions[0] - 1, dimensions[1] - 1)); break;
+							case '-': obj.decreaseSize(); break;
+							case 'Delete':
+							case 'Backspace':
+								this.stopHighlighting();
+								switch (obj.objType())
+								{
+									case 'sphere':
+										for (let i = 0; i < this.balls.length; i++)
+										{
+											if (this.balls[i] == obj)
+											{
+												this.balls[i].dispose();
+												this.balls.splice(i, 1);
+												break;
+											}
+										}
+										break;
+									case 'wall':
+										for (let i = 0; i < this.walls.length; i++)
+										{
+											if (this.walls[i] == obj)
+											{
+												this.walls[i].dispose();
+												this.walls.splice(i, 1);
+												break;
+											}
+										}
+										break;
+									case 'goal':
+										for (let i = 0; i < this.goals.length; i++)
+										{
+											if (this.goals[i] == obj)
+											{
+												this.goals[i].dispose();
+												this.goals.splice(i, 1);
+												break;
+											}
+										}
+									default: break;
+								}
+							case 'w': obj.changePosition(upStep); break;
+							case 's': obj.changePosition(downStep); break;
+							case 'a': obj.changePosition(rightStep); break;
+							case 'd': obj.changePosition(leftStep); break;
+							default: break;
+						}
+					}
+				}
+			}
+		};
+		window.addEventListener('keydown', this.keydownListener);
+	}
+
+	private handleMouseActions()
 	{
 		const scene = this.scene;
+		let pickResult: PickingInfo;
 
-		scene.onPointerObservable.add((pointerInfo) =>
+		this.pointerObserver = (pointerInfo) =>
 		{
 			const evt = pointerInfo.event;
 			const mouseLocation = scene.pick(evt.clientX, evt.clientY);
@@ -302,34 +379,61 @@ export class Editor
 			{
 				return;
 			}
-
 			switch (pointerInfo.type)
 			{
 				case PointerEventTypes.POINTERDOWN:
-					this.highlight.removeAllMeshes();
-					this.highlightedMesh = null;
-					const pickResult = pointerInfo.pickInfo;
-					if (pickResult && pickResult.hit == true && pickResult.pickedMesh)
+					this.stopHighlighting();
+					pickResult = pointerInfo.pickInfo;
+					if (pickResult != null && pickResult.hit == true && pickResult.pickedMesh != null)
 					{
+						this.isDragging = true;
 						const pickedMesh = pickResult.pickedMesh as Mesh;
-						this.highlight.addMesh(pickedMesh, Color3.Yellow());
-						if (pickedMesh == this.demoGoal.getMesh() ||
-							pickedMesh == this.demoGoal.getPost1Mesh() ||
-							pickedMesh == this.demoGoal.getPost2Mesh())
+
+						if (this.isDemoObject(pickedMesh) == true)
 						{
-							this.highlight.addMesh(this.demoGoal.getMesh(), Color3.Yellow());
-							this.highlight.addMesh(this.demoGoal.getPost1Mesh(), Color3.Yellow());
-							this.highlight.addMesh(this.demoGoal.getPost2Mesh(), Color3.Yellow());
-							this.highlightedMesh = this.demoGoal.getMesh();
+							this.highlight.addMesh(pickedMesh, Color3.Yellow());
+							if (pickedMesh == this.demoGoal.getMesh() ||
+								pickedMesh == this.demoGoal.getPost1Mesh() ||
+								pickedMesh == this.demoGoal.getPost2Mesh())
+							{
+								this.highlight.addMesh(this.demoGoal.getMesh(), Color3.Yellow());
+								this.highlight.addMesh(this.demoGoal.getPost1Mesh(), Color3.Yellow());
+								this.highlight.addMesh(this.demoGoal.getPost2Mesh(), Color3.Yellow());
+								this.highlightedMesh = this.demoGoal.getMesh();
+							}
+							else
+							{
+								this.highlightedMesh = pickedMesh;
+							}
 						}
 						else
 						{
-							this.highlightedMesh = pickedMesh;
+							for (const obj of [...this.balls, ...this.walls, ...this.goals])
+							{
+								if (obj.getMesh() == pickedMesh)
+								{
+									this.highlight.addMesh(pickedMesh, Color3.Yellow());
+									if (obj.objType() == 'goal')
+									{
+										this.highlight.addMesh(obj.getPost1Mesh(), Color3.Yellow());
+										this.highlight.addMesh(obj.getPost2Mesh(), Color3.Yellow());
+									}
+									this.highlightedMesh = obj.getMesh();
+									return;
+								}
+							}
 						}
 					}
 					break;
 
 				case PointerEventTypes.POINTERUP:
+					this.isDragging = false;
+					pickResult = pointerInfo.pickInfo;
+					if (pickResult == null || pickResult.hit == false || pickResult.pickedMesh == null)
+					{
+						this.stopHighlighting();
+						break;
+					}
 					placePosition.y = 0.25;
 					placePosition.x = Math.floor(placePosition.x);
 					placePosition.z = Math.floor(placePosition.z);
@@ -341,109 +445,183 @@ export class Editor
 					{
 						placePosition.x += 0.5;
 					}
-					switch (this.highlightedMesh)
+					for (const obj of [...this.balls, ...this.walls, ...this.goals])
 					{
-						case null: break;
-						case this.demoBall.getMesh():
-							this.balls.push(new EditorObject
-							(
-								'sphere',
-								placePosition,
-								new Vector3(-1, 0, 0),
-								ColorMap['green'],
-								scene,
-								undefined,
-								0.3)
-							);
-							break;
-						case this.demoWall.getMesh():
-							this.walls.push(new EditorObject
-							(
-								'wall',
-								placePosition,
-								new Vector3(-1, 0, 0),
-								Color3.Black(),
-								scene,
-								new Vector3(0.5, 1, 3))
-							);
-							break;
-						case this.demoGoal.getMesh():
-						case this.demoGoal.getPost1Mesh():
-						case this.demoGoal.getPost2Mesh():
-							this.goals.push(new EditorObject
-							(
-								'goal',
-								placePosition,
-								new Vector3(-1, 0, 0),
-								ColorMap['red'],
-								scene,
-								new Vector3(0.5, 2, 5))
-							);
-							break;
+						if (obj.getMesh() == this.highlightedMesh)
+						{
+							if (isWithinBounds(placePosition, this.dimensions) == false)
+							{
+								this.stopHighlighting();
+								return;
+							}
+							if (obj.getPosition().equals(placePosition) == true)
+							{
+								return;
+							}
+							obj.moveToPosition(placePosition);
+							return;
+						}
+					}
+					break;
+
+				case PointerEventTypes.POINTERMOVE:
+					if (this.isDragging == false)
+					{
+						return;
+					}
+					pickResult = pointerInfo.pickInfo;
+					placePosition.y = 0.25;
+					for (const obj of [...this.balls, ...this.walls, ...this.goals])
+					{
+						if (obj.getMesh() == this.highlightedMesh)
+						{
+							obj.moveToPosition(placePosition);
+							return;
+						}
 					}
 					break;
 
 				default: break;
 			}
-		});
+		};
+		scene.onPointerObservable.add(this.pointerObserver);
 	}
 
-	redrawGrid()
+	private isDemoObject(mesh: Mesh): boolean
 	{
-		for (const line of this.lines)
+		if (mesh == null)
 		{
-			line.dispose();
+			return false;
+		}		
+		if (mesh == this.demoBall.getMesh() ||
+			mesh == this.demoWall.getMesh() ||
+			mesh == this.demoGoal.getMesh() ||
+			mesh == this.demoGoal.getPost1Mesh() ||
+			mesh == this.demoGoal.getPost2Mesh())
+		{
+			return true;
 		}
-		this.lines = [];
-		this.lines = drawGrid(this.scene, this.dimensions);
+		return false;
 	}
-	
-	private createGround(scene: Scene, dimensions: number[]): Mesh
+
+	private stopHighlighting()
 	{
-		const ground = MeshBuilder.CreateGround(
+		this.highlight.removeAllMeshes();
+		this.highlightedMesh = null;
+	}
+
+	private drawGrid()
+	{
+		if (this.lines != null && this.lines.length > 0)
+		{
+			for (const line of this.lines)
+			{
+				line.dispose();
+			}
+		}
+		if (this.dimensions[1] > 20 || this.dimensions[0] > 30)
+		{
+			this.scene.activeCamera.position.y = Math.max(this.dimensions[1] + 10, this.dimensions[0] + 10);
+		}
+		else
+		{
+			this.scene.activeCamera.position.y = 30;
+		}
+		const verticalHalf = this.dimensions[0] / 2;
+		const horizontalHalf = this.dimensions[1] / 2;
+		const height = 0.01;
+		const lines: LinesMesh[] = [];
+
+		for (let i = -horizontalHalf + 1; i < horizontalHalf; i++)
+		{
+			lines.push(MeshBuilder.CreateLines(`grid_v_${i}`,
+			{
+				points:
+				[
+					new Vector3(i, height, -verticalHalf),
+					new Vector3(i, height, verticalHalf)
+				]
+			}, this.scene));
+			lines[lines.length - 1].color = Color3.Black();
+		}
+
+		for (let i = -verticalHalf + 1; i < verticalHalf; i++)
+		{
+			lines.push(MeshBuilder.CreateLines(`grid_h_${i}`,
+			{
+				points:
+				[
+					new Vector3(-horizontalHalf, height, i),
+					new Vector3(horizontalHalf, height, i)
+				]
+			}, this.scene));
+			lines[lines.length - 1].color = Color3.Black();
+		}
+		this.lines = lines;
+		this.scene.render();
+	}
+
+	
+	private createGround(scene: Scene, dimensions: number[])
+	{
+		if (this.ground != null)
+		{
+			this.ground.dispose();
+		}
+		this.ground = MeshBuilder.CreateGround(
 			'ground',
 			{width: dimensions[1], height: dimensions[0], updatable: true},
 			scene
 		);
-		const mat = new StandardMaterial('floor', ground.getScene());
+		const mat = new StandardMaterial('floor', this.scene);
 		mat.diffuseColor = Color3.Gray();
-		ground.material = mat;
-		return ground;
-	}
-
-	start()
-	{
-		this.engine.runRenderLoop(() =>
-		{
-			this.scene.render();
-		});
+		this.ground.material = mat;
 	}
 
 	dispose()
 	{
-		if (this.engine == null || this.scene == null)
+		if (!this.engine || !this.scene) return;
+
+		this.stopHighlighting();
+
+		if (this.keydownListener)
 		{
-			return;
+			window.removeEventListener('keydown', this.keydownListener);
+			this.keydownListener = null;
 		}
 
+		if (this.pointerObserver)
+		{
+			this.scene.onPointerObservable.remove(this.pointerObserver);
+			this.pointerObserver = null;
+		}
+
+		if (this.highlight) { this.highlight.dispose(); this.highlight = null; }
+		if (this.UI) { this.UI.dispose(); this.UI = null; }
+		if (this.sizeText) { this.sizeText.dispose(); this.sizeText = null; }
+		if (this.load) { this.load.dispose(); this.load = null; }
+		if (this.save) { this.save.dispose(); this.save = null; }
+		if (this.reset) { this.reset.dispose(); this.reset = null; }
+
+		if (this.demoBall) { this.demoBall.dispose(); this.demoBall = null; }
+		if (this.demoWall) { this.demoWall.dispose(); this.demoWall = null; }
+		if (this.demoGoal) { this.demoGoal.dispose(); this.demoGoal = null; }
+
+		if (this.balls) { for (const obj of this.balls) obj.dispose(); this.balls = []; }
+		if (this.walls) { for (const obj of this.walls) obj.dispose(); this.walls = []; }
+		if (this.goals) { for (const obj of this.goals) obj.dispose(); this.goals = []; }
+		if (this.ground) { this.ground.dispose(); this.ground = null; }
+		if (this.lines) { for (const line of this.lines) line.dispose(); this.lines = []; }
+		if (this.scene.activeCamera) { this.scene.activeCamera.dispose(); }
+
+		this.scene.dispose();
 		this.engine.stopRenderLoop();
 		this.engine.dispose();
-		this.scene.dispose();
-		this.UI.dispose();
-		this.loadMap = null;
-		this.saveMap = null;
-		this.reset = null;
-		this.engine = null;
+
 		this.scene = null;
-		this.highlightedMesh = null;
-		this.havokInstance = null;
+		this.engine = null;
 		this.editorCanvas = null;
-		this.balls = [];
-		this.walls = [];
-		this.goals = [];
-		this.demoBall = null;
-		this.demoWall = null;
-		this.demoGoal = null;
+
 		console.log('Editor stopped.');
 	}
 
@@ -453,48 +631,27 @@ export class Editor
 	getScene(): Scene {return this.scene;}
 }
 
-function drawGrid(scene: Scene, dimensions: [number, number]): LinesMesh[]
+function isWithinBounds(position: Vector3, dimensions: [number, number]): boolean
 {
-	const verticalHalf = dimensions[0] / 2;
-	const horizontalHalf = dimensions[1] / 2;
-	const height = 0.01;
-	const lines: LinesMesh[] = [];
+	const halfX = dimensions[1] / 2;
+	const halfZ = dimensions[0] / 2;
 
-	for (let i = -horizontalHalf + 1; i < horizontalHalf; i++)
+	if (position.x < -halfX || position.x > halfX ||
+		position.z < -halfZ || position.z > halfZ)
 	{
-		lines.push(MeshBuilder.CreateLines(`grid_v_${i}`,
-		{
-			points:
-			[
-				new Vector3(i, height, -verticalHalf),
-				new Vector3(i, height, verticalHalf)
-			]
-		}, scene));
-		lines[lines.length - 1].color = Color3.Black();
+		return false;
 	}
-
-	for (let i = -verticalHalf + 1; i < verticalHalf; i++)
-	{
-		lines.push(MeshBuilder.CreateLines(`grid_h_${i}`,
-		{
-			points:
-			[
-				new Vector3(-horizontalHalf, height, i),
-				new Vector3(horizontalHalf, height, i)
-			]
-		}, scene));
-		lines[lines.length - 1].color = Color3.Black();
-	}
-	return lines;
+	return true;
 }
 
-export async function destroyEditor(editor: Editor)
+export function destroyEditor(editor: Editor)
 {
 	editor.dispose();
 }
 
 export async function restartEditor(editor: Editor): Promise<Editor>
 {
-	destroyEditor(editor);
-	return await startEditor();
+	editor.dispose();
+	editor = await startEditor();
+	return editor;
 }

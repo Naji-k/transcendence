@@ -21,6 +21,8 @@ export interface GoalExport
 	location: { x: number; y: number; z: number };
 	dimensions: { x: number; y: number; z: number };
 	surfaceNormal: { x: number; y: number; z: number };
+	post1: { x: number; y: number; z: number };
+	post2: { x: number; y: number; z: number };
 }
 
 export function parseMap(inputFile: string): any

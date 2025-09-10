@@ -1,7 +1,27 @@
 <script>
+	import { testUsers, getUserStats, getUserFriends, getUserMatchHistory } from "$lib/testData";
+
+	let currentUser = testUsers[0];
+	let userStat = getUserStats(currentUser.id);
+	let userFriends = getUserFriends(currentUser.id);
+	let userMatchHistory = getUserMatchHistory(currentUser.id);
+	console.log("wins: ", userStat.wins, "losses: ", userStat.losses)
+	console.log("friends: ", userFriends);
+	console.log("match history: ", userMatchHistory);
+
+
 	let user = {
-		wins: 10,
-		losses: 15  
+		...currentUser,
+		wins: userStat.wins,
+		losses: userStat.losses  
+	}
+
+	function formatDate(date) {
+		return date.toLocaleDateString('en-US', {
+			day: 'numeric',
+			month: 'short',
+			year: 'numeric'
+		});
 	}
 </script>
 
@@ -10,16 +30,16 @@
 		<!-- Section of info with alias and avatar on the left and wins/losses on the right of the page -->
 		<header class="flex justify-between items-center text-gray-300">
 			<section class="flex items-center">
-				<img class="w-20 h-20 rounded-full mr-4" src="https://thisishollywood.com/cdn/shop/products/2330-2325_1024x1024.jpg?v=1615010563" alt="user_avatar"/>
+				<img class="w-20 h-20 rounded-full mr-4" src={user.avatarPath} alt="{user.alias} avatar"/>
 				<h2 class="text-3xl">{user.alias}</h2>
 			</section>
 			<section>
 				<h2 class="text-3xl pb-2">Stats</h2>
 				<dl class="grid grid-cols-2 gap-x-4 gap-y-2">
 					<dt class="text-green-400">Wins</dt>
-					<dd>user.wins</dd>
+					<dd>{user.wins}</dd>
 					<dt class="text-red-400">Losses</dt>
-					<dd>user.losses</dd>
+					<dd>{user.losses}</dd>
 					<dt class="text-cyan-400">Winrate</dt>
 					<dd>{user.wins && user.losses ? Math.round((user.wins / (user.wins + user.losses)) * 100) : 0}%</dd>
 				</dl>
@@ -33,13 +53,58 @@
 		</nav>
 
 		<!-- Match history section - scrollable -->
-		<section>
-		<h3 class="text-2xl">Match history</h3>
+		<section class="mt-6">
+			<h3 class="text-2xl mb-4">Match history({userMatchHistory.length})</h3>
+			<div class="max-h-64 overflow-y-auto space-y-2">
+				{#each userMatchHistory as match}
+					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
+						<div class="flex items-center">
+							{#if match.opponent}
+								<img class="w-10 h-10 rounded-full mr-3" src={match.opponent.avatarPath} alt="{match.opponent.alias} avatar">
+								<hgroup>
+									<p class="text-gray-300">vs {match.opponent.alias}</p>
+									<time class="text-gray-500 text-xs" datetime={match.date.toISOString()}>{formatDate(match.date)}</time>
+								</hgroup>
+							{:else}
+								<div>
+									<p class="text-gray-300">Match #{match.matchId}</p>
+									<time class="text-gray-500 text-xs" datetime={match.date.toISOString()}>{formatDate(match.date)}</time>
+								</div>
+							{/if}
+						</div>
+
+						<div class="text-right">
+							<span class="{match.isWin ? 'text-green-400' : 'text-red-400'} font-bold">
+								{match.isWin ? 'WIN' : 'LOSS'}
+							</span>
+							<small class="text-gray-500 text-xs block">#{match.placement}</small>
+						</div>
+					</article>
+				{/each}
+
+				{#if userMatchHistory.length === 0}
+					<p class="text-gray-500 text-center py-4">No matches played yet</p>
+				{/if}
+			</div>
 		</section>
 
 		<!-- Friends list section - scrollable -->
-		<section>
-		<h3 class="text-2xl">Friends</h3>
+		<section class="mt-6">
+			<h3 class="text-2xl mb-4">Friends({userFriends.length})</h3>
+			<div class="space-y-2">
+				{#each userFriends as friend}
+					<div class="flex items-center bg-gray-800 p-3 rounded-lg">
+						<img class="w-12 h-12 rounded-full mr-3" src={friend.avatarPath} alt="{friend.alias} avatar">
+						<div>
+							<p class="text-gray-300 mr-3">{friend.alias}</p>
+							<!-- <p class="text-gray-500 text-sm">{friend.name}</p> -->
+						</div>
+					</div>
+				{/each}
+				{#if userFriends.length === 0}
+					<p class="text-gray-500">No friends yet</p>
+				{/if}
+			</div>
 		</section>
 
 		<!-- Available lobbies section - Scrollable -->

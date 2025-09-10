@@ -36,6 +36,13 @@ export interface MatchHistoryEntry {
   isWin: boolean;
 }
 
+export interface Lobby {
+  lobbyId: number;
+  creator: number;
+  players: number[];
+  mode: number;
+}
+
 export const testUsers: User[] = [
   {
     id: 1,
@@ -63,8 +70,57 @@ export const testUsers: User[] = [
     email: "mike@example.com",
     avatarPath: "https://thf.bing.com/th?q=Mr+Bean+Avatar&w=120&h=120&c=1&rs=1&qlt=90&cb=1&pid=InlineBlock&mkt=nl-NL&cc=NL&setlang=en&adlt=moderate&t=1&mw=247",
     backgroundPath: "background_default"
+  },
+  {
+    id: 4,
+    alias: "EliteGamer",
+    password: "hashed_password",
+    name: "Sarah Wilson",
+    email: "sarah@example.com",
+    avatarPath: "https://th.bing.com/th/id/OIP.ZDjW4WOYi3l-8kcjsCkVMQHaE8?w=265&h=180&c=7&r=0&o=5&pid=1.7",
+    backgroundPath: "background_default"
   }
 ]
+
+export const testLobbies: Lobby[] = [
+  {
+    lobbyId: 1,
+    creator: 1,
+    players: [1], // Player1 waiting for 1v1 opponent
+    mode: 1 // 1v1 mode
+  },
+  {
+    lobbyId: 2,
+    creator: 2,
+    players: [2, 3], // GamerGirl vs ProPlayer (full 1v1)
+    mode: 1 // 1v1 mode
+  },
+  {
+    lobbyId: 3,
+    creator: 1,
+    players: [1, 2, 4], // 3 players waiting for one more in 2v2
+    mode: 2 // 2v2 mode
+  },
+  {
+    lobbyId: 4,
+    creator: 3,
+    players: [3], // ProPlayer waiting for 1v1 opponent
+    mode: 1 // 1v1 mode
+  },
+  {
+    lobbyId: 5,
+    creator: 4,
+    players: [1, 3], // Player1 and ProPlayer waiting for 2v2 teammates
+    mode: 2 // 2v2 mode
+  },
+  {
+    lobbyId: 6,
+    creator: 2,
+    players: [2, 4], // GamerGirl and EliteGamer waiting for 2v2 opponents
+    mode: 2 // 2v2 mode
+  }
+];
+
 
 export const testMatches: Match[] = [
   { id: 1, victor: 1, date: new Date('2024-09-01') },
@@ -112,6 +168,10 @@ export const testFriendships: Friendship[] = [
   { id: 1, userId: 1, friendId: 2},
   { id: 2, userId: 2, friendId: 3},
 ]
+
+export function getLobbyCreator(creatorId: number) {
+  return testUsers.find(user => user.id === creatorId) || undefined;
+}
 
 export function getUserMatches(userId: number) {
   return testMatchParticipations.filter(mp => mp.playerId === userId);

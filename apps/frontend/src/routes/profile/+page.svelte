@@ -1,13 +1,14 @@
 <script>
-	import { testUsers, getUserStats, getUserFriends, getUserMatchHistory } from "$lib/testData";
+	import { testUsers, testLobbies, getUserStats, getUserFriends, getUserMatchHistory, getLobbyCreator } from "$lib/testData";
 
-	let currentUser = testUsers[0];
+	let currentUser = testUsers[1];
 	let userStat = getUserStats(currentUser.id);
 	let userFriends = getUserFriends(currentUser.id);
 	let userMatchHistory = getUserMatchHistory(currentUser.id);
 	console.log("wins: ", userStat.wins, "losses: ", userStat.losses)
 	console.log("friends: ", userFriends);
 	console.log("match history: ", userMatchHistory);
+	console.log("test lobbies: ", testLobbies);
 
 
 	let user = {
@@ -61,10 +62,10 @@
 						<div class="flex items-center">
 							{#if match.opponent}
 								<img class="w-10 h-10 rounded-full mr-3" src={match.opponent.avatarPath} alt="{match.opponent.alias} avatar">
-								<hgroup>
+								<div>
 									<p class="text-gray-300">vs {match.opponent.alias}</p>
 									<time class="text-gray-500 text-xs" datetime={match.date.toISOString()}>{formatDate(match.date)}</time>
-								</hgroup>
+								</div>
 							{:else}
 								<div>
 									<p class="text-gray-300">Match #{match.matchId}</p>
@@ -91,15 +92,15 @@
 		<!-- Friends list section - scrollable -->
 		<section class="mt-6">
 			<h3 class="text-2xl mb-4">Friends({userFriends.length})</h3>
-			<div class="space-y-2">
+			<div class="max-h-64 overflow-y-auto space-y-2">
 				{#each userFriends as friend}
-					<div class="flex items-center bg-gray-800 p-3 rounded-lg">
+					<article class="flex items-center bg-gray-800 p-3 rounded-lg">
 						<img class="w-12 h-12 rounded-full mr-3" src={friend.avatarPath} alt="{friend.alias} avatar">
 						<div>
 							<p class="text-gray-300 mr-3">{friend.alias}</p>
 							<!-- <p class="text-gray-500 text-sm">{friend.name}</p> -->
 						</div>
-					</div>
+					</article>
 				{/each}
 				{#if userFriends.length === 0}
 					<p class="text-gray-500">No friends yet</p>
@@ -108,8 +109,19 @@
 		</section>
 
 		<!-- Available lobbies section - Scrollable -->
-		<section>
-		<h3 class="text-2xl">Lobbies</h3>
+		<section class="mt-6">
+			<h3 class="text-2xl mb-4">Lobbies</h3>
+			<div class="max-h-64 overflow-y-auto space-y-2">
+				{#each testLobbies as lobby}
+					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
+						<div class="flex items-center">
+							<img class="w-12 h-12 rounded-full mr-3" src={getLobbyCreator(lobby.creator).avatarPath} alt="{getLobbyCreator(lobby.creator).alias} avatar">
+							<p class="text-left text-gray-300 text-sm mr-3">{getLobbyCreator(lobby.creator).alias}'s game</p>
+						</div>
+						<p class="text-right text-gray-300 text-sm mr-3">{lobby.players.length}/{lobby.mode * 2} players</p>
+					</article>
+				{/each}
+			</div>
 		</section>
 
 		<!-- Available tournaments section - Scrollable -->

@@ -14,7 +14,7 @@ export const gameRouter = createRouter({
 	 */
 	//temporary make it publicProcedure
 	initializeMatch: publicProcedure
-		.input(z.object({ matchId: z.string() }))
+		.input(z.object({ matchId: z.number() }))
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const players = await ctx.services.dbServices.getMatchPlayers(
@@ -42,7 +42,7 @@ export const gameRouter = createRouter({
 	 * @returns An observable that emits GameState updates.
 	 */
 	subscribeToGameState: protectedProcedure
-		.input(z.object({ matchId: z.string() }))
+		.input(z.object({ matchId: z.number() }))
 		.subscription(({ input, ctx }) => {
 			return observable<GameState>((emit) => {
 				console.log(`Client subscribed to game state`);

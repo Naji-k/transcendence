@@ -11,14 +11,14 @@ export interface Services {
 		signIn: (email: string, password: string) => Promise<any>;
 	};
 	dbServices: {
-		getMatchPlayers: (matchId: string) => Promise<Array<{ id: string; name: string }>>;
-		playerExistsInMatch: (matchId: string, playerId: string) => Promise<boolean>;
-		matchExists: (matchId: string) => Promise<boolean>;
+		getMatchPlayers: (matchId: number) => Promise<Array<{ id: number; name: string }>>;
+		playerExistsInMatch: (matchId: number, playerId: number) => Promise<boolean>;
+		matchExists: (matchId: number) => Promise<boolean>;
 	};
 	gameStateManager: {
-		subscribe: (matchId: string, callback: (state: GameState) => void) => () => void; // Returns an unsubscribe function
-		initGameState: (matchId: string, players: Array<{ id: string; name: string }>) => GameState;
-		getGameState: (matchId: string) => any; // Replace 'any' with actual GameState type
+		subscribe: (matchId: number, callback: (state: GameState) => void) => () => void; // Returns an unsubscribe function
+		initGameState: (matchId: number, players: Array<{ id: number; name: string }>) => GameState;
+		getGameState: (matchId: number) => any; // Replace 'any' with actual GameState type
 		handlePlayerAction: (action: PlayerAction) => void;
 	};
 }

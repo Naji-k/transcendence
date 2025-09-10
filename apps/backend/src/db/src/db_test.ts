@@ -5,9 +5,8 @@ import { eq } from 'drizzle-orm';
 import { friendshipsTable, matchTable, singleMatchPlayersTable, tournamentPlayersTable, tournamentTable, usersTable } from './dbSchema/schema';
 import { reset } from 'drizzle-seed';
 import { db } from './dbClientInit';
-import { createUser, findUserByAlias, findUserByEmail, findUserById } from './dbFunctions';
+import { createUser, findUserByAlias, findUserByEmail, findUserById, playerExistsInMatch } from './dbFunctions';
 import * as readline from 'readline/promises';
-import { lutimesSync } from 'fs';
 
 console.log(__dirname);
 
@@ -198,6 +197,8 @@ async function testMatchPlayers() {
   console.log()
   // const users_4 = await db.all(sql`SELECT * FROM user_table`);
   // console.log('Result from SQL-like query: ', users_4);
+  // const playerExists = await playerExistsInMatch(7, 19);
+  // console.log(`playerId 19 exists in matchId 7: ${playerExists}`);
   console.log('---------------------------------------------');
 }
 
@@ -227,12 +228,12 @@ async function testMenu() {
 async function main() {
   await testDbExistence();
   /* Reset the tables (doesn't reset the ids) */
-  await reset(db, { usersTable });
-  await reset(db, { matchTable });
-  await reset(db, { singleMatchPlayersTable });
-  await reset(db, { friendshipsTable });
-  await reset(db, { tournamentTable });
-  await reset(db, { tournamentPlayersTable });
+  // await reset(db, { usersTable });
+  // await reset(db, { matchTable });
+  // await reset(db, { singleMatchPlayersTable });
+  // await reset(db, { friendshipsTable });
+  // await reset(db, { tournamentTable });
+  // await reset(db, { tournamentPlayersTable });
   /* or */
   // await db.delete(singleMatchPlayersTable);
   // await db.delete(matchTable);

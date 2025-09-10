@@ -31,8 +31,8 @@ export const GameStateSchema = z.object({
 });
 
 export const PlayerActionSchema = z.object({
-	playerId: z.string().optional(),
-	matchId: z.string(),
+	playerId: z.number().optional(),
+	matchId: z.number(),
 	action: z.enum(['up', 'down', 'stop', 'ready', 'pause']),
 });
 

@@ -30,10 +30,13 @@ export class EditorObject
 		this.orientationDown = new Vector3(0, 0, 1);
 		this.color = color;
 		this.type = type;
+
 		const mat = new StandardMaterial('objectMat', scene);
+		
 		mat.diffuseColor = color;
 		mat.maxSimultaneousLights = 16;
 		this.material = mat;
+
 		switch (type)
 		{
 			case 'sphere':
@@ -50,6 +53,7 @@ export class EditorObject
 					{ mass: 0, restitution: 0.5 },
 					scene
 				);
+				this.mesh.material = this.material;
 				break;
 			case 'wall':
 				if (dimensions == undefined)
@@ -82,6 +86,7 @@ export class EditorObject
 				);
 				const directionP1 = rotateVector(this.surfaceNormal, Math.PI / 2).scale(this.dimensions.z / 2);
 				const directionP2 = rotateVector(this.surfaceNormal, -Math.PI / 2).scale(this.dimensions.z / 2);
+				
 				directionP1.addInPlace(this.surfaceNormal.scale(0.5));
 				directionP2.addInPlace(this.surfaceNormal.scale(0.5));
 				this.post1 = this.createPost(this.position.add(directionP1), scene);
@@ -89,6 +94,7 @@ export class EditorObject
 				break;
 			default: throw new Error(`Unknown type: ${type}`);
 		}
+		this.mesh.material = this.material;
 	}
 	
 	createPost(position: Vector3, scene: Scene): Mesh
@@ -220,11 +226,6 @@ export class EditorObject
 			this.dimensions ? this.dimensions.clone() : undefined,
 			this.diameter ? this.diameter : undefined
 		);
-		// if (this.type == 'goal')
-		// {
-		// 	copy.post1 = copy.createPost(this.post1.position.clone(), scene);
-		// 	copy.post2 = copy.createPost(this.post2.position.clone(), scene);
-		// }
 		copy.moveToPosition(middle);
 		return copy;
 	}

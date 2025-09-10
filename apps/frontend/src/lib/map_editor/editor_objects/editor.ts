@@ -161,6 +161,7 @@ export class Editor
 
 		scene.enablePhysics(new Vector3(0, -9.81, 0), havokPlugin);
 		camera.setTarget(Vector3.Zero());
+		// camera.attachControl(this.editorCanvas, true);
 		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
 		hemiLight.intensity = 0.6;
 
@@ -171,7 +172,7 @@ export class Editor
 			'sphere',
 			new Vector3(this.dimensions[1] / 2 + 3, 0.5, 0),
 			new Vector3(-1, 0, 0),
-			Color3.Black(),
+			ColorMap['green'],
 			scene,
 			undefined,
 			0.5
@@ -181,7 +182,7 @@ export class Editor
 			'wall',
 			new Vector3(this.dimensions[1] / 2 + 2, 0, 0),
 			new Vector3(-1, 0, 0),
-			Color3.Black(),
+			ColorMap['blue'],
 			scene,
 			new Vector3(0.5, 1, 3),
 			undefined
@@ -190,7 +191,7 @@ export class Editor
 			'goal',
 			new Vector3(this.dimensions[1] / 2 + 5, 0, 0),
 			new Vector3(-1, 0, 0),
-			Color3.Black(),
+			ColorMap['orange'],
 			scene,
 			new Vector3(0.5, 1, 7),
 			undefined

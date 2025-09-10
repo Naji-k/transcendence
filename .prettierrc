@@ -3,8 +3,7 @@
   "trailingComma": "es5",
   "printWidth": 80,
   "tabWidth": 2,
-  "useTabs": true,
-  "trimTrailingWhitespace": true,
+  "useTabs": false,
   "semi": true,
   "plugins": ["prettier-plugin-svelte"]
 }

@@ -3,7 +3,7 @@ import { Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		 StandardMaterial, MeshBuilder, HavokPlugin, Mesh, Observer,
 		 PointerEventTypes, HighlightLayer, LinesMesh, PickingInfo, PointerInfo } from '@babylonjs/core';
 import { type Nullable } from '@babylonjs/core/types';
-import { TextBlock, AdvancedDynamicTexture, Button, Control } from '@babylonjs/gui';
+import { TextBlock, AdvancedDynamicTexture, Button, Control, Rectangle } from '@babylonjs/gui';
 
 const rotationStep = 6 * Math.PI / 180;
 const leftStep = new Vector3(-0.5, 0, 0);
@@ -38,6 +38,7 @@ export class Editor
 	private load: Button;
 	private save: Button;
 	private reset: Button;
+	private help: Button;
 	
 	constructor(havokInstance: any)
 	{
@@ -52,24 +53,25 @@ export class Editor
 		this.lines = [];
 		this.engine = new Engine(this.editorCanvas, true, {antialias: true});
 		this.scene = this.createScene();
-		this.handleMouseActions();
 		this.addGui();
 		this.engine.runRenderLoop(() =>
 		{
 			this.scene.render();
 		});
 	}
-
+		
 	private addGui()
 	{
 		const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
-
+		
 		this.initSizeText(advancedTexture);
 		this.loadButton(advancedTexture);
 		this.saveButton(advancedTexture);
 		this.resetButton(advancedTexture);
+		this.helpButton(advancedTexture);
 		this.handleKeyPresses();
 		this.UI = advancedTexture;
+		this.handleMouseActions();
 		this.drawGrid();
 		console.log('Editor started');
 	}
@@ -103,6 +105,8 @@ export class Editor
 		button.left = '0px';
 		button.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
 		button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+		button.onPointerEnterObservable.add(() => { button.background = '#c3d1a1ff'; });
+		button.onPointerOutObservable.add(() => { button.background = 'green'; });
 		button.onPointerUpObservable.add(async () =>
 		{
 			const mapObjects = await loadMap();
@@ -119,11 +123,13 @@ export class Editor
 		button.width = '150px';
 		button.height = '40px';
 		button.color = 'white';
-		button.background = 'blue';
+		button.background = '#0d439bff';
 		button.top = '-45px';
 		button.left = '-200px';
 		button.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
 		button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+		button.onPointerEnterObservable.add(() => { button.background = '#c3d1a1ff'; });
+		button.onPointerOutObservable.add(() => { button.background = '#0d439bff'; });
 		button.onPointerUpObservable.add(async () =>
 		{
 			saveMap(this.balls, this.walls, this.goals, this.dimensions);
@@ -144,6 +150,8 @@ export class Editor
 		button.left = '200px';
 		button.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
 		button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+		button.onPointerEnterObservable.add(() => { button.background = '#c3d1a1ff'; });
+		button.onPointerOutObservable.add(() => { button.background = 'red'; });
 		button.onPointerUpObservable.add(() =>
 		{
 			this.dispose();
@@ -199,6 +207,84 @@ export class Editor
 		this.highlight = new HighlightLayer('hl', scene);
 
 		return scene;
+	}
+
+
+	private helpButton(advancedTexture: AdvancedDynamicTexture)
+	{
+		const button = Button.CreateSimpleButton('help', '?');
+		const modalRect = new Rectangle();
+		const helpText = new TextBlock();
+		const closeButton = Button.CreateSimpleButton("helpClose", "Close");
+
+		button.width = '40px';
+		button.height = '40px';
+		button.color = 'yellow';
+		button.background = '#444';
+		button.fontSize = 32;
+		button.cornerRadius = 20;
+		button.thickness = 2;
+		button.top = '20px';
+		button.left = '20px';
+		button.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+		button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+		button.onPointerEnterObservable.add(() => { button.background = '#c3d1a1ff'; });
+		button.onPointerOutObservable.add(() => { button.background = '#444'; });
+
+		modalRect.width = "450px";
+		modalRect.height = "420px";
+		modalRect.thickness = 2;
+		modalRect.color = "black";
+		modalRect.cornerRadius = 18;
+		modalRect.background = "rgba(211, 200, 127, 1.0)";
+		modalRect.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+		modalRect.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+		modalRect.isVisible = false;
+		modalRect.isPointerBlocker = true;
+		advancedTexture.addControl(modalRect);
+
+		helpText.text =
+			"Controls:\n\n" +
+			"Arrow Up/Down: Adjust map height\n" +
+			"Arrow Left/Right: Adjust map width\n\n" +
+			"When object is selected:\n\n" +
+			"w/a/s/d: Move\n" +
+			"Arrow Left/Right: Rotate selected object\n" +
+			"+/-: Increase/Decrease size\n" +
+			"Delete/Backspace: Delete object\n" +
+			"+ (on demo): Add new object";
+		helpText.color = "black";
+		helpText.fontSize = 22;
+		helpText.paddingTop = "20px";
+		helpText.paddingLeft = "28px";
+		helpText.paddingRight = "28px";
+		helpText.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+		helpText.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+		modalRect.addControl(helpText);
+
+		closeButton.width = "120px";
+		closeButton.height = "50px";
+		closeButton.color = "white";
+		closeButton.background = "#5b5a5aff";
+		closeButton.cornerRadius = 12;
+		closeButton.thickness = 2;
+		closeButton.top = "0px";
+		closeButton.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+		closeButton.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+		closeButton.fontSize = 20;
+		closeButton.onPointerUpObservable.add(() =>
+		{
+			modalRect.isVisible = false;
+		});
+		modalRect.addControl(closeButton);
+
+		button.onPointerUpObservable.add(() =>
+		{
+			modalRect.isVisible = true;
+		});
+
+		advancedTexture.addControl(button);
+		this.help = button;
 	}
 
 	private loadMapFromFile(mapObjects: any)

@@ -39,7 +39,7 @@ export function jsonToVector2(obj: { width: number; height: number }): [number, 
 
 export function jsonToVector3(obj: { x: number; y: number; z: number }): Vector3
 {
-    return new Vector3(obj.x, obj.y, obj.z);
+	return new Vector3(obj.x, obj.y, obj.z);
 }
 
 export function vector3ToJson(vec: Vector3): { x: number; y: number; z: number }

@@ -1,7 +1,8 @@
 import { ColorMap, saveMap, loadMap, EditorObject, startEditor, jsonToVector2, jsonToVector3 } from '$lib/index';
 import { Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
-		 StandardMaterial, MeshBuilder, HavokPlugin, Mesh, 
-		 PointerEventTypes, HighlightLayer, LinesMesh, PickingInfo } from '@babylonjs/core';
+		 StandardMaterial, MeshBuilder, HavokPlugin, Mesh, Observer,
+		 PointerEventTypes, HighlightLayer, LinesMesh, PickingInfo, PointerInfo } from '@babylonjs/core';
+import { type Nullable } from '@babylonjs/core/types';
 import { TextBlock, AdvancedDynamicTexture, Button, Control } from '@babylonjs/gui';
 
 const rotationStep = 6 * Math.PI / 180;
@@ -25,7 +26,7 @@ export class Editor
 	private highlightedMesh: Mesh;
 	private isDragging: boolean = false;
 	private keydownListener: (event: KeyboardEvent) => void;
-	private pointerObserver: any;
+	private pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
 	private goals: EditorObject[] = [];
 	private balls: EditorObject[] = [];
@@ -369,8 +370,9 @@ export class Editor
 	{
 		const scene = this.scene;
 		let pickResult: PickingInfo;
+		let clickLogic: (pointerInfo: PointerInfo) => void;
 
-		this.pointerObserver = (pointerInfo) =>
+		clickLogic = (pointerInfo) =>
 		{
 			const evt = pointerInfo.event;
 			const mouseLocation = scene.pick(evt.clientX, evt.clientY);
@@ -484,7 +486,7 @@ export class Editor
 				default: break;
 			}
 		};
-		scene.onPointerObservable.add(this.pointerObserver);
+		this.pointerObserver = scene.onPointerObservable.add(clickLogic);
 	}
 
 	private isDemoObject(mesh: Mesh): boolean
@@ -561,7 +563,6 @@ export class Editor
 		this.scene.render();
 	}
 
-	
 	private createGround(scene: Scene, dimensions: number[])
 	{
 		if (this.ground != null)

@@ -126,8 +126,6 @@ export class EditorObject
 
 	rotate(angle: number)
 	{
-		// const rotationMatrix = Matrix.RotationY(angle);
-
 		this.orientationDown = rotateVector(this.orientationDown, -angle);
 		this.orientationUp = rotateVector(this.orientationUp, -angle);
 		this.surfaceNormal = rotateVector(this.surfaceNormal, -angle);
@@ -157,7 +155,7 @@ export class EditorObject
 				this.post1.position = this.post1.position.add(this.orientationUp.scale(0.5));
 				this.post2.position = this.post2.position.add(this.orientationDown.scale(0.5));
 				break;
-			default: break;
+			default: return;
 		}
 		this.mesh.scaling.z = this.dimensions.z / this.mesh.getBoundingInfo().boundingBox.extendSize.z / 2;
 	}
@@ -177,7 +175,7 @@ export class EditorObject
 				this.post1.position = this.post1.position.add(this.orientationDown.scale(0.5));
 				this.post2.position = this.post2.position.add(this.orientationUp.scale(0.5));
 				break;
-			default: break;
+			default: return;
 		}
 		this.mesh.scaling.z = this.dimensions.z / this.mesh.getBoundingInfo().boundingBox.extendSize.z / 2;
 	}

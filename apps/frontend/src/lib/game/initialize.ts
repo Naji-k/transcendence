@@ -2,7 +2,6 @@ import { Wall, Ball, Paddle, Goal, Player, Colors,
 		 ColorMap, jsonToVector2, jsonToVector3 } from '../index';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from '@babylonjs/gui';
-import { json } from 'zod';
 
 const ballDiameter = 0.5;
 
@@ -75,6 +74,7 @@ export function createGoals(scene: Scene, goals: Goal[], map: any)
 	{
 		throw new Error('Map cannot have more than 6 players.');
 	}
+	console.log(map.goals);
 	for (let i = 0; i < map.goals.length; i++)
 	{
 		goals.push(new Goal

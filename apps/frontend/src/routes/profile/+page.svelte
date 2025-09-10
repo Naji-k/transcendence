@@ -1,21 +1,22 @@
-<script>
+<script lang="ts">
 	import { testUsers, testLobbies, getUserStats, getUserFriends, getUserMatchHistory, getLobbyCreator } from "$lib/testData";
 
-	let currentUser = testUsers[1];
-	let userStat = getUserStats(currentUser.id);
-	let userFriends = getUserFriends(currentUser.id);
-	let userMatchHistory = getUserMatchHistory(currentUser.id);
-	console.log("wins: ", userStat.wins, "losses: ", userStat.losses)
-	console.log("friends: ", userFriends);
-	console.log("match history: ", userMatchHistory);
-	console.log("test lobbies: ", testLobbies);
+	let currentUserIndex = $state(0);
+	let currentUser =$derived(testUsers[currentUserIndex]);
+	let userStat = $derived(getUserStats(currentUser.id));
+	let userFriends = $derived(getUserFriends(currentUser.id));
+	let userMatchHistory = $derived(getUserMatchHistory(currentUser.id));
+	// console.log("wins: ", userStat.wins, "losses: ", userStat.losses)
+	// console.log("friends: ", userFriends);
+	// console.log("match history: ", userMatchHistory);
+	// console.log("test lobbies: ", testLobbies);
 
 
-	let user = {
+	let user = $derived({
 		...currentUser,
 		wins: userStat.wins,
 		losses: userStat.losses  
-	}
+	})
 
 	function formatDate(date) {
 		return date.toLocaleDateString('en-US', {
@@ -24,12 +25,27 @@
 			year: 'numeric'
 		});
 	}
+
+	function scrollToSection(sectionId: string) {
+		const element = document.getElementById(sectionId);
+		if (element) {
+			element.scrollIntoView({
+				behavior: 'smooth',
+				block: 'start'
+			});
+		}
+	}
 </script>
 
 <div class= "min-h-screen p-24 bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
-	<main class="py-2 sm:py-4 md:py-6 lg:py-10 px-4 max-w-[1000px] mx-auto font-['Press_Start_2P'] bg-gradient-to-br from-purple-700 to-indigo-900 rounded-3xl shadow-2xl">
+	<main class="py-2 sm:py-4 md:py-6 lg:py-10 px-4 max-w-[1000px] mx-auto font-['Press_Start_2P'] bg-gradient-to-br from-purple-700 to-indigo-900 rounded-3xl shadow-2xl relative">
+		<select bind:value={currentUserIndex} class="absolute top-4 left-4 bg-gray-700 text-white px-3 py-2 rounded">
+			{#each testUsers as user, index}
+				<option value={index}>{user.alias}</option>
+			{/each}
+		</select>
 		<!-- Section of info with alias and avatar on the left and wins/losses on the right of the page -->
-		<header class="flex justify-between items-center text-gray-300">
+		<header id="userInfo" class="flex justify-between items-center text-gray-300">
 			<section class="flex items-center">
 				<img class="w-20 h-20 rounded-full mr-4" src={user.avatarPath} alt="{user.alias} avatar"/>
 				<h2 class="text-3xl">{user.alias}</h2>
@@ -48,9 +64,13 @@
 		</header>
 		
 		<!-- Lobbies and Tournaments buttons section - They redirect to the corresponding sections below -->
-		<nav>
-		<button>Lobbies</button>
-		<button>Tournaments</button>
+		<nav class="my-6">
+			<button onclick={() => scrollToSection('lobbies')} class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mr-4 text-white">
+				Lobbies
+			</button>
+			<button onclick={() => scrollToSection('tournaments')} class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-white">
+				Tournaments
+			</button>
 		</nav>
 
 		<!-- Match history section - scrollable -->
@@ -92,7 +112,7 @@
 		<!-- Friends list section - scrollable -->
 		<section class="mt-6">
 			<h3 class="text-2xl mb-4">Friends({userFriends.length})</h3>
-			<div class="max-h-64 overflow-y-auto space-y-2">
+			<div class="max-h-64 overflow-y-auto scrollbar-hide space-y-2">
 				{#each userFriends as friend}
 					<article class="flex items-center bg-gray-800 p-3 rounded-lg">
 						<img class="w-12 h-12 rounded-full mr-3" src={friend.avatarPath} alt="{friend.alias} avatar">
@@ -109,9 +129,9 @@
 		</section>
 
 		<!-- Available lobbies section - Scrollable -->
-		<section class="mt-6">
+		<section id="lobbies" class="mt-6">
 			<h3 class="text-2xl mb-4">Lobbies</h3>
-			<div class="max-h-64 overflow-y-auto space-y-2">
+			<div class="max-h-90 overflow-y-auto scrollbar-hide space-y-2">
 				{#each testLobbies as lobby}
 					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
 						<div class="flex items-center">
@@ -125,9 +145,15 @@
 		</section>
 
 		<!-- Available tournaments section - Scrollable -->
-		<section>
+		<section id="tournaments" class="mt-6">
 		<h3 class="text-2xl">Tournaments</h3>
 		</section>
+
+		<div class="mt-6 flex justify-center">
+			<button onclick={() => scrollToSection('userInfo')} class="hover:bg-gray-700 px-4 py-2 rounded text-white">
+				back to top
+			</button>
+		</div>
 	</main>
 </div>
 

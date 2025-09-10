@@ -40,8 +40,8 @@
 <div class= "min-h-screen p-24 bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
 	<main class="py-2 sm:py-4 md:py-6 lg:py-10 px-4 max-w-[1000px] mx-auto font-['Press_Start_2P'] bg-gradient-to-br from-purple-700 to-indigo-900 rounded-3xl shadow-2xl relative">
 		<select bind:value={currentUserIndex} class="absolute top-4 left-4 bg-gray-700 text-white px-3 py-2 rounded">
-			{#each testUsers as user, index}
-				<option value={index}>{user.alias}</option>
+			{#each testUsers as testUser, index}
+				<option value={index}>{testUser.alias}</option>
 			{/each}
 		</select>
 		<!-- Section of info with alias and avatar on the left and wins/losses on the right of the page -->
@@ -112,7 +112,7 @@
 		<!-- Friends list section - scrollable -->
 		<section class="mt-6">
 			<h3 class="text-2xl mb-4">Friends({userFriends.length})</h3>
-			<div class="max-h-64 overflow-y-auto scrollbar-hide space-y-2">
+			<div class="max-h-64 overflow-y-auto space-y-2">
 				{#each userFriends as friend}
 					<article class="flex items-center bg-gray-800 p-3 rounded-lg">
 						<img class="w-12 h-12 rounded-full mr-3" src={friend.avatarPath} alt="{friend.alias} avatar">
@@ -131,7 +131,7 @@
 		<!-- Available lobbies section - Scrollable -->
 		<section id="lobbies" class="mt-6">
 			<h3 class="text-2xl mb-4">Lobbies</h3>
-			<div class="max-h-90 overflow-y-auto scrollbar-hide space-y-2">
+			<div class="max-h-80 overflow-y-auto space-y-2">
 				{#each testLobbies as lobby}
 					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
 						<div class="flex items-center">

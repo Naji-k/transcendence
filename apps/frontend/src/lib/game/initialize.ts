@@ -120,7 +120,13 @@ export function createPaddles(scene: Scene, paddles: Paddle[], mapGoals: any[])
 		const normal = jsonToVector3(mapGoals[i].surfaceNormal);
 		const paddlePos = goalPos.add(normal.scale(2));
 
-		paddles.push(new Paddle(dimensions, paddlePos, Colors[i].color, scene));
+		paddles.push(new Paddle
+			(dimensions,
+			paddlePos,
+			normal,
+			Colors[i].color,
+			scene
+		));
 	}
 }
 
@@ -160,6 +166,8 @@ export function	createGround(scene: Scene, dimensions: number[])
 	mat.maxSimultaneousLights = 16;
 	ground.material = mat;
 }
+
+// take a look at this, alignment not quite right
 
 export function createScoreboard(scoreboard: TextBlock[], players: Player[])
 {

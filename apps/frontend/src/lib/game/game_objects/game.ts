@@ -115,15 +115,16 @@ export class Game
 	{
 		const scene = this.scene;
 		const havokPlugin = new HavokPlugin(true, this.havokInstance);
-		const camera = new FreeCamera('camera1', new Vector3(0, 30, 5), scene);
 		
 		scene.enablePhysics(new Vector3(0, -10, 0), havokPlugin);
-		camera.setTarget(Vector3.Zero());
 		// camera.attachControl(this.gameCanvas, true);
 		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
 		hemiLight.intensity = 0.6;
-
+		
 		this.dimensions = jsonToVector2(map.dimensions);
+		const cameraHeight = Math.max(this.dimensions[0], this.dimensions[1]) + 10;
+		const camera = new FreeCamera('camera1', new Vector3(0, cameraHeight, 0), scene);
+		camera.setTarget(Vector3.Zero());
 		createGround(scene, this.dimensions);
 		createBalls(scene, this.balls, map);
 		createSurroundingWalls(scene, this.walls, this.dimensions);

@@ -7,7 +7,7 @@
 	onMount(async () =>
 	{
 		const { startGame } = await import('$lib');
-		game = await startGame('maps/standard2player.map');
+		game = await startGame('maps/tragedy.map');
 	});
 	onDestroy(async () =>
 	{

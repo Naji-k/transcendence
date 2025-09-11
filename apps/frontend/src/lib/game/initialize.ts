@@ -1,5 +1,5 @@
 import { Wall, Ball, Paddle, Goal, Player, Colors,
-		 ColorMap, jsonToVector2, jsonToVector3 } from '../index';
+		 ColorMap, jsonToVector3 } from '../index';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from '@babylonjs/gui';
 

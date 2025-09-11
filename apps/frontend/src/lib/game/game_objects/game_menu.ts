@@ -87,7 +87,8 @@ export class GameMenu
 	{
 		this.scene.actionManager = new ActionManager(this.scene);
 
-		this.scene.actionManager.registerAction(new ExecuteCodeAction(
+		this.scene.actionManager.registerAction(new ExecuteCodeAction
+		(
 			ActionManager.OnKeyDownTrigger, 
 			(evt) =>
 			{

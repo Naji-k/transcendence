@@ -45,10 +45,11 @@ export const friendshipsTable = sqliteTable(
 export const tournamentTable = sqliteTable(
   "tournament_table", {
     id: int().primaryKey({ autoIncrement: true }),
-    creator: int().notNull().references((): AnySQLiteColumn => usersTable.id),
-    name: text(),
-    status: int().default(0), // like enum
-    date: int({ mode: 'timestamp' }).notNull(),
+    creator: int().notNull().references(() => usersTable.id),
+    name: text().notNull(),
+    playerLimit: int().notNull(),
+    status: text("status", { enum: ["waiting", "ready", "ongoing", "completed"] }).default("waiting"),
+    createdAt: text().default(sql`CURRENT_TIMESTAMP`),
   }
 )
 

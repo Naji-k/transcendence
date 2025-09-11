@@ -9,6 +9,7 @@
 	let isSubscribed = false;
 	let connectionStatus = 'Disconnected';
 	let playerID: string = '';
+	let tournamentName: string;
 
 	// Initialize game
 	async function initGame() {
@@ -135,6 +136,45 @@
 			</p>
 		</div>
 	{/if}
+</div>
+
+<div>
+	<h2>Tournament</h2>
+	<p>This section is for testing tournament creation and listing.</p>
+	<div class="buttons">
+		<input
+			type="text"
+			bind:value={tournamentName}
+			placeholder="tournament Name"
+			style="width: 100px;"
+		/>
+		<p>Tournament Name: {tournamentName}</p>
+
+		<button
+			on:click={async () => {
+				try {
+					const result = await trpc.tournament.create.mutate({
+						name: tournamentName,
+						playerLimit: 4,
+					});
+					console.log(`Tournament created: ${JSON.stringify(result)}`);
+				} catch (error) {
+					console.log(`Error creating tournament: ${error.message}`);
+				}
+			}}
+			>🏆 Create Tournament</button>
+		<button
+			on:click={async () => {
+				try {
+					const tournaments = await trpc.tournament.list.query();
+					console.log(`Tournaments: ${JSON.stringify(tournaments)}`);
+				} catch (error) {
+					console.log(`Error listing tournaments: ${error.message}`);
+				}
+			}}
+			>📋 List All Tournaments</button>
+			</div>
+			
 </div>
 
 <style>

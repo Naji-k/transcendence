@@ -72,47 +72,47 @@ export const gameRouter = createRouter({
 			});
 		}),
 
-	/**
-	 * Handles a player's action within a match.
-	 * Validates the action and updates the game state accordingly.
-	 * @input { matchId: string, playerId: string, actionType: string} - The player's action details.
-	 * @returns { success: boolean } - The result of the action handling.
-	 */
-	sentPlayerAction: protectedProcedure
-		.input(PlayerActionSchema)
-		.mutation(async ({ ctx, input }) => {
-			//here should check if the game is exist
-			const action: PlayerAction = {
-				...input,
-				// playerId: ctx.userToken.id,
-				playerId: input.playerId, // Temporary hardcoded playerId for testing
-			};
-			const playerExists = await ctx.services.dbServices.playerExistsInMatch(
-				action.matchId,
-				action.playerId!
-			);
-			if (!playerExists) {
-				throw new TRPCError({
-					code: 'NOT_FOUND',
-					message: 'Player does not exist in this match',
-				});
-			}
-			const matchExists = await ctx.services.dbServices.matchExists(
-				input.matchId
-			);
-			if (!matchExists) {
-				throw new TRPCError({
-					code: 'NOT_FOUND',
-					message: 'Match does not exist',
-				});
-			}
-			const gameState = ctx.services.gameStateManager.getGameState(
-				input.matchId
-			);
-			if (!gameState) {
-				throw new TRPCError({ code: 'NOT_FOUND', message: 'Match not found' });
-			}
-			ctx.services.gameStateManager.handlePlayerAction(action);
-			return { success: true };
-		}),
+  /**
+   * Handles a player's action within a match.
+   * Validates the action and updates the game state accordingly.
+   * @input { matchId: string, playerId: string, actionType: string} - The player's action details.
+   * @returns { success: boolean } - The result of the action handling.
+   */
+  sentPlayerAction: protectedProcedure
+    .input(PlayerActionSchema)
+    .mutation(async ({ ctx, input }) => {
+      //here should check if the game is exist
+      const action: PlayerAction = {
+        ...input,
+        // playerId: ctx.userToken.id,
+        playerId: input.playerId, // Temporary hardcoded playerId for testing
+      };
+      const playerExists = await ctx.services.dbServices.playerExistsInMatch(
+        action.matchId,
+        action.playerId!
+      );
+      if (!playerExists) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Player does not exist in this match',
+        });
+      }
+      const matchExists = await ctx.services.dbServices.matchExists(
+        input.matchId
+      );
+      if (!matchExists) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Match does not exist',
+        });
+      }
+      const gameState = ctx.services.gameStateManager.getGameState(
+        input.matchId
+      );
+      if (!gameState) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Match not found' });
+      }
+      ctx.services.gameStateManager.handlePlayerAction(action);
+      return { success: true };
+    }),
 });

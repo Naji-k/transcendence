@@ -11,15 +11,20 @@ export interface Services {
 		signIn: (email: string, password: string) => Promise<any>;
 	};
 	dbServices: {
-		getMatchPlayers: (matchId: number) => Promise<Array<{ id: number; alias: string }>>;
+		getMatchPlayers: (matchId: number) => Promise<{ id: number; alias: string }[]>;
 		playerExistsInMatch: (matchId: number, playerId: number) => Promise<boolean>;
 		matchExists: (matchId: number) => Promise<boolean>;
 	};
 	gameStateManager: {
-		subscribe: (matchId: number, callback: (state: GameState) => void) => () => void; // Returns an unsubscribe function
-		initGameState: (matchId: number, players: Array<{ id: number; alias: string }>) => GameState;
-		getGameState: (matchId: number) => any; // Replace 'any' with actual GameState type
+		subscribe: (matchId: number, callback: (state: GameState) => void) => () => void;
+		initGameState: (matchId: number, players: { id: number; alias: string }[]) => GameState;
+		getGameState: (matchId: number) => GameState | null;
 		handlePlayerAction: (action: PlayerAction) => void;
+	};
+	tournament: {
+		createTournament: (name: string, userId: number, playerLimit: number) => Promise<any>;
+		joinTournament: (tournamentId: number, playerId: number) => Promise<any>;
+		listAllTournaments: () => Promise<any>;
 	};
 }
 

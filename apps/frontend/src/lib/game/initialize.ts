@@ -18,6 +18,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 	walls.push(
 		new Wall(new Vector3(wallThickness, wallHeight, height + wallThickness * 2),
 		new Vector3(-width / 2 - wallThickness / 2, wallHeight / 2, 0),
+		new Vector3(1, 0, 0),
 		whiteColor,
 		wallOpacity,
 		scene)
@@ -27,6 +28,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 	walls.push(
 		new Wall(new Vector3(wallThickness, wallHeight, height + wallThickness * 2),
 		new Vector3(width / 2 + wallThickness / 2, wallHeight / 2, 0),
+		new Vector3(-1, 0, 0),
 		whiteColor,
 		wallOpacity,
 		scene)
@@ -35,6 +37,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 	walls.push(
 		new Wall(new Vector3(width, wallHeight, wallThickness),
 		new Vector3(0, wallHeight / 2, -height / 2 - wallThickness / 2),
+		new Vector3(0, 0, 1),
 		whiteColor,
 		wallOpacity,
 		scene)
@@ -43,6 +46,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 	walls.push(
 		new Wall(new Vector3(width, wallHeight, wallThickness),
 		new Vector3(0, wallHeight / 2, height / 2 + wallThickness / 2),
+		new Vector3(0, 0, -1),
 		whiteColor,
 		wallOpacity,
 		scene)
@@ -61,6 +65,7 @@ export function createWalls(scene: Scene, walls: Wall[], map: any)
 		(
 			jsonToVector3(map.walls[i].dimensions),
 			jsonToVector3(map.walls[i].location),
+			jsonToVector3(map.walls[i].surfaceNormal),
 			ColorMap[map.walls[i].color] || ColorMap['white'],
 			map.walls[i].opacity || 1,
 			scene

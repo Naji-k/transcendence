@@ -1,8 +1,7 @@
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PointLight, Scene } from '@babylonjs/core';
-import { Ball, dot2D } from '../../index';
+import { Ball } from '../../index';
 
 const goalPostDiameter = 0.5;
-const goalThickness = 0.5;
 
 export class Goal
 {
@@ -35,9 +34,6 @@ export class Goal
 		);
 		this.plate.position = goalpos;
 
-		this.post1.position = this.post1.position.add(this.normal.scale(goalThickness / 2));
-		this.post2.position = this.post2.position.add(this.normal.scale(goalThickness / 2));
-
 		new PhysicsAggregate(
 			this.plate,
 			PhysicsShapeType.BOX,
@@ -51,6 +47,10 @@ export class Goal
 		mat.alpha = 0.4;
 		mat.maxSimultaneousLights = 16;
 		this.plate.material = mat;
+
+		const angle = Math.atan2(normalDir.x, normalDir.z);
+
+		this.plate.rotate(Vector3.Up(), Math.atan2(normalDir.x, normalDir.z) + Math.PI / 2);
 	}
 
 	createPost(position: Vector3, scene: Scene): Mesh

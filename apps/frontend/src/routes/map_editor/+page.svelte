@@ -21,7 +21,8 @@
 	onDestroy(async () =>
 	{
 		const { destroyEditor } = await import('$lib');
-		await destroyEditor(editor);
+		destroyEditor(editor);
+		editor = null;
 	});
 </script>
 <canvas id="editorCanvas" width="1920" height="1080"></canvas>

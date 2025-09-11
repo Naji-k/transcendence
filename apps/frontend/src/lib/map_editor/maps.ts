@@ -33,6 +33,7 @@ export function parseMap(inputFile: string): any
 	{
 		throw new Error('Invalid map format');
 	}
+	console.log(map);
 	return map;
 }
 
@@ -117,8 +118,12 @@ export async function loadMap(): Promise<EditorObject[]>
 	{
 		console.log('Fetched map list successfully');
 	}
+	else
+	{
+		throw new Error('Failed to fetch map list');
+	}
 	const maps = await response.json();
-	if (!Array.isArray(maps) || maps.length == 0)
+	if (Array.isArray(maps) == false || maps.length == 0)
 	{
 		throw new Error('No maps available');
 	}

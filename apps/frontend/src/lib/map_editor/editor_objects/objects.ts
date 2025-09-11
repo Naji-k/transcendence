@@ -26,8 +26,8 @@ export class EditorObject
 	{
 		this.position = position;
 		this.surfaceNormal = surfaceNormal;
-		this.orientationUp = new Vector3(0, 0, -1);
-		this.orientationDown = new Vector3(0, 0, 1);
+		this.orientationUp = rotateVector(surfaceNormal, Math.PI / 2);
+		this.orientationDown = rotateVector(surfaceNormal, -Math.PI / 2);
 		this.color = color;
 		this.type = type;
 
@@ -56,9 +56,10 @@ export class EditorObject
 				this.mesh.material = this.material;
 				break;
 			case 'wall':
+			case 'goal':
 				if (dimensions == undefined)
 				{
-					throw new Error('Dimensions must be defined for wall type');
+					throw new Error(`Dimensions must be defined for ${type} type`);
 				}
 				this.dimensions = dimensions;
 				this.mesh = MeshBuilder.CreateBox('box', {width: dimensions.x, height: dimensions.y, depth: dimensions.z}, scene);
@@ -70,31 +71,19 @@ export class EditorObject
 					scene
 				);
 				break;
-			case 'goal':
-				if (dimensions == undefined)
-				{
-					throw new Error('Dimensions must be defined for goal type');
-				}
-				this.dimensions = dimensions;
-				this.mesh = MeshBuilder.CreateBox('box', {width: dimensions.x, height: dimensions.y, depth: dimensions.z}, scene);
-				this.mesh.position = position;
-				this.physicsAggregate = new PhysicsAggregate(
-					this.mesh,
-					PhysicsShapeType.BOX,
-					{ mass: 0, restitution: 0.5 },
-					scene
-				);
-				const directionP1 = rotateVector(this.surfaceNormal, Math.PI / 2).scale(this.dimensions.z / 2);
-				const directionP2 = rotateVector(this.surfaceNormal, -Math.PI / 2).scale(this.dimensions.z / 2);
-				
-				directionP1.addInPlace(this.surfaceNormal.scale(0.5));
-				directionP2.addInPlace(this.surfaceNormal.scale(0.5));
-				this.post1 = this.createPost(this.position.add(directionP1), scene);
-				this.post2 = this.createPost(this.position.add(directionP2), scene);
-				break;
 			default: throw new Error(`Unknown type: ${type}`);
 		}
 		this.mesh.material = this.material;
+		if (this.type == 'goal')
+		{
+			const directionP1 = this.orientationUp.scale(dimensions.z / 2).add(this.surfaceNormal.scale(0.5));
+			const directionP2 = this.orientationDown.scale(dimensions.z / 2).add(this.surfaceNormal.scale(0.5));
+			this.post1 = this.createPost(this.position.add(directionP1), scene);
+			this.post2 = this.createPost(this.position.add(directionP2), scene);
+		}
+		this.mesh.rotate(Vector3.Up(), Math.atan2(surfaceNormal.x, surfaceNormal.z) + Math.PI / 2);
+		// this.mesh.rotate(Vector3.Up(), Math.atan2(surfaceNormal.x, surfaceNormal.z) + Math.PI / 2);
+		// this.rotate(Math.atan2(surfaceNormal.x, surfaceNormal.z) + Math.PI / 2);
 	}
 	
 	createPost(position: Vector3, scene: Scene): Mesh

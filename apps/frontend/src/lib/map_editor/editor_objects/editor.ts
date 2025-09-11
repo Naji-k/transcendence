@@ -110,6 +110,12 @@ export class Editor
 		button.onPointerUpObservable.add(async () =>
 		{
 			const mapObjects = await loadMap();
+			if (mapObjects == null)
+			{
+				console.error('Failed to load map.');
+				return;
+			}
+			this.restart();
 			this.loadMapFromFile(mapObjects);
 		});
 		advancedTexture.addControl(button);
@@ -664,6 +670,12 @@ export class Editor
 		const mat = new StandardMaterial('floor', this.scene);
 		mat.diffuseColor = Color3.Gray();
 		this.ground.material = mat;
+	}
+
+	restart()
+	{
+		this.dispose();
+		this.start(this.havokInstance);
 	}
 
 	dispose()

@@ -90,3 +90,27 @@ export async function findUserByEmail(email: string): Promise<ExistingUser | nul
     throw error;
   }
 }
+// Simulated database function to check if a player exists in a match
+export function playerExistsInMatch(
+	matchId: string,
+	playerId: string
+): Promise<boolean> {
+	// Dummy implementation, replace with actual database query
+	return Promise.resolve(true);
+}
+
+// Simulated database function to check if a match exists
+export function matchExists(matchId: string): Promise<boolean> {
+	// Dummy implementation, replace with actual database query
+	return Promise.resolve(true);
+}
+
+export async function getMatchPlayers(matchId: string): Promise<{ id: string; name: string }[]> {
+  // Dummy implementation, replace with actual database query
+  return Promise.resolve([
+    { id: '1', name: 'Player 1' },
+    { id: '2', name: 'Player 2' },
+    { id: '3', name: 'Player 3' },
+  ]);
+  
+}

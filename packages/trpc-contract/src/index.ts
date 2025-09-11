@@ -1,4 +1,5 @@
 import { userRouter, authRouter } from './router';
+import { gameRouter } from './router/game';
 import { createRouter, publicProcedure } from './trpc';
 
 /**
@@ -8,6 +9,7 @@ import { createRouter, publicProcedure } from './trpc';
 export const appRouter = createRouter({
 	user: userRouter,
 	auth: authRouter,
+	game: gameRouter,
 	hello: publicProcedure.query(() => {
 		return 'Hello, world!';
 	}),

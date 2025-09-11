@@ -1,5 +1,7 @@
 // It defines the context type used in tRPC routers
 
+import { GameState, PlayerAction } from "./types/gameState";
+
 export interface Services {
 	jwtUtils: {
 		sign: (userId: number, email: string) => string;
@@ -7,6 +9,17 @@ export interface Services {
 	auth: {
 		signUp: (name: string, email: string, password: string) => Promise<any>;
 		signIn: (email: string, password: string) => Promise<any>;
+	};
+	dbServices: {
+		getMatchPlayers: (matchId: string) => Promise<Array<{ id: string; name: string }>>;
+		playerExistsInMatch: (matchId: string, playerId: string) => Promise<boolean>;
+		matchExists: (matchId: string) => Promise<boolean>;
+	};
+	gameStateManager: {
+		subscribe: (matchId: string, callback: (state: GameState) => void) => () => void; // Returns an unsubscribe function
+		initGameState: (matchId: string, players: Array<{ id: string; name: string }>) => GameState;
+		getGameState: (matchId: string) => any; // Replace 'any' with actual GameState type
+		handlePlayerAction: (action: PlayerAction) => void;
 	};
 }
 

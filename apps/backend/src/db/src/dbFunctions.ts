@@ -1,4 +1,4 @@
-import { singleMatchPlayersTable, usersTable } from './dbSchema/schema';
+import { matchTable, singleMatchPlayersTable, usersTable } from './dbSchema/schema';
 import { db } from './dbClientInit'
 import { eq, and } from 'drizzle-orm'
 
@@ -112,16 +112,28 @@ export async function playerExistsInMatch(
       return true;
     return false;
   } catch (error) {
-    console.error('Unknown error searching if a player exists in a match');
+    console.error('playerExistsInMatch error: unknown error searching if a player exists in a match');
     console.error(error);
     throw(error);
   }
 }
 
 // Simulated database function to check if a match exists
-export function matchExists(matchId: string): Promise<boolean> {
-	// Dummy implementation, replace with actual database query
-	return Promise.resolve(true);
+export async function matchExists(matchId: number): Promise<boolean> {
+	if (!matchId)
+  {
+    throw new Error('matchExists error: matchId must be provided');
+  }
+  try {
+    const matchExists = await db.select().from(matchTable).where(eq(matchTable.id, matchId));
+    if (matchExists.length > 0)
+        return true;
+    return false;
+  } catch (error) {
+    console.error('matchExists error: unknown error');
+    console.error(error);
+    throw (error);
+  }
 }
 
 export async function getMatchPlayers(matchId: string): Promise<{ id: string; name: string }[]> {

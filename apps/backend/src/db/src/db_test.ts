@@ -7,6 +7,8 @@ import { reset } from 'drizzle-seed';
 import { db } from './dbClientInit';
 import { createUser, findUserByAlias, findUserByEmail, findUserById, playerExistsInMatch } from './dbFunctions';
 import * as readline from 'readline/promises';
+import { match } from 'assert';
+import { configDotenv } from 'dotenv';
 
 console.log(__dirname);
 
@@ -125,7 +127,7 @@ async function testMatchHistory() {
   console.log('-------------Testing match history------------');
   const allIds = (await db.select({ id: usersTable.id }).from(usersTable).orderBy(usersTable.id)).map(u => u.id);
   const randomId1 = allIds[Math.floor(Math.random() * allIds.length)];
-  const match: NewMatch = { victor: randomId1, date: new Date() };
+  const match: NewMatch = { date: new Date() };
   // error match
   // match = { victor: "sec", date: new Date() };
   let allInsertedIds;
@@ -165,8 +167,11 @@ async function testMatchPlayers() {
   const participant1: NewParticipant = { playerId: randomId1, placement: 1, matchId: lastMatchId };
   const participant2: NewParticipant = { playerId: randomId2, placement: 2, matchId: lastMatchId };
   try {
-    await db.insert(singleMatchPlayersTable).values(participant1);
-    await db.insert(singleMatchPlayersTable).values(participant2);
+    const p1 = await db.insert(singleMatchPlayersTable).values(participant1).returning();
+    const p2 = await db.insert(singleMatchPlayersTable).values(participant2).returning();
+    console.log(`p1: ${p1}`);
+    console.log(`p2: ${p2}`);
+    await db.update(matchTable).set({ victor: participant1.playerId }).where(eq(matchTable.id, lastMatchId));
     // error participant
     // const participant3: NewParticipant = { playerId: 1, placement: 1, matchId: 1};
     // const participant4: NewParticipant = { playerId: 1, placement: 2, matchId: 1};
@@ -189,12 +194,8 @@ async function testMatchPlayers() {
   console.log(participants_1);
   console.log(`${participants_1[0].alias}: ${participant1.placement}`);
   console.log(`${participants_1[1].alias}: ${participant2.placement}`);
-  const victor = await db.select({ alias: usersTable.alias })
-  .from(matchTable)
-  .innerJoin(usersTable, eq(matchTable.victor, usersTable.id))
-  .where(eq(matchTable.id, lastMatchId))
-  console.log(`Victor: ${victor[0]?.alias}`);
-  console.log()
+  const [confirmVictor] = await db.select({ victor: matchTable.victor }).from(matchTable).where(eq(matchTable.id, lastMatchId));
+  console.log(`\nConfirming victor for added match: ${confirmVictor.victor}`);
   // const users_4 = await db.all(sql`SELECT * FROM user_table`);
   // console.log('Result from SQL-like query: ', users_4);
   // const playerExists = await playerExistsInMatch(7, 19);
@@ -228,12 +229,12 @@ async function testMenu() {
 async function main() {
   await testDbExistence();
   /* Reset the tables (doesn't reset the ids) */
-  // await reset(db, { usersTable });
-  // await reset(db, { matchTable });
-  // await reset(db, { singleMatchPlayersTable });
-  // await reset(db, { friendshipsTable });
-  // await reset(db, { tournamentTable });
-  // await reset(db, { tournamentPlayersTable });
+  await reset(db, { usersTable });
+  await reset(db, { matchTable });
+  await reset(db, { singleMatchPlayersTable });
+  await reset(db, { friendshipsTable });
+  await reset(db, { tournamentTable });
+  await reset(db, { tournamentPlayersTable });
   /* or */
   // await db.delete(singleMatchPlayersTable);
   // await db.delete(matchTable);

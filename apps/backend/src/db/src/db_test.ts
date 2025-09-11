@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { friendshipsTable, matchTable, singleMatchPlayersTable, tournamentPlayersTable, tournamentTable, usersTable } from './dbSchema/schema';
 import { reset } from 'drizzle-seed';
 import { db } from './dbClientInit';
-import { createUser, findUserByAlias, findUserByEmail, findUserById, playerExistsInMatch } from './dbFunctions';
+import { createUser, findUserByAlias, findUserByEmail, findUserById, playerExistsInMatch, matchExists } from './dbFunctions';
 import * as readline from 'readline/promises';
 import { match } from 'assert';
 import { configDotenv } from 'dotenv';
@@ -135,6 +135,8 @@ async function testMatchHistory() {
   try {
     allInsertedIds = await db.insert(matchTable).values(match).returning({ id: matchTable.id });
     lastMatchId = allInsertedIds[0]?.id;
+    const matchExistence = await matchExists(lastMatchId);
+    console.log(`Match ${lastMatchId} exists: ${matchExistence}`);
     if (lastMatchId === undefined) {
       throw new Error('Failed to retrieve match id');
     }
@@ -167,10 +169,10 @@ async function testMatchPlayers() {
   const participant1: NewParticipant = { playerId: randomId1, placement: 1, matchId: lastMatchId };
   const participant2: NewParticipant = { playerId: randomId2, placement: 2, matchId: lastMatchId };
   try {
-    const p1 = await db.insert(singleMatchPlayersTable).values(participant1).returning();
-    const p2 = await db.insert(singleMatchPlayersTable).values(participant2).returning();
-    console.log(`p1: ${p1}`);
-    console.log(`p2: ${p2}`);
+    const [p1] = await db.insert(singleMatchPlayersTable).values(participant1).returning();
+    const [p2] = await db.insert(singleMatchPlayersTable).values(participant2).returning();
+    console.log('p1:', p1.playerId);
+    console.log('p2:', p2.playerId);
     await db.update(matchTable).set({ victor: participant1.playerId }).where(eq(matchTable.id, lastMatchId));
     // error participant
     // const participant3: NewParticipant = { playerId: 1, placement: 1, matchId: 1};

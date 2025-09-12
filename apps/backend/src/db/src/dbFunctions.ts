@@ -89,7 +89,7 @@ export async function findUserByEmail(email: string): Promise<ExistingUser | nul
     const [foundUser] = await db.select().from(usersTable).where(eq(usersTable.email, email));
     return foundUser ?? null;
   } catch (error) {
-    console.error('findUserByAlias error: unknown error searching for user by email');
+    console.error('findUserByEmail error: unknown error searching for user by email');
     console.error(error);
     throw error;
   }
@@ -136,14 +136,14 @@ export async function matchExists(matchId: number): Promise<boolean> {
 
 export async function getMatchPlayers(matchId: number): Promise<{ id: number; alias: string }[]> {
   if (!matchId) {
-    throw new Error('playerExistsInMatch error: matchId and playerId must be provided');
+    throw new Error('getMatchPlayers error: matchId must be provided');
   }
   try {
-    const matchPlayers = db.select({ id: singleMatchPlayersTable.playerId, alias: usersTable.alias})
+    const matchPlayers = await db.select({ id: singleMatchPlayersTable.playerId, alias: usersTable.alias})
                            .from(singleMatchPlayersTable)
                            .innerJoin(usersTable, eq(singleMatchPlayersTable.playerId, usersTable.id))
                            .where(eq(singleMatchPlayersTable.matchId, matchId));
-    return matchPlayers ?? null;
+    return matchPlayers ?? [];
   } catch (error) {
     console.error('getMatchPlayers error: unknown error');
     console.error(error);

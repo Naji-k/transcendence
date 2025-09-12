@@ -6,21 +6,21 @@ import {
 import { EventEmitter } from 'events';
 
 export class GameStateManager extends EventEmitter {
-	private gameStates = new Map<string, GameState>();
+	private gameStates = new Map<number, GameState>();
 
-	subscribe(matchId: string, callback: (state: GameState) => void) {
+	subscribe(matchId: number, callback: (state: GameState) => void) {
 		this.on(`gameState:${matchId}`, callback);
 		return () => {
 			this.off(`gameState: ${matchId}`, callback);
 		};
 	}
 
-	notifySubs(matchId: string, gameState: GameState) {
+	notifySubs(matchId: number, gameState: GameState) {
 		console.log(`Notifying subscribers of match ${matchId}`);
 		this.emit(`gameState:${matchId}`, gameState);
 	}
 
-	getGameState(matchId: string): GameState | null {
+	getGameState(matchId: number): GameState | null {
 		return this.gameStates.get(matchId) ?? null;
 	}
 
@@ -31,15 +31,15 @@ export class GameStateManager extends EventEmitter {
 	 * @returns
 	 */
 	initGameState(
-		matchId: string,
-		players: { id: string; name: string }[]
+		matchId: number,
+		players: { id: number; alias: string }[]
 	): GameState {
 		const initialState: GameState = {
 			matchId,
 			status: 'waiting',
 			players: players.map((p) => ({
 				id: p.id,
-				name: p.name,
+				alias: p.alias,
 				lives: 3, // Number of lives each player starts with
 				isAlive: true,
 				isReady: false,

@@ -95,7 +95,6 @@ export async function findUserByEmail(email: string): Promise<ExistingUser | nul
   }
 }
 
-// Simulated database function to check if a player exists in a match
 export async function playerExistsInMatch(
 	matchId: number,
 	playerId: number
@@ -118,7 +117,6 @@ export async function playerExistsInMatch(
   }
 }
 
-// Simulated database function to check if a match exists
 export async function matchExists(matchId: number): Promise<boolean> {
 	if (!matchId)
   {
@@ -136,22 +134,19 @@ export async function matchExists(matchId: number): Promise<boolean> {
   }
 }
 
-export async function getMatchPlayers(matchId: string): Promise<{ id: number; name: string }[]> {
+export async function getMatchPlayers(matchId: number): Promise<{ id: number; alias: string }[]> {
   if (!matchId) {
     throw new Error('playerExistsInMatch error: matchId and playerId must be provided');
   }
   try {
-    const matchPlayers = db.select({ playerId: singleMatchPlayersTable.matchId }).from(singleMatchPlayersTable).
+    const matchPlayers = db.select({ id: singleMatchPlayersTable.playerId, alias: usersTable.alias})
+                           .from(singleMatchPlayersTable)
+                           .innerJoin(usersTable, eq(singleMatchPlayersTable.playerId, usersTable.id))
+                           .where(eq(singleMatchPlayersTable.matchId, matchId));
+    return matchPlayers ?? null;
   } catch (error) {
     console.error('getMatchPlayers error: unknown error');
     console.error(error);
     throw (error);
-  }
-  // Dummy implementation, replace with actual database query
-  return Promise.resolve([
-    { id: 1, name: 'Player 1' },
-    { id: 2, name: 'Player 2' },
-    { id: 3, name: 'Player 3' },
-  ]);
-  
+  }  
 }

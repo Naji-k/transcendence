@@ -11,13 +11,13 @@ export interface Services {
 		signIn: (email: string, password: string) => Promise<any>;
 	};
 	dbServices: {
-		getMatchPlayers: (matchId: number) => Promise<Array<{ id: number; name: string }>>;
+		getMatchPlayers: (matchId: number) => Promise<Array<{ id: number; alias: string }>>;
 		playerExistsInMatch: (matchId: number, playerId: number) => Promise<boolean>;
 		matchExists: (matchId: number) => Promise<boolean>;
 	};
 	gameStateManager: {
 		subscribe: (matchId: number, callback: (state: GameState) => void) => () => void; // Returns an unsubscribe function
-		initGameState: (matchId: number, players: Array<{ id: number; name: string }>) => GameState;
+		initGameState: (matchId: number, players: Array<{ id: number; alias: string }>) => GameState;
 		getGameState: (matchId: number) => any; // Replace 'any' with actual GameState type
 		handlePlayerAction: (action: PlayerAction) => void;
 	};

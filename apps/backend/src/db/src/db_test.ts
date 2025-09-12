@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { friendshipsTable, matchTable, singleMatchPlayersTable, tournamentPlayersTable, tournamentTable, usersTable } from './dbSchema/schema';
 import { reset } from 'drizzle-seed';
 import { db } from './dbClientInit';
-import { createUser, findUserByAlias, findUserByEmail, findUserById, playerExistsInMatch, matchExists } from './dbFunctions';
+import { createUser, findUserByAlias, findUserByEmail, findUserById, playerExistsInMatch, matchExists, getMatchPlayers } from './dbFunctions';
 import * as readline from 'readline/promises';
 import { match } from 'assert';
 import { configDotenv } from 'dotenv';
@@ -188,10 +188,7 @@ async function testMatchPlayers() {
   }
   
   /* Show participant info for a match, there is probably a better way to do it */
-  const participants_1 = await db.select({ alias: usersTable.alias })
-    .from(singleMatchPlayersTable)
-    .innerJoin(usersTable, eq(singleMatchPlayersTable.playerId, usersTable.id))
-    .where(eq(singleMatchPlayersTable.matchId, lastMatchId));
+  const participants_1 = await getMatchPlayers(lastMatchId);
     console.log('Showing participant info for matchId: ', lastMatchId);
   console.log(participants_1);
   console.log(`${participants_1[0].alias}: ${participant1.placement}`);

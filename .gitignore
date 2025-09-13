@@ -54,3 +54,6 @@ web_modules/
 
 # DB
 database.sqlite
+
+# Drizzle directory
+drizzle/

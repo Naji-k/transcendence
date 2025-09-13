@@ -5,9 +5,10 @@ import { eq } from 'drizzle-orm';
 import { friendshipsTable, matchTable, singleMatchPlayersTable, tournamentPlayersTable, tournamentTable, usersTable } from './dbSchema/schema';
 import { reset } from 'drizzle-seed';
 import { db } from './dbClientInit';
-import { createUser, findUserByAlias, findUserByEmail, findUserById } from './dbFunctions';
+import { createUser, findUserByAlias, findUserByEmail, findUserById, playerExistsInMatch, matchExists, getMatchPlayers } from './dbFunctions';
 import * as readline from 'readline/promises';
-import { lutimesSync } from 'fs';
+import { match } from 'assert';
+import { configDotenv } from 'dotenv';
 
 console.log(__dirname);
 
@@ -126,7 +127,7 @@ async function testMatchHistory() {
   console.log('-------------Testing match history------------');
   const allIds = (await db.select({ id: usersTable.id }).from(usersTable).orderBy(usersTable.id)).map(u => u.id);
   const randomId1 = allIds[Math.floor(Math.random() * allIds.length)];
-  const match: NewMatch = { victor: randomId1, date: new Date() };
+  const match: NewMatch = { date: new Date() };
   // error match
   // match = { victor: "sec", date: new Date() };
   let allInsertedIds;
@@ -134,6 +135,8 @@ async function testMatchHistory() {
   try {
     allInsertedIds = await db.insert(matchTable).values(match).returning({ id: matchTable.id });
     lastMatchId = allInsertedIds[0]?.id;
+    const matchExistence = await matchExists(lastMatchId);
+    console.log(`Match ${lastMatchId} exists: ${matchExistence}`);
     if (lastMatchId === undefined) {
       throw new Error('Failed to retrieve match id');
     }
@@ -166,8 +169,11 @@ async function testMatchPlayers() {
   const participant1: NewParticipant = { playerId: randomId1, placement: 1, matchId: lastMatchId };
   const participant2: NewParticipant = { playerId: randomId2, placement: 2, matchId: lastMatchId };
   try {
-    await db.insert(singleMatchPlayersTable).values(participant1);
-    await db.insert(singleMatchPlayersTable).values(participant2);
+    const [p1] = await db.insert(singleMatchPlayersTable).values(participant1).returning();
+    const [p2] = await db.insert(singleMatchPlayersTable).values(participant2).returning();
+    console.log('p1:', p1.playerId);
+    console.log('p2:', p2.playerId);
+    await db.update(matchTable).set({ victor: participant1.playerId }).where(eq(matchTable.id, lastMatchId));
     // error participant
     // const participant3: NewParticipant = { playerId: 1, placement: 1, matchId: 1};
     // const participant4: NewParticipant = { playerId: 1, placement: 2, matchId: 1};
@@ -182,22 +188,17 @@ async function testMatchPlayers() {
   }
   
   /* Show participant info for a match, there is probably a better way to do it */
-  const participants_1 = await db.select({ alias: usersTable.alias })
-    .from(singleMatchPlayersTable)
-    .innerJoin(usersTable, eq(singleMatchPlayersTable.playerId, usersTable.id))
-    .where(eq(singleMatchPlayersTable.matchId, lastMatchId));
+  const participants_1 = await getMatchPlayers(lastMatchId);
     console.log('Showing participant info for matchId: ', lastMatchId);
   console.log(participants_1);
   console.log(`${participants_1[0].alias}: ${participant1.placement}`);
   console.log(`${participants_1[1].alias}: ${participant2.placement}`);
-  const victor = await db.select({ alias: usersTable.alias })
-  .from(matchTable)
-  .innerJoin(usersTable, eq(matchTable.victor, usersTable.id))
-  .where(eq(matchTable.id, lastMatchId))
-  console.log(`Victor: ${victor[0]?.alias}`);
-  console.log()
+  const [confirmVictor] = await db.select({ victor: matchTable.victor }).from(matchTable).where(eq(matchTable.id, lastMatchId));
+  console.log(`\nConfirming victor for added match: ${confirmVictor.victor}`);
   // const users_4 = await db.all(sql`SELECT * FROM user_table`);
   // console.log('Result from SQL-like query: ', users_4);
+  // const playerExists = await playerExistsInMatch(7, 19);
+  // console.log(`playerId 19 exists in matchId 7: ${playerExists}`);
   console.log('---------------------------------------------');
 }
 

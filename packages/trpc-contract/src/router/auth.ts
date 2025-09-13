@@ -4,7 +4,6 @@
  */
 import { createRouter, publicProcedure } from '../trpc';
 import { signUpInput, loginInput } from '../schemas';
-import { LoginResponse, Response, User } from '../types';
 
 export const authRouter = createRouter({
 	/**

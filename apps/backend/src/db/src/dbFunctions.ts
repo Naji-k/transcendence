@@ -16,13 +16,15 @@ type ExistingUser = typeof usersTable.$inferSelect;
 export async function createUser(
   newAlias: string,
   newEmail: string,
-  newPassword: string
+  newPassword: string,
+  newGoogleId?: string
 ): Promise<NewUser> {
   try {
     const [createdUser] = await db.insert(usersTable).values({
       alias: newAlias,
       email: newEmail,
       password: newPassword,
+      googleId: newGoogleId
     }).returning();
     return createdUser;
   } catch (error) {

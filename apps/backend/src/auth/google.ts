@@ -84,9 +84,6 @@ export function setupGoogleAuthRoutes(app: FastifyInstance) {
       let user = await findUserByEmail(email);
 
       if (!user) {
-        // Create user (no password for Google users)
-        // TODO: update db functions to store google id too, for preventing users from logining with password
-        // Do we want picture from google as the avatar?
         const dummyPassword = `google_${googleId}_${Date.now()}`;
         await createUser(name, email, dummyPassword);
         user = await findUserByEmail(email);
@@ -106,7 +103,8 @@ export function setupGoogleAuthRoutes(app: FastifyInstance) {
         user: {
           id: user.id,
           email: user.email,
-          name: user.alias || user.name
+          name: user.alias || user.name,
+          googleId: googleId
         },
         token,
     });

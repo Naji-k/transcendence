@@ -98,16 +98,8 @@ export function setupGoogleAuthRoutes(app: FastifyInstance) {
 
       // Issue JWT
       const token = jwtUtils.sign(user.id, user.email);
-
-      reply.send({
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.alias || user.name,
-          googleId: googleId
-        },
-        token,
-    });
+      
+      reply.redirect(`http://localhost:8080/welcome?name=${encodeURIComponent(user.alias)}&token=${token}`);
     } catch (error) {
       console.error('Google Sign-In failed:', error);
       reply.status(500).send({ error: 'Google Sign-In failed' });

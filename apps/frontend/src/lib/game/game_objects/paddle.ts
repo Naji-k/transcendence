@@ -1,4 +1,4 @@
-import { Ball, Wall } from '../../index';
+import { Ball, Wall, rotateVector } from '../../index';
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh,
 	PhysicsShapeType, PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
 
@@ -16,7 +16,7 @@ export class Paddle
 
 	private static eliminatedMaterial: StandardMaterial;
 
-	constructor(dimensions: Vector3, _position: Vector3, _color: Color3, scene: Scene)
+	constructor(dimensions: Vector3, _position: Vector3, surfaceNorm: Vector3, _color: Color3, scene: Scene)
 	{
 		this.mesh = MeshBuilder.CreateBox
 		(
@@ -46,7 +46,11 @@ export class Paddle
 		mat.maxSimultaneousLights = 16;
         this.mesh.material = mat;
 		this.frozen = false;
+		this.velocity = rotateVector(this.velocity, Math.PI / 2);
+		this.mesh.rotate(Vector3.Up(), Math.atan2(surfaceNorm.x, surfaceNorm.z) + Math.PI / 2);
 	}
+
+	// take a look at moving, move "offset" in up or down direction, probably store up & down as vectors in class
 
 	move(walls: Wall[])
 	{
@@ -68,7 +72,7 @@ export class Paddle
 						this.mesh.position.x -= offset;
 					}
 				}
-				else if (this.velocity.z != 0)
+				if (this.velocity.z != 0)
 				{
 					this.mesh.position.z -= this.velocity.z;
 					if (this.mesh.position.z < 0)

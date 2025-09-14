@@ -2,7 +2,6 @@ import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, PhysicsShapeType,
 import { Ball } from '../../index';
 
 const goalPostDiameter = 0.5;
-const goalThickness = 0.5;
 
 export class Goal
 {
@@ -20,31 +19,21 @@ export class Goal
 
 	private static height = 4;
 
-	constructor(loc1: Vector3, loc2: Vector3, clr: Color3, normalDir: Vector3, scene: Scene)
+	constructor(goalpos: Vector3, dimensions: Vector3, post1: Vector3, post2: Vector3, clr: Color3, normalDir: Vector3, scene: Scene)
 	{
 		this.isAlive = true;
 		this.scoringCooldown = 0;
 		this.normal = normalDir;
 		this.color = clr;
-		this.post1 = this.createPost(loc1, scene);
-		this.post2 = this.createPost(loc2, scene);
+		this.post1 = this.createPost(post1, scene);
+		this.post2 = this.createPost(post2, scene);
 		
 		this.plate = MeshBuilder.CreateBox('goalplate',
-			{ width: goalThickness, height: Goal.height, depth: loc2.subtract(loc1).length() },
+			{ width: dimensions.x, height: Goal.height, depth: dimensions.z },
 			scene
 		);
-		this.plate.position = Vector3.Lerp(loc1, loc2, 0.5);
+		this.plate.position = goalpos;
 
-		if (this.post1.position.x < 0)
-		{
-			this.post1.position.x += goalThickness;
-			this.post2.position.x += goalThickness;
-		}
-		else
-		{
-			this.post1.position.x -= goalThickness;
-			this.post2.position.x -= goalThickness;
-		}
 		new PhysicsAggregate(
 			this.plate,
 			PhysicsShapeType.BOX,
@@ -58,6 +47,10 @@ export class Goal
 		mat.alpha = 0.4;
 		mat.maxSimultaneousLights = 16;
 		this.plate.material = mat;
+
+		const angle = Math.atan2(normalDir.x, normalDir.z);
+
+		this.plate.rotate(Vector3.Up(), Math.atan2(normalDir.x, normalDir.z) + Math.PI / 2);
 	}
 
 	createPost(position: Vector3, scene: Scene): Mesh
@@ -104,7 +97,7 @@ export class Goal
 			return false;
 		}
 
-		const linearVelocity = ball.getAggregate().body.getLinearVelocity();
+		const linearVelocity = ball.getDirection();
 
 		if (linearVelocity == null)
 		{
@@ -112,10 +105,22 @@ export class Goal
 		}
 		const ballDirection = linearVelocity.normalize();
 
-		console.log('Ball direction:', ballDirection);
-		console.log('Goal normal:', this.normal);
-		console.log('Dot product:', Vector3.Dot(ballDirection, this.normal));
-		return Vector3.Dot(ballDirection, this.normal) > 0;
+		return Vector3.Dot(ballDirection, this.normal) < 0;
+	}
+
+	getPlateMesh(): Mesh
+	{
+		return this.plate;
+	}
+
+	getPost1Mesh(): Mesh
+	{
+		return this.post1;
+	}
+
+	getPost2Mesh(): Mesh
+	{
+		return this.post2;
 	}
 
 	eliminate()

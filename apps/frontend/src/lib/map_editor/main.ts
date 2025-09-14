@@ -1,10 +1,5 @@
 import { Editor } from '$lib/index';
-import { Button } from '@babylonjs/gui';
 import HavokPhysics from '@babylonjs/havok';
-
-const buttonLoadMap = Button.CreateSimpleButton('load', 'Load Map');
-const buttonSaveMap = Button.CreateSimpleButton('save', 'Save Map');
-const buttonReset = Button.CreateSimpleButton('reset', 'Reset');
 
 export async function getPhysics(): Promise<any>
 {
@@ -20,8 +15,6 @@ export async function startEditor(): Promise<Editor>
 		console.error('Failed to initialize HavokPhysics.');
 		return;
 	}
-	const editor = new Editor(havokInstance);
 
-	editor.start();
-	return editor;
+	return new Editor(havokInstance);
 }

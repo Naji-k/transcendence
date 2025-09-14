@@ -4,7 +4,7 @@ export class Wall
 {
 	private mesh:		Mesh;
 
-	constructor(dimensions: Vector3, _position: Vector3, _color: Color3, opacity: number, scene: Scene)
+	constructor(dimensions: Vector3, _position: Vector3, _surfaceNormal: Vector3, _color: Color3, opacity: number, scene: Scene)
 	{
 		this.mesh = MeshBuilder.CreateBox
 		(

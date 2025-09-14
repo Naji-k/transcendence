@@ -1,6 +1,6 @@
-import { usersTable } from './dbSchema/schema';
+import { matchTable, singleMatchPlayersTable, usersTable } from './dbSchema/schema';
 import { db } from './dbClientInit'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 
 type NewUser = typeof usersTable.$inferInsert;
 type ExistingUser = typeof usersTable.$inferSelect;
@@ -13,7 +13,11 @@ type ExistingUser = typeof usersTable.$inferSelect;
  * @param newPassword password of the new user
  * @returns The user data or throws an error
  */
-export async function createUser(newAlias: string, newEmail: string, newPassword: string): Promise<NewUser> {
+export async function createUser(
+  newAlias: string,
+  newEmail: string,
+  newPassword: string
+): Promise<NewUser> {
   try {
     const [createdUser] = await db.insert(usersTable).values({
       alias: newAlias,
@@ -23,11 +27,11 @@ export async function createUser(newAlias: string, newEmail: string, newPassword
     return createdUser;
   } catch (error) {
     if (error instanceof Error && error.message.includes('Failed query: insert into "users_table"')) {
-      console.log('! Failed to store user !');
-      console.log(error.message);
+      console.error('CreateUser error: failed to store user');
+      console.error(error.message);
     } else {
-      console.log('Unknown error');
-      console.log(error);
+      console.error('CreateUser error: unknown error');
+      console.error(error);
     }
     throw error;
   }
@@ -43,8 +47,8 @@ export async function findUserById(id: number): Promise<ExistingUser | null> {
     const [foundUser] = await db.select().from(usersTable).where(eq(usersTable.id, id));
     return foundUser ?? null;
   } catch (error) {
-    console.log('Unknown error searching for user by id');
-    console.log(error);
+    console.error('findUserById error: unknown error searching for user by id');
+    console.error(error);
     throw error;
   }
 }
@@ -64,8 +68,8 @@ export async function findUserByAlias(alias: string): Promise<ExistingUser | nul
     const [foundUser] = await db.select().from(usersTable).where(eq(usersTable.alias, alias));
     return foundUser ?? null;
   } catch (error) {
-    console.log('Unknown error searching for user by alias');
-    console.log(error);
+    console.error('findUserByAlias error: unknown error searching for user by alias');
+    console.error(error);
     throw error;
   }
 }
@@ -85,32 +89,64 @@ export async function findUserByEmail(email: string): Promise<ExistingUser | nul
     const [foundUser] = await db.select().from(usersTable).where(eq(usersTable.email, email));
     return foundUser ?? null;
   } catch (error) {
-    console.log('Unknown error searching for user by email');
-    console.log(error);
+    console.error('findUserByEmail error: unknown error searching for user by email');
+    console.error(error);
     throw error;
   }
 }
-// Simulated database function to check if a player exists in a match
-export function playerExistsInMatch(
-	matchId: string,
-	playerId: string
+
+export async function playerExistsInMatch(
+	matchId: number,
+	playerId: number
 ): Promise<boolean> {
-	// Dummy implementation, replace with actual database query
-	return Promise.resolve(true);
+
+  if (!matchId || !playerId) {
+    throw new Error('playerExistsInMatch error: matchId and playerId must be provided');
+  }
+  try {
+    const playerExists = await db.select()
+                                 .from(singleMatchPlayersTable)
+                                 .where(and(eq(singleMatchPlayersTable.matchId, matchId), eq(singleMatchPlayersTable.playerId, playerId)));
+    if (playerExists.length > 0)
+      return true;
+    return false;
+  } catch (error) {
+    console.error('playerExistsInMatch error: unknown error searching if a player exists in a match');
+    console.error(error);
+    throw(error);
+  }
 }
 
-// Simulated database function to check if a match exists
-export function matchExists(matchId: string): Promise<boolean> {
-	// Dummy implementation, replace with actual database query
-	return Promise.resolve(true);
+export async function matchExists(matchId: number): Promise<boolean> {
+	if (!matchId)
+  {
+    throw new Error('matchExists error: matchId must be provided');
+  }
+  try {
+    const matchExists = await db.select().from(matchTable).where(eq(matchTable.id, matchId));
+    if (matchExists.length > 0)
+        return true;
+    return false;
+  } catch (error) {
+    console.error('matchExists error: unknown error');
+    console.error(error);
+    throw (error);
+  }
 }
 
-export async function getMatchPlayers(matchId: string): Promise<{ id: string; name: string }[]> {
-  // Dummy implementation, replace with actual database query
-  return Promise.resolve([
-    { id: '1', name: 'Player 1' },
-    { id: '2', name: 'Player 2' },
-    { id: '3', name: 'Player 3' },
-  ]);
-  
+export async function getMatchPlayers(matchId: number): Promise<{ id: number; alias: string }[]> {
+  if (!matchId) {
+    throw new Error('getMatchPlayers error: matchId must be provided');
+  }
+  try {
+    const matchPlayers = await db.select({ id: singleMatchPlayersTable.playerId, alias: usersTable.alias})
+                           .from(singleMatchPlayersTable)
+                           .innerJoin(usersTable, eq(singleMatchPlayersTable.playerId, usersTable.id))
+                           .where(eq(singleMatchPlayersTable.matchId, matchId));
+    return matchPlayers ?? [];
+  } catch (error) {
+    console.error('getMatchPlayers error: unknown error');
+    console.error(error);
+    throw (error);
+  }  
 }

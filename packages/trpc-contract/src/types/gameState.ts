@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 const PlayerSchema = z.object({
-	id: z.string(),
-	name: z.string(),
+	id: z.number(),
+	alias: z.string(),
 	lives: z.number(),
 	position: z.object({
 		x: z.number(),
@@ -13,7 +13,7 @@ const PlayerSchema = z.object({
 });
 
 export const GameStateSchema = z.object({
-	matchId: z.string(),
+	matchId: z.number(),
 	status: z.enum(['waiting', 'playing', 'paused', 'finished']),
 	players: z.array(PlayerSchema),
 	currentRound: z.number(),
@@ -31,8 +31,8 @@ export const GameStateSchema = z.object({
 });
 
 export const PlayerActionSchema = z.object({
-	playerId: z.string().optional(),
-	matchId: z.string(),
+	playerId: z.number().optional(),
+	matchId: z.number(),
 	action: z.enum(['up', 'down', 'stop', 'ready', 'pause']),
 });
 

@@ -8,13 +8,13 @@ import { createRouter, publicProcedure } from './trpc';
  * This is the entry point for all tRPC operations.
  */
 export const appRouter = createRouter({
-	user: userRouter,
-	auth: authRouter,
-	game: gameRouter,
-	tournament: tournamentRouter,
-	hello: publicProcedure.query(() => {
-		return 'Hello, world!';
-	}),
+  user: userRouter,
+  auth: authRouter,
+  game: gameRouter,
+  tournament: tournamentRouter,
+  hello: publicProcedure.query(() => {
+    return 'Hello, world!';
+  }),
 });
 
 export type AppRouter = typeof appRouter;

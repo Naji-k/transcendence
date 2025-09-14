@@ -48,7 +48,9 @@ export const tournamentRouter = createRouter({
   getPlayers: publicProcedure
     .input(z.object({ name: tournamentNameSchema }))
     .query(async ({ input, ctx }) => {
-      const players = await ctx.services.tournament.getTournamentPlayers(input.name);
+      const players = await ctx.services.tournament.getTournamentPlayers(
+        input.name
+      );
       if (!players) {
         throw new Error('No players found for this tournament');
       }

@@ -3,12 +3,12 @@
   import type { GameState } from '@repo/trpc/src/types/gameState';
 
   // State variables
-  let matchId = 'test_match_123';
+  let matchId = 1; // Example match ID
   let gameState: GameState | null = null;
   let subscription: any = null;
   let isSubscribed = false;
   let connectionStatus = 'Disconnected';
-  let playerID: number;
+  let playerID: number = 1;
   let tournamentName: string;
   let messages: string[] = [];
 
@@ -17,7 +17,7 @@
     try {
       console.log('Initializing game...');
       const result = await trpc.game.initializeMatch.mutate({
-        matchId: 'test_match_123',
+        matchId: matchId,
       });
       console.log(`Game initialized: ${JSON.stringify(result)}`);
     } catch (error) {
@@ -52,7 +52,7 @@
   }
 
   // Send ready action
-  async function sendReady(id: string) {
+  async function sendReady(id: number) {
     try {
       console.log('Sending ready action...');
       const result = await trpc.game.sentPlayerAction.mutate({
@@ -139,7 +139,15 @@
     >{connectionStatus}</strong
     ></span
     >
-    <span>Match ID: <strong>{matchId}</strong></span>
+    <label>
+      Match ID:
+      <input
+      type="number"
+      bind:value={matchId}
+      min="1"
+      style="width: 100px;"
+      />
+    </label>
   </div>
 
   <!-- Action Buttons -->
@@ -173,7 +181,7 @@
       <h3>Players:</h3>
       {#each gameState.players as player}
         <div class="player">
-          <strong>{player.name}</strong> - Ready: {player.isReady ? '✅' : '❌'}
+          <strong>{player.alias}</strong> - Ready: {player.isReady ? '✅' : '❌'}
           | Lives: {player.lives} | Position: ({player.position.x}, {player
           .position.y})
         </div>

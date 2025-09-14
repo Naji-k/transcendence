@@ -62,6 +62,20 @@ async function addPlayerToTournament(tournamentId: number, playerId: number) {
     .returning();
 }
 
+async function tournamentExists(tournamentName: string) {
+  const [tournament] = await db
+    .select()
+    .from(tournamentTable)
+    .where(eq(tournamentTable.name, tournamentName));
+  if (!tournament) {
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: 'Tournament not found',
+    });
+  }
+  return tournament;
+}
+
 /**
  * Tournament service class
  * This class contains methods to create, join, list tournaments and get tournament players
@@ -92,33 +106,21 @@ export class TournamentService {
    * @param playerId
    */
   async joinTournament(tournamentName: string, playerId: number) {
-    const [tournament] = await db
-      .select()
-      .from(tournamentTable)
-      .where(eq(tournamentTable.name, tournamentName));
-
-    if (!tournament) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Tournament not found',
-      });
-    }
-    const tournamentId = tournament.id;
-    console.log('Found tournament ID:', { tournamentId, tournamentName });
+    const tournament = await tournamentExists(tournamentName);
     if (tournament.status !== 'waiting') {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: 'Tournament already started',
       });
     }
-    const isInTournament = await isPlayerInTournament(tournamentId, playerId);
+    const isInTournament = await isPlayerInTournament(tournament.id, playerId);
     console.log('Is player in THIS tournament:', isInTournament);
     if (isInTournament) {
       return tournament;
     }
     try {
-      await addPlayerToTournament(tournamentId, playerId);
-      const players = await tournamentPlayers(tournamentId);
+      await addPlayerToTournament(tournament.id, playerId);
+      const players = await tournamentPlayers(tournament.id);
       if (players.length >= tournament.playerLimit) {
         console.log("Tournament is full, updating status to 'ready'");
         await db
@@ -126,7 +128,6 @@ export class TournamentService {
           .set({ status: 'ready' })
           .where(eq(tournamentTable.name, tournamentName));
       }
-      console.log('Player added to tournament:', { playerId, tournamentId });
       return tournament;
     } catch (error) {
       throw new TRPCError({
@@ -151,25 +152,42 @@ export class TournamentService {
   }
 
   async getTournamentPlayers(tournamentName: string) {
-    const [tournament] = await db
-      .select()
-      .from(tournamentTable)
-      .where(eq(tournamentTable.name, tournamentName));
-
-    if (!tournament) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Tournament not found',
-      });
-    }
-
-    const tournamentId = tournament.id;
+    const tournament = await tournamentExists(tournamentName);
     try {
-      return await tournamentPlayers(tournamentId);
+      return await tournamentPlayers(tournament.id);
     } catch (error) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Failed to fetch tournament players',
+        cause: error,
+      });
+    }
+  }
+
+  async startTournament(tournamentName: string) {
+    const tournament = await tournamentExists(tournamentName);
+    if (tournament.status !== 'ready') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'Tournament not ready to start',
+      });
+    }
+    try {
+      await db
+        .update(tournamentTable)
+        .set({ status: 'ongoing' })
+        .where(eq(tournamentTable.name, tournamentName));
+
+        //createTournamentMatches logic here
+        //need to create matches and assign players to matches
+      return {
+        success: true,
+        message: 'Tournament started successfully',
+      };
+    } catch (error) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to start tournament',
         cause: error,
       });
     }

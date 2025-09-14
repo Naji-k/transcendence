@@ -41,6 +41,7 @@ export interface Services {
     joinTournament: (tournamentName: string, playerId: number) => Promise<any>;
     listAllTournaments: () => Promise<any>;
     getTournamentPlayers: (tournamentName: string) => Promise<any>;
+    startTournament: (tournamentName: string) => Promise<any>;
   };
 }
 

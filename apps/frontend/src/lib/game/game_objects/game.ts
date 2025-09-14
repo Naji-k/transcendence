@@ -1,9 +1,12 @@
-import { Wall, Ball, Paddle, createWalls, createBalls,
-		createPlayers, createGround, Player, Goal, createScoreboard, GameMenu, ColorMap, Colors } from '../../index';
+import { Wall, Ball, Paddle, createSurroundingWalls,
+		createWalls, createBalls, createPlayers, createGoals,
+		createGround, createPaddles, createScoreboard, Player, Goal, jsonToVector2,
+		jsonToVector3, GameMenu, ColorMap, Colors } from '../../index';
 import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
 		Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		HavokPlugin, StandardMaterial, Layer } from '@babylonjs/core';
 import { TextBlock, AdvancedDynamicTexture } from '@babylonjs/gui';
+import type { AudioEngineV2 } from '@babylonjs/core';
 
 const maxPlayerCount = 6;
 
@@ -16,6 +19,7 @@ export class Game
 	private gameIsRunning: boolean;
 	private	gameCanvas: HTMLCanvasElement;
 	
+	private jsonMap: any;
 	private keys: Record<string, boolean> = {};
 	private scoreboard: TextBlock[] = [];
 	private players: Player[] = [];	
@@ -29,6 +33,8 @@ export class Game
 	private static paddlehitSound: StreamingSound;
 	private static playerOutSound: StreamingSound;
 	private static victorySound: StreamingSound;
+	private static audioEngine: AudioEngineV2;
+	private static music: StreamingSound;
 
 	constructor(havokInstance: any)
 	{
@@ -41,6 +47,7 @@ export class Game
 		this.gameIsRunning = true;
 		this.engine = new Engine(this.gameCanvas, true, {antialias: true});
 		this.scene = new Scene(this.engine);
+		console.log('Game started');
 	}
 
 	keyEvents()
@@ -51,41 +58,13 @@ export class Game
 		}
 	}
 
-	private parseMapFile(mapText: string): string[][]
-	{
-		const lines = mapText.split('\n');
-		const sizeMatch = lines[0].match(/^size:\s*(\d+)x(\d+)$/);
-		const playersMatch = lines[1].match(/^players:\s*(\d+)$/);
-		
-		if (!sizeMatch || !playersMatch || lines[2] != '')
-		{
-			throw new Error('Lines 1-3 format: size: <rows>x<columns>, players: <number>, empty line');
-		}
-		this.dimensions = [parseInt(sizeMatch[1]), parseInt(sizeMatch[2])];
-		this.playerCount = parseInt(playersMatch[1]);
-
-		if (this.playerCount < 1 || this.playerCount > maxPlayerCount)
-		{
-			throw new Error(`Invalid player count: ${this.playerCount}. Must be between 1 and ${maxPlayerCount}.`);
-		}
-
-		lines.splice(0, 3);
-		if (lines.length != this.dimensions[0] ||
-			lines.some(line => line.length != this.dimensions[1]))
-		{
-			console.error(`Map size: ${lines.length}x${lines[0].length}`);
-			throw new Error(`Map size does not match expected size: ${this.dimensions[0]}x${this.dimensions[1]}`);
-		}
-		return lines.map(lines => lines.split(''));
-	}
-
-	async loadMap(map: string)
+	private async loadSounds()
 	{
 		try
 		{
-			const audioEngine = await CreateAudioEngineAsync();
-			audioEngine.volume = 0.5;
-			const frogs = await CreateStreamingSoundAsync('music', 'sounds/frogs.mp3');
+			Game.audioEngine = await CreateAudioEngineAsync();
+			Game.audioEngine.volume = 0.5;
+			Game.music = await CreateStreamingSoundAsync('music', 'sounds/frogs.mp3');
 			Game.wallhitSound = await CreateStreamingSoundAsync('wallhit', 'sounds/wallhit.wav');
 			Game.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', 'sounds/paddlehit.wav');
 			Game.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', 'sounds/paddlehit.wav');
@@ -93,26 +72,72 @@ export class Game
 			Game.victorySound = await CreateStreamingSoundAsync('victory', 'sounds/victory.wav');
 			Game.paddlehitSound.maxInstances = 1;
 			Game.wallhitSound.maxInstances = 1;
-	
-			await audioEngine.unlockAsync();
-			frogs.play();
+
+			Game.paddlehitSound.setVolume(0.6);
+			Game.wallhitSound.setVolume(0.6);
+			Game.playerOutSound.setVolume(0.6);
+			Game.music.play();
+
+			await Game.audioEngine.unlockAsync();
 		}
 		catch (error)
 		{
 			console.error('Error loading audio:', error);
 		}
-		const fileText = await(loadFileText('maps/' + map));
-		const grid = this.parseMapFile(fileText);
-		const eliminationMat = new StandardMaterial('eliminatedMat', this.scene);
+	}
 
+	async loadMap(inputFile: string)
+	{
+		const fileText = await loadFileText(inputFile);
+		
+		const map = JSON.parse(fileText);
+		
+		if (!map.dimensions || !map.balls || !map.goals)
+		{
+			throw new Error('Invalid map format');
+		}
+		this.createScene(map);
+		
+		const eliminationMat = new StandardMaterial('eliminatedMat', this.scene);
+		
 		eliminationMat.diffuseColor = new Color3(0.5, 0.5, 0.5);
 		eliminationMat.alpha = 0.5;
 		eliminationMat.maxSimultaneousLights = 16;
-
+		
 		Paddle.setEliminatedMaterial(eliminationMat);
 		Goal.setEliminatedMaterial(eliminationMat);
 		Goal.createGoalPostMaterial(this.scene);
-		this.createScene(grid);
+		await this.loadSounds();
+		this.jsonMap = map;
+	}
+
+	private createScene(map: any)
+	{
+		const scene = this.scene;
+		const havokPlugin = new HavokPlugin(true, this.havokInstance);
+		
+		scene.enablePhysics(new Vector3(0, -10, 0), havokPlugin);
+		// camera.attachControl(this.gameCanvas, true);
+		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
+		hemiLight.intensity = 0.6;
+		
+		this.dimensions = jsonToVector2(map.dimensions);
+		const cameraHeight = Math.max(this.dimensions[0], this.dimensions[1]) + 10;
+		const camera = new FreeCamera('camera1', new Vector3(0, cameraHeight, 0), scene);
+		camera.setTarget(Vector3.Zero());
+		createGround(scene, this.dimensions);
+		createBalls(scene, this.balls, map);
+		createSurroundingWalls(scene, this.walls, this.dimensions);
+		createWalls(scene, this.walls, map.walls);
+		createGoals(scene, this.goals, map);
+		createPaddles(scene, this.paddles, map.goals);
+		createPlayers(this.players, this.goals, this.paddles);
+		createScoreboard(this.scoreboard, this.players);
+		
+		const background = new Layer('background', 'backgrounds/volcano.jpg', scene, true);
+		background.isBackground = true;
+		this.scene = scene;
+		this.playerCount = this.players.length;
 	}
 
 	private victory()
@@ -137,29 +162,6 @@ export class Game
 		victoryText.outlineColor = 'black';
 		advancedTexture.addControl(victoryText);
 		this.scene.render();
-	}
-
-	private createScene(grid: string[][])
-	{
-		const scene = this.scene;
-		const havokPlugin = new HavokPlugin(true, this.havokInstance);
-		const camera = new FreeCamera('camera1', new Vector3(0, 30, 5), scene);
-		
-		scene.enablePhysics(new Vector3(0, -10, 0), havokPlugin);
-		camera.setTarget(Vector3.Zero());
-		// camera.attachControl(this.gameCanvas, true);
-		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
-		hemiLight.intensity = 0.6;
-
-		createGround(scene, this.dimensions);
-		createWalls(scene, this.walls, this.dimensions, grid);
-		createBalls(scene, this.balls, 1);
-		createPlayers(this.players, this.goals, this.paddles, this.playerCount, grid, scene);
-		createScoreboard(this.scoreboard, this.players);
-		
-		const background = new Layer('background', 'backgrounds/volcano.jpg', scene, true);
-		background.isBackground = true;
-		this.scene = scene;
 	}
 
 	private pauseGame()
@@ -270,7 +272,7 @@ export class Game
 					{
 						this.paddles[j].reset();
 					}
-					createBalls(this.scene, this.balls, 1);
+					createBalls(this.scene, this.balls, this.jsonMap);
 				}
 				scored = false;
 			}
@@ -291,12 +293,9 @@ export class Game
 		this.walls = [];
 		this.goals = [];
 		this.scoreboard = [];
-		Game.wallhitSound.dispose();
-		Game.paddlehitSound.dispose();
-		Game.playerOutSound.dispose();
-		Game.victorySound.dispose();
+		Game.audioEngine.dispose();
 		this.gameIsRunning = false;
-		console.log('Game disposed successfully.');
+		console.log('Game data deleted.');
 	}
 
 	getPaddles(): Paddle[] {return this.paddles;}
@@ -330,5 +329,4 @@ async function loadFileText(filePath: string): Promise<string>
 export async function destroyGame(game: Game)
 {
 	game.dispose();
-	console.log('Game destroyed successfully.');
 }

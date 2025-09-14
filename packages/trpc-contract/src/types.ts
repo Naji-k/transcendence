@@ -18,13 +18,14 @@ export interface Services {
 	gameStateManager: {
 		subscribe: (matchId: number, callback: (state: GameState) => void) => () => void;
 		initGameState: (matchId: number, players: { id: number; alias: string }[]) => GameState;
-		getGameState: (matchId: number) => GameState | null;
+		getGameState: (matchId: number) => GameState;
 		handlePlayerAction: (action: PlayerAction) => void;
 	};
 	tournament: {
 		createTournament: (name: string, userId: number, playerLimit: number) => Promise<any>;
-		joinTournament: (tournamentId: number, playerId: number) => Promise<any>;
+		joinTournament: (tournamentName: string, playerId: number) => Promise<any>;
 		listAllTournaments: () => Promise<any>;
+    getTournamentPlayers: (tournamentName: string) => Promise<any>;
 	};
 }
 

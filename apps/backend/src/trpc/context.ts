@@ -68,11 +68,7 @@ export async function createTRPCContext({
       handlePlayerAction:
         gameStateManager.handlePlayerAction.bind(gameStateManager),
     },
-    tournament: {
-      createTournament: tournamentService.createTournament.bind(tournamentService),
-      joinTournament: tournamentService.joinTournament.bind(tournamentService),
-      listAllTournaments: tournamentService.listAllTournaments.bind(tournamentService)
-    },
+    tournament: tournamentService,
   };
   return { db, services, userToken };
 }

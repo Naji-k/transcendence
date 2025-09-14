@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db } from '../db/src/dbClientInit';
 import {
   tournamentPlayersTable,
@@ -23,24 +23,36 @@ async function insertTournament(
       .returning();
     return tournament;
   } catch (error) {
-    console.log('Error inserting tournament:');
     console.log(error);
     throw error;
   }
 }
 
-async function isPlayerInTournament(playerId: number, tournamentId: number) {
+async function isPlayerInTournament(
+  tournamentId: number,
+  playerId: number
+): Promise<boolean> {
   const [exist] = await db
     .select()
     .from(tournamentPlayersTable)
     .where(
-      (eq(tournamentPlayersTable.tournamentId, tournamentId),
-      eq(tournamentPlayersTable.playerId, playerId))
+      and(
+        eq(tournamentPlayersTable.tournamentId, tournamentId),
+        eq(tournamentPlayersTable.playerId, playerId)
+      )
     );
   return !!exist;
 }
 
-async function addPlayerToTournament(playerId: number, tournamentId: number) {
+// Get all players in a tournament by tournament ID
+function tournamentPlayers(tournamentId: number) {
+  return db
+    .select()
+    .from(tournamentPlayersTable)
+    .where(eq(tournamentPlayersTable.tournamentId, tournamentId));
+}
+
+async function addPlayerToTournament(tournamentId: number, playerId: number) {
   await db
     .insert(tournamentPlayersTable)
     .values({
@@ -50,18 +62,13 @@ async function addPlayerToTournament(playerId: number, tournamentId: number) {
     .returning();
 }
 
-async function getTournamentPlayers(tournamentId: number) {
-  const players = await db
-    .select()
-    .from(tournamentPlayersTable)
-    .where(eq(tournamentPlayersTable.tournamentId, tournamentId));
-  return players;
-}
-
+/**
+ * Tournament service class
+ * This class contains methods to create, join, list tournaments and get tournament players
+ */
 export class TournamentService {
   async createTournament(name: string, userId: number, playerLimit: number) {
     try {
-      console.log('Creating tournament:', { name, userId, playerLimit });
       const tournament = await insertTournament(name, userId, playerLimit);
       console.log('Tournament created:', tournament);
       return tournament;
@@ -74,11 +81,21 @@ export class TournamentService {
     }
   }
 
-  async joinTournament(tournamentId: number, playerId: number) {
+  /**
+   * Join a tournament by name, there is some checks before adding the player to the tournament
+   * 1. Check if the tournament exists
+   * 2. Check if the tournament is still waiting for players
+   * 3. Check if the player is already in the tournament
+   * 4. Add the player to the tournament
+   * 5. If the tournament is full, update the status to 'ready'
+   * @param tournamentName
+   * @param playerId
+   */
+  async joinTournament(tournamentName: string, playerId: number) {
     const [tournament] = await db
       .select()
       .from(tournamentTable)
-      .where(eq(tournamentTable.id, tournamentId));
+      .where(eq(tournamentTable.name, tournamentName));
 
     if (!tournament) {
       throw new TRPCError({
@@ -86,26 +103,30 @@ export class TournamentService {
         message: 'Tournament not found',
       });
     }
-
+    const tournamentId = tournament.id;
+    console.log('Found tournament ID:', { tournamentId, tournamentName });
     if (tournament.status !== 'waiting') {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: 'Tournament already started',
       });
     }
-    const isInTournament = await isPlayerInTournament(playerId, tournamentId);
+    const isInTournament = await isPlayerInTournament(tournamentId, playerId);
+    console.log('Is player in THIS tournament:', isInTournament);
     if (isInTournament) {
-      return tournament; // Player already in tournament, no action needed
+      return tournament;
     }
     try {
-      await addPlayerToTournament(playerId, tournamentId);
-      const players = await getTournamentPlayers(tournamentId);
+      await addPlayerToTournament(tournamentId, playerId);
+      const players = await tournamentPlayers(tournamentId);
       if (players.length >= tournament.playerLimit) {
+        console.log("Tournament is full, updating status to 'ready'");
         await db
           .update(tournamentTable)
           .set({ status: 'ready' })
-          .where(eq(tournamentTable.id, tournamentId));
+          .where(eq(tournamentTable.name, tournamentName));
       }
+      console.log('Player added to tournament:', { playerId, tournamentId });
       return tournament;
     } catch (error) {
       throw new TRPCError({
@@ -116,14 +137,39 @@ export class TournamentService {
     }
   }
 
+  // List all tournaments in the database
   async listAllTournaments() {
     try {
-      const tournaments = await db.select().from(tournamentTable);
-      return tournaments;
+      return await db.select().from(tournamentTable);
     } catch (error) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Failed to fetch tournaments',
+        cause: error,
+      });
+    }
+  }
+
+  async getTournamentPlayers(tournamentName: string) {
+    const [tournament] = await db
+      .select()
+      .from(tournamentTable)
+      .where(eq(tournamentTable.name, tournamentName));
+
+    if (!tournament) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Tournament not found',
+      });
+    }
+
+    const tournamentId = tournament.id;
+    try {
+      return await tournamentPlayers(tournamentId);
+    } catch (error) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to fetch tournament players',
         cause: error,
       });
     }

@@ -1,16 +1,10 @@
 import { z } from 'zod';
 import { createRouter, protectedProcedure, publicProcedure } from '../trpc';
+import { tournamentNameSchema, tournamentInput } from '../schemas';
 
 export const tournamentRouter = createRouter({
   create: publicProcedure
-    .input(
-      z.object({
-        name: z
-          .string()
-          .regex(/^\S+$/, { message: 'Name must not contain spaces' }),
-        playerLimit: z.number().min(2).max(8),
-      })
-    )
+    .input(tournamentInput)
     .mutation(async ({ input, ctx }) => {
       const userId = 1; //ctx.userToken?.id;
       return await ctx.services.tournament.createTournament(
@@ -21,12 +15,13 @@ export const tournamentRouter = createRouter({
     }),
 
   join: protectedProcedure
-    .input(z.object({ tournamentId: z.number().positive() }))
+    .input(z.object({ name: tournamentNameSchema }))
+    .input(z.object({ playerId: z.number().positive() })) // temp for testing
+    //ctx.userToken?.id;
     .mutation(async ({ input, ctx }) => {
-      const userId = 1; //ctx.userToken?.id;
       return await ctx.services.tournament.joinTournament(
-        input.tournamentId,
-        userId
+        input.name,
+        input.playerId
       );
     }),
 
@@ -41,8 +36,22 @@ export const tournamentRouter = createRouter({
     .query(async ({ input, ctx }) => {
       const tournaments = await ctx.services.tournament.listAllTournaments();
       if (tournaments) {
-        return tournaments.find((t: { id: number }) => t.id === input.tournamentId) || null;
+        return (
+          tournaments.find(
+            (t: { id: number }) => t.id === input.tournamentId
+          ) || null
+        );
       }
       return null;
+    }),
+
+  getPlayers: publicProcedure
+    .input(z.object({ name: tournamentNameSchema }))
+    .query(async ({ input, ctx }) => {
+      const players = await ctx.services.tournament.getTournamentPlayers(input.name);
+      if (!players) {
+        throw new Error('No players found for this tournament');
+      }
+      return players;
     }),
 });

@@ -1,8 +1,9 @@
 import {
-	GameState,
-	Player,
-	PlayerAction,
+  GameState,
+  Player,
+  PlayerAction,
 } from '@repo/trpc/src/types/gameState';
+import { TRPCError } from '@trpc/server';
 import { EventEmitter } from 'events';
 
 export class GameStateManager extends EventEmitter {
@@ -57,41 +58,46 @@ export class GameStateManager extends EventEmitter {
 		return initialState;
 	}
 
-	/**
-	 * Handles player actions such as moving paddles or marking readiness.
-	 * @param action The action performed by the player
-	 * @returns
-	 */
-	handlePlayerAction(action: PlayerAction): void {
-		console.log('Processing action:', action);
-		const currentState = this.getGameState(action.matchId);
-		if (!currentState) {
-			console.error('Match not found: ', action.matchId);
-			return;
-		}
-		const player = currentState.players.find(
-			(p) => p.id === action.playerId
-		) as Player;
-		if (!player) {
-			console.error('Player not found in match: ', action.playerId);
-			return;
-		}
-		switch (action.action) {
-			case 'up':
-				// Move player's paddle up
-				player.position.y -= 10; // Example movement
-				break;
-			case 'down':
-				// Move player's paddle down
-				break;
-			case 'stop':
-				// Stop player's paddle
-				break;
-			case 'ready':
-				player.isReady = true;
-				break;
-		}
-		this.gameStates.set(action.matchId, currentState);
-		this.notifySubs(action.matchId, currentState);
-	}
+  /**
+   * Handles player actions such as moving paddles or marking readiness.
+   * @param action The action performed by the player
+   * @returns
+   */
+  handlePlayerAction(action: PlayerAction): void {
+    console.log('Processing action:', action);
+    let currentState: GameState;
+    try {
+      currentState = this.getGameState(action.matchId);
+    } catch (error) {
+      console.error(error);
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Match not found' });
+    }
+    const player = currentState.players.find(
+      (p) => p.id === action.playerId
+    ) as Player;
+    if (!player) {
+      console.error('Player not found in match: ', action.playerId);
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Player not found in this match ' + action.playerId,
+      });
+    }
+    switch (action.action) {
+      case 'up':
+        // Move player's paddle up
+        player.position.y -= 10; // Example movement
+        break;
+      case 'down':
+        // Move player's paddle down
+        break;
+      case 'stop':
+        // Stop player's paddle
+        break;
+      case 'ready':
+        player.isReady = true;
+        break;
+    }
+    this.gameStates.set(action.matchId, currentState);
+    this.notifySubs(action.matchId, currentState);
+  }
 }

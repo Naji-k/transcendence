@@ -46,7 +46,7 @@ export const tournamentTable = sqliteTable(
   "tournament_table", {
     id: int().primaryKey({ autoIncrement: true }),
     creator: int().notNull().references(() => usersTable.id),
-    name: text().notNull(),
+    name: text().notNull().unique(),
     playerLimit: int().notNull(),
     status: text("status", { enum: ["waiting", "ready", "ongoing", "completed"] }).default("waiting"),
     createdAt: text().default(sql`CURRENT_TIMESTAMP`),
@@ -59,8 +59,8 @@ export const tournamentTable = sqliteTable(
 export const tournamentPlayersTable = sqliteTable(
   "tournament_participants_table", {
     id: int().primaryKey({ autoIncrement: true }),
-    tournamentId: int().notNull().references((): AnySQLiteColumn => tournamentTable.id),
-    playerId: int().notNull().references((): AnySQLiteColumn => usersTable.id),
+    tournamentId: int().notNull().references(() => tournamentTable.id),
+    playerId: int().notNull().references(() => usersTable.id),
   },
   (table) => [
 	uniqueIndex("unique_tournament_participation_idx").on(
@@ -90,7 +90,7 @@ export const singleMatchPlayersTable = sqliteTable(
 	id: int().primaryKey({ autoIncrement: true }),
 	matchId: int().notNull().references((): AnySQLiteColumn => matchTable.id),
 	playerId: int().notNull().references((): AnySQLiteColumn => usersTable.id),
-	placement: int().notNull().default(0), // This will be the the position that players finish at, only position 1 will be considered a victory 
+	placement: int().notNull().default(0), // This will be the the position that players finish at, only position 1 will be considered a victory
 },
 (table) => [
 	uniqueIndex("unique_match_participation_idx").on(

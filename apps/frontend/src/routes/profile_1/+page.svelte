@@ -64,14 +64,14 @@
 		</header>
 		
 		<!-- Lobbies and Tournaments buttons section - They redirect to the corresponding sections below -->
-		<!-- <nav class="my-6">
+		<nav class="my-6">
 			<button onclick={() => scrollToSection('lobbies')} class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mr-4 text-white">
 				Lobbies
 			</button>
-			<button onclick={() => scrollToSection('tournaments')} class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-white">
+			<button onclick={() => scrollToSection('tournaments')} class="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded text-white">
 				Tournaments
 			</button>
-		</nav> -->
+		</nav>
 
 		<!-- Match history section - scrollable -->
 		<section class="mt-8">
@@ -172,11 +172,11 @@
 			</div>
 		</section>
 	
-		<!-- <div class="mt-6 flex justify-center">
+		<div class="mt-6 flex justify-center">
 			<button onclick={() => scrollToSection('page_top')} class="hover:bg-gray-700 px-4 py-2 rounded text-white">
 				back to top
 			</button>
-		</div> -->
+		</div>
 	</main>
 </div>
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { testUsers, testLobbies, getUserStats, getUserFriends, getUserMatchHistory, getLobbyCreator } from "$lib/testData";
+	import { testUsers, testLobbies, getUserStats, getUserFriends, getUserMatchHistory, getCreator } from "$lib/testData";
 
 	let currentUserIndex = $state(0);
 	let currentUser =$derived(testUsers[currentUserIndex]);
@@ -135,8 +135,8 @@
 				{#each testLobbies as lobby}
 					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
 						<div class="flex items-center">
-							<img class="w-12 h-12 rounded-full mr-3" src={getLobbyCreator(lobby.creator).avatarPath} alt="{getLobbyCreator(lobby.creator).alias} avatar">
-							<p class="text-left text-gray-300 text-sm mr-3">{getLobbyCreator(lobby.creator).alias}'s game</p>
+							<img class="w-12 h-12 rounded-full mr-3" src={getCreator(lobby.creator).avatarPath} alt="{getCreator(lobby.creator).alias} avatar">
+							<p class="text-left text-gray-300 text-sm mr-3">{getCreator(lobby.creator).alias}'s game</p>
 						</div>
 						<p class="text-right text-gray-300 text-sm mr-3">{lobby.players.length}/{lobby.mode * 2} players</p>
 					</article>

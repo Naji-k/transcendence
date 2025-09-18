@@ -29,7 +29,7 @@ export interface Friendship {
 }
 
 export interface MatchHistoryEntry {
-  matchId: number;
+  id: number;
   date: Date;
   placement: number;
   opponent?: User;
@@ -37,10 +37,27 @@ export interface MatchHistoryEntry {
 }
 
 export interface Lobby {
-  lobbyId: number;
+  id: number;
   creator: number;
   players: number[];
   mode: number;
+}
+
+export enum TournamentStatus {
+  WAITING = 'waiting',
+  READY = 'ready',
+  ONGOING = 'ongoing',
+  COMPLETED = 'completed'
+}
+
+export interface Tournament {
+  id: number;
+  creator: number;
+  name: string;
+  playerLimit: number;
+  players: number[];
+  status: TournamentStatus;
+  createdAt: Date;
 }
 
 export const testUsers: User[] = [
@@ -84,37 +101,37 @@ export const testUsers: User[] = [
 
 export const testLobbies: Lobby[] = [
   {
-    lobbyId: 1,
+    id: 1,
     creator: 1,
     players: [1], // Player1 waiting for 1v1 opponent
     mode: 1 // 1v1 mode
   },
   {
-    lobbyId: 2,
+    id: 2,
     creator: 2,
     players: [2, 3], // GamerGirl vs ProPlayer (full 1v1)
     mode: 1 // 1v1 mode
   },
   {
-    lobbyId: 3,
+    id: 3,
     creator: 1,
     players: [1, 2, 4], // 3 players waiting for one more in 2v2
     mode: 2 // 2v2 mode
   },
   {
-    lobbyId: 4,
+    id: 4,
     creator: 3,
     players: [3], // ProPlayer waiting for 1v1 opponent
     mode: 1 // 1v1 mode
   },
   {
-    lobbyId: 5,
+    id: 5,
     creator: 4,
     players: [1, 3], // Player1 and ProPlayer waiting for 2v2 teammates
     mode: 2 // 2v2 mode
   },
   {
-    lobbyId: 6,
+    id: 6,
     creator: 2,
     players: [2, 4], // GamerGirl and EliteGamer waiting for 2v2 opponents
     mode: 2 // 2v2 mode
@@ -164,12 +181,78 @@ export const testMatchParticipations: MatchParticipation[] = [
   { id: 24, matchId: 12, playerId: 1, placement: 2 },
 ]
 
+export const testTournaments: Tournament[] = [
+  {
+    id: 1,
+    creator: 1,
+    name: "Summer Championship",
+    playerLimit: 4,
+    players: [1],
+    status: TournamentStatus.WAITING,
+    createdAt: new Date('2024-09-15')
+  },
+  {
+    id: 2,
+    creator: 2,
+    name: "Elite Masters Cup",
+    playerLimit: 2,
+    players: [2, 3],
+    status: TournamentStatus.ONGOING,
+    createdAt: new Date('2024-09-10')
+  },
+  {
+    id: 3,
+    creator: 3,
+    name: "Beginner's Tournament",
+    playerLimit: 4,
+    players: [3, 1, 2, 4],
+    status: TournamentStatus.COMPLETED,
+    createdAt: new Date('2024-09-05')
+  },
+  {
+    id: 4,
+    creator: 4,
+    name: "Pro League Finals",
+    playerLimit: 2,
+    players: [4, 1],
+    status: TournamentStatus.READY,
+    createdAt: new Date('2024-09-18')
+  },
+  {
+    id: 5,
+    creator: 1,
+    name: "Weekend Warriors",
+    playerLimit: 6,
+    players: [1, 2],
+    status: TournamentStatus.WAITING,
+    createdAt: new Date('2024-09-17')
+  },
+  {
+    id: 6,
+    creator: 2,
+    name: "Champions League",
+    playerLimit: 4,
+    players: [2, 3, 4, 1],
+    status: TournamentStatus.ONGOING,
+    createdAt: new Date('2024-09-12')
+  },
+  {
+    id: 7,
+    creator: 3,
+    name: "Ultimate Challenge",
+    playerLimit: 6,
+    players: [3, 4, 1],
+    status: TournamentStatus.WAITING,
+    createdAt: new Date('2024-09-16')
+  }
+]
+
 export const testFriendships: Friendship[] = [
   { id: 1, userId: 1, friendId: 2},
   { id: 2, userId: 2, friendId: 3},
 ]
 
-export function getLobbyCreator(creatorId: number) {
+export function getCreator(creatorId: number): User |  undefined {
   return testUsers.find(user => user.id === creatorId) || undefined;
 }
 
@@ -211,7 +294,7 @@ export function getUserMatchHistory(userId: number): MatchHistoryEntry[] {
     const opponent = opponentParticipation ? getUserById(opponentParticipation.playerId) : undefined;
     
     return {
-      matchId: participation.matchId,
+      id: participation.matchId,
       date: match.date,
       placement: participation.placement,
       opponent,

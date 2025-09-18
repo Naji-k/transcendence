@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { testUsers, testLobbies, getUserStats, getUserFriends, getUserMatchHistory, getLobbyCreator } from "$lib/testData";
+	import { testUsers, testLobbies, testTournaments, getUserStats, getUserFriends, getUserMatchHistory, getCreator } from "$lib/testData";
 
 	let currentUserIndex = $state(0);
 	let currentUser =$derived(testUsers[currentUserIndex]);
@@ -88,7 +88,7 @@
 								</div>
 							{:else}
 								<div>
-									<p class="text-gray-300">Match #{match.matchId}</p>
+									<p class="text-gray-300">Match #{match.id}</p>
 									<time class="text-gray-500 text-xs" datetime={match.date.toISOString()}>{formatDate(match.date)}</time>
 								</div>
 							{/if}
@@ -142,8 +142,8 @@
 				{#each testLobbies as lobby}
 					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
 						<div class="flex items-center">
-							<img class="w-12 h-12 rounded-full mr-3" src={getLobbyCreator(lobby.creator).avatarPath} alt="{getLobbyCreator(lobby.creator).alias} avatar">
-							<p class="text-left text-gray-300 text-sm mr-3">{getLobbyCreator(lobby.creator).alias}'s game</p>
+							<img class="w-12 h-12 rounded-full mr-3" src={getCreator(lobby.creator).avatarPath} alt="{getCreator(lobby.creator).alias} avatar">
+							<p class="text-left text-gray-300 text-sm mr-3">{getCreator(lobby.creator).alias}'s game</p>
 						</div>
 						<p class="text-right text-gray-300 text-sm mr-3">{lobby.players.length}/{lobby.mode * 2} players</p>
 					</article>
@@ -160,13 +160,14 @@
 				</button>
 			</div>
 			<div class="max-h-128 overflow-y-auto space-y-2">
-				{#each testLobbies as lobby}
+				{#each testTournaments as tournament}
 					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
 						<div class="flex items-center">
-							<img class="w-12 h-12 rounded-full mr-3" src={getLobbyCreator(lobby.creator).avatarPath} alt="{getLobbyCreator(lobby.creator).alias} avatar">
-							<p class="text-left text-gray-300 text-sm mr-3">{getLobbyCreator(lobby.creator).alias}'s game</p>
+							<img class="w-12 h-12 rounded-full mr-3" src={getCreator(tournament.creator).avatarPath} alt="{getCreator(tournament.creator).alias} avatar">
+							<p class="text-left text-gray-300 text-sm mr-3">{tournament.name}</p>
 						</div>
-						<p class="text-right text-gray-300 text-sm mr-3">{lobby.players.length}/{lobby.mode * 2} players</p>
+						<p class="text-center text-gray-300 text-sm mr-3">{tournament.players.length}/{tournament.playerLimit} players</p>
+						<p class="text-right text-gray-300 text-sm mr-3">{tournament.status}</p>
 					</article>
 				{/each}
 			</div>

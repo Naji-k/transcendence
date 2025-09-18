@@ -64,7 +64,7 @@
 		</header>
 		
 		<!-- Lobbies and Tournaments buttons section - They redirect to the corresponding sections below -->
-		<nav class="my-6">
+		<nav class="text-xs sm:text-sm md:text-md lg:text-lg my-6">
 			<button onclick={() => scrollToSection('lobbies')} class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mr-4 text-white">
 				Lobbies
 			</button>
@@ -75,7 +75,7 @@
 
 		<!-- Match history section - scrollable -->
 		<section class="mt-8">
-			<h3 class="text-2xl mb-4 text-amber-300">Match history({userMatchHistory.length})</h3>
+			<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-4 text-amber-300">Match history({userMatchHistory.length})</h3>
 			<div class="max-h-128 overflow-y-auto space-y-2">
 				{#each userMatchHistory as match}
 					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
@@ -111,14 +111,13 @@
 
 		<!-- Friends list section - scrollable -->
 		<section class="mt-6">
-			<h3 class="text-2xl mb-4 text-amber-400">Friends({userFriends.length})</h3>
+			<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-4 text-amber-400">Friends({userFriends.length})</h3>
 			<div class="max-h-64 overflow-y-auto space-y-2">
 				{#each userFriends as friend}
 					<article class="flex items-center bg-gray-800 p-3 rounded-lg">
 						<img class="w-12 h-12 rounded-full mr-3" src={friend.avatarPath} alt="{friend.alias} avatar">
 						<div>
 							<p class="text-gray-300 mr-3">{friend.alias}</p>
-							<!-- <p class="text-gray-500 text-sm">{friend.name}</p> -->
 						</div>
 					</article>
 				{/each}
@@ -133,8 +132,8 @@
 		<!-- Available lobbies section - Scrollable -->
 		<section id="lobbies" class="mt-6">
 			<div class="flex justify-between items-center mb-4">
-				<h3 class="text-2xl mb-4 text-amber-300">Match lobbies</h3>
-				<button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mr-1 text-white">
+				<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-2 text-amber-300">Match lobbies</h3>
+				<button class="text-xs sm:text-sm md:text-md lg:text-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mr-1 mb-2 text-white">
 					+ Create match
 				</button>
 			</div>
@@ -153,27 +152,25 @@
 	
 		<!-- Available tournaments section - Scrollable -->
 		<section id="tournaments" class="mt-6">
-		<div class="flex justify-between items-center mb-4">
-				<h3 class="text-2xl mb-4 text-amber-300">Tournaments</h3>
-				<button class="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded mr-1 text-white">
+			<div class="flex justify-between items-center mb-2">
+				<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-4 text-amber-300">Tournaments</h3>
+				<button class="text-xs sm:text-sm md:text-md lg:text-lg bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded mr-1 mb-2 text-white">
 					+ Create tournament
 				</button>
 			</div>
 			<div class="max-h-128 overflow-y-auto space-y-2">
 				{#each testTournaments as tournament}
-					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
-						<div class="flex items-center">
-							<img class="w-12 h-12 rounded-full mr-3" src={getCreator(tournament.creator).avatarPath} alt="{getCreator(tournament.creator).alias} avatar">
-							<p class="text-left text-gray-300 text-sm mr-3">{tournament.name}</p>
-						</div>
-						<p class="text-center text-gray-300 text-sm mr-3">{tournament.players.length}/{tournament.playerLimit} players</p>
-						<p class="text-right text-gray-300 text-sm mr-3">{tournament.status}</p>
+					<article class="grid grid-cols-[auto_1fr_100px_120px] sm:grid-cols-[auto_1fr_120px_160px] md:grid-cols-[auto_1fr_160px_200px] gap-3 items-center bg-gray-800 p-3 rounded-lg">
+						<img class="w-8 h-8 sm:w-12 sm:h-12 rounded-full" src={getCreator(tournament.creator).avatarPath} alt="{getCreator(tournament.creator).alias} avatar">
+						<p class="text-left text-gray-300 text-xs sm:text-sm min-w-0 truncate">{tournament.name}</p>
+						<p class="text-center text-gray-300 text-xs sm:text-sm">{tournament.players.length}/{tournament.playerLimit} players</p>
+						<p class="text-right text-gray-300 text-xs sm:text-sm mr-3">{tournament.status}</p>
 					</article>
 				{/each}
 			</div>
 		</section>
 	
-		<div class="mt-6 flex justify-center">
+		<div class="text-sm md:text-md lg:text-lg mt-6 flex justify-center">
 			<button onclick={() => scrollToSection('page_top')} class="hover:bg-gray-700 px-4 py-2 rounded text-white">
 				back to top
 			</button>

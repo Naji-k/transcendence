@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { testUsers, testLobbies, testTournaments, getUserStats, getUserFriends, getUserMatchHistory, getCreator } from "$lib/testData";
+	import { testUsers, testLobbies, testTournaments, getUserStats, getUserFriends, getUserMatchHistory, getCreator } from "$lib/profileTestData";
 
 	let currentUserIndex = $state(0);
 	let currentUser =$derived(testUsers[currentUserIndex]);
@@ -160,7 +160,7 @@
 			</div>
 			<div class="max-h-128 overflow-y-auto space-y-2">
 				{#each testTournaments as tournament}
-					<article class="grid grid-cols-[auto_1fr_100px_120px] sm:grid-cols-[auto_1fr_120px_160px] md:grid-cols-[auto_1fr_160px_200px] gap-3 items-center bg-gray-800 p-3 rounded-lg">
+					<article class="grid grid-cols-[auto_1fr_1fr_1fr] gap-3 items-center bg-gray-800 p-3 rounded-lg">
 						<img class="w-8 h-8 sm:w-12 sm:h-12 rounded-full" src={getCreator(tournament.creator).avatarPath} alt="{getCreator(tournament.creator).alias} avatar">
 						<p class="text-left text-gray-300 text-xs sm:text-sm min-w-0 truncate">{tournament.name}</p>
 						<p class="text-center text-gray-300 text-xs sm:text-sm">{tournament.players.length}/{tournament.playerLimit} players</p>

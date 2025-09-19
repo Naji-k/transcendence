@@ -155,7 +155,7 @@
 		<section id="tournaments" class="mt-6">
 			<div class="flex justify-between items-center mb-2">
 				<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-4 text-amber-300">Tournaments</h3>
-				<button class="text-xs sm:text-sm md:text-md lg:text-lg bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded mr-1 mb-2 text-white">
+				<button onclick={() => goto('/tournament_lobby')} class="text-xs sm:text-sm md:text-md lg:text-lg bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded mr-1 mb-2 text-white">
 					+ Create tournament
 				</button>
 			</div>

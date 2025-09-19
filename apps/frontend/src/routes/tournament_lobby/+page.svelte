@@ -16,7 +16,7 @@
 
 <div id="page_top" class="flex flex-col sm:p-8 md:p-12 lg:p-24 2xl:flex-row space-y-4 md:space-y-0 xl:space-x-0 2xl:space-x-16 justify-between min-h-screen bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
 	<main class="flex-1 max-h-[500px] py-2 sm:py-4 md:py-6 lg:py-10 px-4 font-['Press_Start_2P'] bg-gradient-to-br from-purple-700 to-indigo-900 rounded-3xl shadow-2xl relative">
-		<h3 class="text-sm sm:text-sm md:text-lg lg:text-2xl mb-4 text-amber-300">Match settings</h3>
+		<h3 class="text-sm sm:text-sm md:text-lg lg:text-2xl mb-4 text-amber-300">Tournament settings</h3>
 		<section class="mt-6">
 			<!-- No. of players -->
 			<article class="flex items-center mb-6">

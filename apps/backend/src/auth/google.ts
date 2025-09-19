@@ -8,7 +8,11 @@ const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo';
 
-function makeHttpsRequest(url: string, options: any, body?: string): Promise<any> {
+function makeHttpsRequest(
+  url: string,
+  options: any,
+  body?: string
+): Promise<any> {
   return new Promise((resolve, reject) => {
     const req = request(url, options, (res) => {
       let data = '';
@@ -61,12 +65,16 @@ export function setupGoogleAuthRoutes(app: FastifyInstance) {
         grant_type: 'authorization_code',
       });
 
-      const tokenResponse = await makeHttpsRequest(GOOGLE_TOKEN_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+      const tokenResponse = await makeHttpsRequest(
+        GOOGLE_TOKEN_URL,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
         },
-      }, tokenParams.toString());
+        tokenParams.toString()
+      );
 
       const { access_token } = tokenResponse;
 

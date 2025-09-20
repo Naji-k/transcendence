@@ -5,6 +5,7 @@ import { createTRPCContext } from './trpc/context';
 import websocket from '@fastify/websocket';
 import { setupGoogleAuthRoutes } from './auth/google';
 import pino from 'pino';
+import cookie from '@fastify/cookie';
 // Create a Fastify instance
 const fastifyInstance = Fastify({
   disableRequestLogging: true,
@@ -13,6 +14,8 @@ const fastifyInstance = Fastify({
     timestamp: pino.stdTimeFunctions.isoTime,
   },
 });
+
+fastifyInstance.register(cookie);
 
 /**
  * Register the tRPC plugin with Fastify

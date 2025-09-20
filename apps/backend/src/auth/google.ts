@@ -107,10 +107,45 @@ export function setupGoogleAuthRoutes(app: FastifyInstance) {
       // Issue JWT
       const token = jwtUtils.sign(user.id, user.email);
       
-      reply.redirect(`http://localhost:8080/welcome?name=${encodeURIComponent(user.alias)}&token=${token}`);
+      reply.setCookie('auth_token', token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7, // 1 week
+        })
+        .redirect('http://localhost:8080/welcome');
+
     } catch (error) {
       console.error('Google Sign-In failed:', error);
       reply.status(500).send({ error: 'Google Sign-In failed' });
+    }
+  });
+
+  app.get('/api/auth/me', async (req, reply) => {
+    try {
+      const { auth_token } = req.cookies;
+      if (!auth_token) {
+        return reply.status(401).send({ error: 'Not authenticated' });
+      }
+      
+      const decoded = jwtUtils.verify(auth_token);
+      if (typeof decoded === 'string' || !decoded?.email) {
+        return reply.status(400).send({ error: 'Invalid token' });
+      }
+      const user = await findUserByEmail(decoded.email);
+      
+      if (!user) {
+        return reply.status(404).send({ error: 'User not found' });
+      }
+      
+      return {
+        name: user.alias ?? user.name,
+        token: auth_token, // to mirror into localStorage
+      };
+    } catch (err) {
+      console.error(err);
+      return reply.status(401).send({ error: 'Invalid or expired token' });
     }
   });
 }

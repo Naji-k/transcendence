@@ -1,28 +1,28 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { setAuthToken } from '$lib/trpc'; // function you use to store JWT
+  import { setAuthToken } from '$lib/trpc';
 
   let name = '';
 
-  onMount(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    const userName = params.get('name');
+  onMount(async () => {
+    try {
+      const res = await fetch('http://localhost:3000/api/auth/me', {
+        credentials: 'include', // so cookies are sent
+      });
 
-    if (token) {
-      setAuthToken(token); // store token in localStorage/sessionStorage
-      console.log('Token stored:', token);
-    }
+      if (!res.ok) {
+        console.error('Auth check failed');
+        return;
+      }
 
-    if (userName) {
-      name = decodeURIComponent(userName);
-    }
+      const data = await res.json();
+      name = data.name;
 
-    //Remove token and name from URL to clean up
-    if (token || userName) {
-      const url = new URL(window.location.href);
-      url.search = '';
-      window.history.replaceState({}, '', url.toString());
+      if (data.token) {
+        setAuthToken(data.token);
+      }
+    } catch (err) {
+      console.error('Error fetching user:', err);
     }
   });
 </script>

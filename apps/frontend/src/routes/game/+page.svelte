@@ -2,7 +2,7 @@
 
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import type { ClientGame } from '$lib/index';
+	import { ClientGame } from '$lib/index';
 
 	let canvas: HTMLCanvasElement | null = null;
 	let game: ClientGame | null = null;
@@ -46,12 +46,12 @@
 		{
 			try
 			{
-				game = await startGame('maps/standard2player.map');
+				game = await startGame ('maps/standard2player.map');
+			
 			}
 			catch (err)
 			{
-				// console.warn('startGame(canvas, map) failed — falling back to startGame(map):', err);
-				console.warn('startGame(canvas, map) failed)', err);
+				console.warn('startGame(canvas, map) failed — falling back to startGame(map):', err);
 				// game = await (startGame as any)('maps/standard2player.map');
 			}
 			resizeCanvas();

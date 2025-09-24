@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { createRouter, protectedProcedure, publicProcedure } from '../trpc';
-import { PlayerAction, PlayerActionSchema } from '../types/gameState';
+import { PlayerAction } from '../types/gameState';
 import { z } from 'zod';
 import { GameState } from '../types/gameState';
 import { observable } from '@trpc/server/observable';
@@ -80,40 +80,40 @@ export const gameRouter = createRouter({
    * @returns { success: boolean } - The result of the action handling.
    */
   sentPlayerAction: protectedProcedure
-    .input(PlayerActionSchema)
+    .input(z.custom<PlayerAction>())
     .mutation(async ({ ctx, input }) => {
       //here should check if the game is exist
-      const action: PlayerAction = {
-        ...input,
-        // playerId: ctx.userToken.id,
-        // playerId: input.playerId, // Temporary hardcoded playerId for testing
-      };
-      const playerExists = await ctx.services.dbServices.playerExistsInMatch(
-        action.matchId,
-        action.playerId!
-      );
-      if (!playerExists) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Player does not exist in this match',
-        });
-      }
-      const matchExists = await ctx.services.dbServices.matchExists(
-        input.matchId
-      );
-      if (!matchExists) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Match does not exist',
-        });
-      }
-      const gameState = ctx.services.gameStateManager.getGameState(
-        input.matchId
-      );
-      if (!gameState) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Match not found' });
-      }
-      ctx.services.gameStateManager.handlePlayerAction(action);
+      // const action: PlayerAction = {
+      //   ...input,
+      //   // playerId: ctx.userToken.id,
+      //   // playerId: input.id, // Temporary hardcoded playerId for testing
+      // };
+      // const playerExists = await ctx.services.dbServices.playerExistsInMatch(
+      //   action,
+      //   action.id!
+      // );
+      // if (!playerExists) {
+      //   throw new TRPCError({
+      //     code: 'NOT_FOUND',
+      //     message: 'Player does not exist in this match',
+      //   });
+      // }
+      // const matchExists = await ctx.services.dbServices.matchExists(
+      //   input.matchId
+      // );
+      // if (!matchExists) {
+      //   throw new TRPCError({
+      //     code: 'NOT_FOUND',
+      //     message: 'Match does not exist',
+      //   });
+      // }
+      // const gameState = ctx.services.gameStateManager.getGameState(
+      //   input.matchId
+      // );
+      // if (!gameState) {
+      //   throw new TRPCError({ code: 'NOT_FOUND', message: 'Match not found' });
+      // }
+      ctx.services.gameStateManager.handlePlayerAction(input.);
       return { success: true };
     }),
 });

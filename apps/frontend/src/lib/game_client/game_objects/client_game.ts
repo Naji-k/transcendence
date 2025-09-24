@@ -8,6 +8,7 @@ import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
 import { TextBlock, AdvancedDynamicTexture } from '@babylonjs/gui';
 import type { AudioEngineV2 } from '@babylonjs/core';
 import type { GameState } from '../../index';
+import { trpc } from '$lib/trpc';
 
 export class ClientGame
 {
@@ -103,8 +104,15 @@ export class ClientGame
 
 	async loadMap(inputFile: string)
 	{
-		const fileText = await loadFileText(inputFile);
-		
+		let fileText = '';
+		try {
+			fileText = await loadFileText(inputFile);
+			
+		} catch (error) {
+			console.error('Error loading map:', error);
+			throw error;
+			
+		}		
 		const map = JSON.parse(fileText);
 		
 		if (!map.dimensions || !map.balls || !map.goals)
@@ -112,7 +120,7 @@ export class ClientGame
 			throw new Error('Invalid map format');
 		}
 		this.createScene(map);
-		
+		initGame();
 		const eliminationMat = new StandardMaterial('eliminatedMat', this.scene);
 		
 		eliminationMat.diffuseColor = new Color3(0.5, 0.5, 0.5);
@@ -271,10 +279,39 @@ export class ClientGame
 
 	private async updateGameState()
 	{
-		;
-		//get stuff from the gamestate object
 		// const serverInput = await loadServerInput((this.scene as any).socket) as string;
+		subscribeToGameState();
+		const serverInput = trpc.game.subscribeToGameState.subscribe({matchId: 1}, {
+			onData(gameState) {
+				return JSON.stringify(gameState);
+			},
+			onError(err) {
+				console.error('Subscription error:', err);
+				return '';
+			},
+		});
+		if (!serverInput)
+		{
+			console.warn('No data received from server');
+			return;
+		}
+		//WHY TO PARSE IT!!
+		console.log(serverInput);
 		// this.lastState = JSON.parse(serverInput) as GameState;
+	}
+
+	private updateScoreboard()
+	{
+		const players = this.lastState.players;
+
+		for (let i = 0; i < this.players.length; i++)
+		{
+			if (this.players[i].getLives() != players[i].lives)
+			{
+				this.players[i].loseLife();
+				this.scoreboard[i].text = `Player ${this.players[i].ID}: ${this.players[i].getLives()}`;
+			}
+		}
 	}
 
 	private updateBalls()
@@ -313,11 +350,11 @@ export class ClientGame
 
 	private gameLoop()
 	{
-		// this.updateGameState();
-		// this.updateBalls();
-		// this.updatePaddles();
-		// this.updateScoreboard();
-		// send key presses to server
+		console.log("Game loop tick");
+		this.updateGameState();
+		this.updateBalls();
+		this.updatePaddles();
+		this.updateScoreboard();
 		this.scene.render();
 	}
 
@@ -358,19 +395,51 @@ async function loadFileText(filePath: string): Promise<string>
 	return response.text();
 }
 
-async function loadServerInput(socket: WebSocket): Promise<string>
+//here need to get data from server
+// async function loadServerInput(socket: WebSocket): Promise<string>
+// {
+// 	return new Promise((resolve, reject) =>
+// 	{
+// 		socket.onmessage = (event) =>
+// 		{
+// 			resolve(event.data);
+// 		};
+// 		socket.onerror = (event) =>
+// 		{
+// 			reject(new Error('WebSocket error'));
+// 		};
+// 	});
+// }
+
+async function initGame() {
+    try {
+      console.log('Initializing game...');
+      const result = await trpc.game.initializeMatch.mutate({
+        matchId: 1,
+      });
+      console.log(`Game initialized: ${JSON.stringify(result)}`);
+    } catch (error) {
+      console.log(`Error initializing: ${error.message}`);
+    }
+  }
+
+
+function subscribeToGameState()
 {
-	return new Promise((resolve, reject) =>
-	{
-		socket.onmessage = (event) =>
-		{
-			resolve(event.data);
-		};
-		socket.onerror = (event) =>
-		{
-			reject(new Error('WebSocket error'));
-		};
-	});
+	let subscription: any;
+	try {
+		subscription = trpc.game.subscribeToGameState.subscribe({matchId: 1}, {
+			onData(gameState) {
+				console.log('Received game state:', gameState);
+			},
+			onError(err) {
+				console.error('Subscription error:', err);
+			},
+		});
+	} catch(error) {
+		console.log(`Subscribe error: ${error.message}`);
+
+	}
 }
 
 /*	Destroys the resources associated with the game	*/

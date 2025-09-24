@@ -10,10 +10,12 @@ export async function startGame(map: string, gameState: GameState): Promise<Serv
 {
 	const havokInstance = await getPhysics();
 
-	if (havokInstance.isError == true)
-	{
-		console.error('Failed to initialize HavokPhysics.');
-		return Promise.reject();
+	if (!havokInstance) {
+		console.error('HavokPhysics instance is not available.');
+		return Promise.reject('Physics engine is not initialized.');
+	if (!havokInstance) {
+		console.error('HavokPhysics instance is not available.');
+		return Promise.reject('Physics engine is not initialized.');
 	}
 	const game = new ServerGame(havokInstance, gameState);
 	

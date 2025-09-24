@@ -73,5 +73,8 @@ export async function createTRPCContext({
     tournament: tournamentService,
     match: matchService,
   };
+
+  // let user = { id: 1, email: 'example11758728678904@example.com', name: '' }; // default guest user
+  // return { db, services, userToken, user};
   return { db, services, userToken };
 }

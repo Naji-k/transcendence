@@ -2,7 +2,7 @@
  * authentication router
  * Handles user authentication operations such as login, logout, and registration.
  */
-import { createRouter, publicProcedure } from '../trpc';
+import { createRouter, publicProcedure, protectedProcedure } from '../trpc';
 import { signUpInput, loginInput } from '../schemas';
 
 export const authRouter = createRouter({
@@ -30,4 +30,9 @@ export const authRouter = createRouter({
     .mutation(({ ctx, input }) =>
       ctx.services.auth.signIn(input.email, input.password)
     ),
+  
+
+  // me: protectedProcedure.query(({ ctx }) => {
+  //   return ctx.user;
+  // })
 });

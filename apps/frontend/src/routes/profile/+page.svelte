@@ -1,6 +1,18 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { testUsers, testLobbies, testTournaments, getUserStats, getUserFriends, getUserMatchHistory, getCreator } from "$lib/profileTestData";
+	import { authStoreMethods, userAuthStore } from "$lib/store";
+	import { onMount } from "svelte";
+
+	// let { user: activeUser, isAuth: activeUserIsAuth } = $derived($userAuthStore);
+
+	// onMount(() => {
+	// 	if (activeUserIsAuth == false) {
+	// 		goto('/signin');
+	// 	}
+	// });
+
+	// $inspect(activeUser.name);
 
 	let currentUserIndex = $state(0);
 	let currentUser =$derived(testUsers[currentUserIndex]);

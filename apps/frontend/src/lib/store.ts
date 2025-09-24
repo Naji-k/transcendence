@@ -1,6 +1,7 @@
+import { browser } from "$app/environment";
 import { writable } from "svelte/store";
 import type { User } from '@repo/trpc/src/types'
-import { StateCondition } from "@babylonjs/core";
+import { trpc, setAuthToken } from "./trpc";
 
 interface UserAuthState {
   user: User | null;
@@ -19,7 +20,41 @@ export const authStoreMethods = {
     userAuthStore.update(state => ({
       ...state,
       user,
+      isAuth: true
+    }))
+  },
+
+  clearUser: () => {
+    userAuthStore.update(state => ({
+      ...state,
+      user: null,
       isAuth: false
     }))
+  },
+
+}
+
+export async function initAuthStore(): Promise<void> {
+  if (!browser) {
+    return;
+  }
+
+  try {
+    const authToken = localStorage.getItem('authToken');
+
+    if (!authToken) {
+      authStoreMethods.clearUser();
+      return;
+    }
+
+    setAuthToken(authToken);
+
+    const user = await trpc.auth.me.query(); // need to figure this out
+    authStoreMethods.setUser(user);
+  } catch (error) {
+    console.error(error);
+    localStorage.removeItem('authToken');
+    authStoreMethods.clearUser();
   }
 }
+

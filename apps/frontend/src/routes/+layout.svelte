@@ -1,8 +1,15 @@
 <script lang="ts">
   import '../app.css';
+  import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
+  import { initAuthStore } from '$lib/store';
+
   // import favicon from '$lib/assets/favicon.svg';
   const favicon = '/favicon.svg'; // Place favicon.svg in static/ folder
 
+//   onMount( async () => {
+// 	await initAuthStore();
+//   })
   let { children } = $props();
 </script>
 

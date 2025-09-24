@@ -1,5 +1,7 @@
 import { loginInput, signUpInput } from '@repo/trpc/src/schemas';
 import { trpc, setAuthToken } from '../trpc';
+import { authStoreMethods } from '$lib/store';
+import { goto } from '$app/navigation';
 
 export async function signUp(name: string, email: string, password: string) {
   try {
@@ -16,7 +18,9 @@ export async function signUp(name: string, email: string, password: string) {
     const res = await trpc.auth.signUp.mutate(validInput.data);
     console.error('signed up: ', res.user);
     setAuthToken(res.token);
-    return res.user;
+    console.log('logged in :', res.user);
+		// authStoreMethods.setUser(res.user);
+    await goto('/profile');
   } catch (e) {
     console.error('signup failed ', e);
     throw e;
@@ -42,7 +46,8 @@ export async function login(email: string, password: string) {
     setAuthToken(res.token);
     localStorage.setItem('id', res.user.id.toString());
     console.log('logged in :', res.user);
-    return res.user;
+    // authStoreMethods.setUser(res.user);
+    await goto('/profile');
   } catch (e) {
     console.error('login failed: ', e);
     throw e.message || e;

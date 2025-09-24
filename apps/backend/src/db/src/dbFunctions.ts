@@ -128,7 +128,6 @@ export async function playerExistsInMatch(
   matchId: number,
   playerId: number
 ): Promise<boolean> {
-  return true;
   if (!matchId || !playerId) {
     throw new Error(
       'playerExistsInMatch error: matchId and playerId must be provided'
@@ -159,7 +158,6 @@ export async function matchExists(matchId: number): Promise<boolean> {
   if (!matchId) {
     throw new Error('matchExists error: matchId must be provided');
   }
-  return true;
   try {
     const matchExists = await db
       .select()
@@ -177,10 +175,6 @@ export async function matchExists(matchId: number): Promise<boolean> {
 export async function getMatchPlayers(
   matchId: number
 ): Promise<{ id: number; alias: string }[]> {
-  return [
-    { id: 1, alias: 'player 1' },
-    { id: 2, alias: 'player 2' },
-  ];
   if (!matchId) {
     throw new Error('getMatchPlayers error: matchId must be provided');
   }

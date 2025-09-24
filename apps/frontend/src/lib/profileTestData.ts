@@ -1,11 +1,9 @@
 export interface User {
   id: number;
   alias: string;
-  password: string;
   name?: string;
   email: string;
   avatarPath?: string;
-  backgroundPath?: string;
 }
 
 export interface Match {
@@ -64,38 +62,30 @@ export const testUsers: User[] = [
   {
     id: 1,
     alias: "Player1",
-    password: "hashed_password",
     name: "John Doe",
     email: "john@example.com",
     avatarPath: "https://thisishollywood.com/cdn/shop/products/2330-2325_1024x1024.jpg?v=1615010563",
-    backgroundPath: "background_default"
   },
   {
     id: 2,
     alias: "GamerGirl",
-    password: "hashed_password",
     name: "Jane Smith", 
     email: "jane@example.com",
     avatarPath: "https://thf.bing.com/th?q=Avatar+Fight+Scene&w=120&h=120&c=1&rs=1&qlt=90&cb=1&pid=InlineBlock&mkt=nl-NL&cc=NL&setlang=en&adlt=moderate&t=1&mw=247",
-    backgroundPath: "background_default"
   },
   {
     id: 3,
     alias: "ProPlayer",
-    password: "hashed_password",
     name: "Mike Johnson",
     email: "mike@example.com",
     avatarPath: "https://thf.bing.com/th?q=Mr+Bean+Avatar&w=120&h=120&c=1&rs=1&qlt=90&cb=1&pid=InlineBlock&mkt=nl-NL&cc=NL&setlang=en&adlt=moderate&t=1&mw=247",
-    backgroundPath: "background_default"
   },
   {
     id: 4,
     alias: "EliteGamer",
-    password: "hashed_password",
     name: "Sarah Wilson",
     email: "sarah@example.com",
     avatarPath: "https://th.bing.com/th/id/OIP.ZDjW4WOYi3l-8kcjsCkVMQHaE8?w=265&h=180&c=7&r=0&o=5&pid=1.7",
-    backgroundPath: "background_default"
   }
 ]
 

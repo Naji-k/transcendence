@@ -1,7 +1,7 @@
 import { browser } from "$app/environment";
 import { writable } from "svelte/store";
 import type { User } from '@repo/trpc/src/types'
-import { trpc, setAuthToken } from "./trpc";
+import { trpc, setAuthToken } from "../trpc";
 
 interface UserAuthState {
   user: User | null;
@@ -49,7 +49,11 @@ export async function initAuthStore(): Promise<void> {
 
     setAuthToken(authToken);
 
-    const user = await trpc.auth.me.query(); // need to figure this out
+    const user = await trpc.user.getUser.query();
+    if (!user) {
+      authStoreMethods.clearUser();
+      return;
+    }
     authStoreMethods.setUser(user);
   } catch (error) {
     console.error(error);

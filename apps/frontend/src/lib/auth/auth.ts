@@ -1,6 +1,6 @@
 import { loginInput, signUpInput } from '@repo/trpc/src/schemas';
 import { trpc, setAuthToken } from '../trpc';
-import { authStoreMethods } from '$lib/store';
+import { authStoreMethods } from '$lib/auth/store';
 import { goto } from '$app/navigation';
 
 export async function signUp(name: string, email: string, password: string) {

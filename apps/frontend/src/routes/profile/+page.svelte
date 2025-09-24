@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { testUsers, testLobbies, testTournaments, getUserStats, getUserFriends, getUserMatchHistory, getCreator } from "$lib/profileTestData";
-	import { authStoreMethods, userAuthStore } from "$lib/store";
+	import { authStoreMethods, userAuthStore } from "$lib/auth/store";
 	import { onMount } from "svelte";
 
 	// let { user: activeUser, isAuth: activeUserIsAuth } = $derived($userAuthStore);

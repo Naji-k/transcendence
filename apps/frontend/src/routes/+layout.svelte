@@ -2,7 +2,7 @@
   import '../app.css';
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { initAuthStore } from '$lib/store';
+  import { initAuthStore } from '$lib/auth/store';
 
   // import favicon from '$lib/assets/favicon.svg';
   const favicon = '/favicon.svg'; // Place favicon.svg in static/ folder

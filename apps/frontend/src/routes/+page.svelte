@@ -74,11 +74,6 @@
       >Start</a
     >
     <a
-      href="./game"
-      class="block bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-600 hover:to-violet-700 rounded-xl py-4 px-8 text-black font-bold text-center shadow-md transition-colors"
-      >Play Pongers</a
-    >
-    <a
       href="./map_editor"
       class="block bg-gradient-to-r from-cyan-500 to-violet-600 hover:from-cyan-600 hover:to-violet-700 rounded-xl py-4 px-8 text-black font-bold text-center shadow-md transition-colors"
       >Edit Pongers</a

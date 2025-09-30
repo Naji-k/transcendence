@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   let email = '';
   let password = '';
   import { login } from '$lib/auth/auth';
@@ -7,6 +8,7 @@
     login(email, password)
       .then((res) => {
         alert(`Login successful! Welcome ${res?.name || res?.alias}`);
+        goto('/game_lobby');
       })
       .catch((error) => {
         alert(`Login failed:\n ${error}`);

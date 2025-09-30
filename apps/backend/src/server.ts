@@ -6,6 +6,8 @@ import websocket from '@fastify/websocket';
 import { setupGoogleAuthRoutes } from './auth/google';
 import pino from 'pino';
 import cookie from '@fastify/cookie';
+import fastifyCors from '@fastify/cors';
+
 // Create a Fastify instance
 const fastifyInstance = Fastify({
   disableRequestLogging: true,

@@ -35,7 +35,7 @@
         { matchId },
         {
           onData: (data) => {
-            gameState = data;
+            gameState = data as GameState;
             connectionStatus = 'Connected';
             isSubscribed = true;
             console.log(`Received update: ${JSON.stringify(data)}`);
@@ -57,11 +57,10 @@
       console.log('Sending ready action...');
       const result = await trpc.game.sentPlayerAction.mutate({
         matchId,
-        playerId: id,
         action: '-1',
       });
       console.log(
-        `Ready action sent for player ${id}: ${JSON.stringify(result)}`,
+        `Ready action sent for player: ${JSON.stringify(result)}`,
       );
     } catch (error) {
       console.log(`Error sending ready: ${error.message}`);
@@ -163,7 +162,7 @@
       placeholder="Player ID"
       style="width: 100px;"
     />
-    <button on:click={() => sendReady(playerID)}>✅ Send Ready</button>
+    <button on:click={() => sendReady()}>✅ Send Ready</button>
     <p>Current Player ID: {playerID}</p>
     <button on:click={disconnect} disabled={!isSubscribed}>🔌 Disconnect
     </button
@@ -175,7 +174,6 @@
     <div class="game-state">
       <h2>Current Game State</h2>
       <p><strong>Status:</strong> {gameState.status}</p>
-      <p><strong>Round:</strong> {gameState.currentRound}</p>
       <p><strong>Last Update:</strong> {gameState.lastUpdate}</p>
 
       <h3>Players:</h3>
@@ -189,10 +187,7 @@
 
       <h3>Ball:</h3>
       <p>
-        Position: ({gameState.ball.position.x}, {gameState.ball.position.y})
-      </p>
-      <p>
-        Velocity: ({gameState.ball.velocity.x}, {gameState.ball.velocity.y})
+        Position: ({gameState.balls[0].x}, {gameState.balls[0].z})
       </p>
     </div>
   {/if}

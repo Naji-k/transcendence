@@ -25,10 +25,12 @@ export class GameStateManager extends EventEmitter {
   }
 
   /**
-   *
-   * @param matchId The unique identifier for the match
-   * @param players Array of players participating in the match still not sure from where we get this
-   * @returns
+   * Initializes a new game state for the given matchId if it doesn't already exist.
+   * Also starts a new ServerGame instance for the match.
+   * @param matchId The ID of the match to initialize
+   * @param players The list of players in the match
+   * @returns The initialized GameState
+   * @throws TRPCError if the game state already exists and is not in 'waiting' status
    */
 
   //this will be called after GameLoop (matchmaking is done and players are assigned to a match)
@@ -36,8 +38,9 @@ export class GameStateManager extends EventEmitter {
     matchId: number,
     players: { id: number; alias: string }[]
   ): Promise<GameState> {
-    if (this.gameStates.has(matchId)) {
-      return this.gameStates.get(matchId) as GameState;
+    const state = this.getGameState(matchId);
+    if (state && state.status == 'waiting') {
+      return state;
     }
     console.log(`Initializing game state for match ${matchId}...`);
     const initialState: GameState = {
@@ -57,20 +60,21 @@ export class GameStateManager extends EventEmitter {
     };
 
     this.gameStates.set(matchId, initialState);
-    const serverGame = await startGame(initialState, this); // startGame should return ServerGame instance
+    const serverGame = await startGame(initialState, this);
     this.serverGames.set(matchId, serverGame);
     this.notifySubs(matchId, initialState);
     return initialState;
   }
 
   /**
-   * Handles player actions such as moving paddles or marking readiness.
-   * @param action The action performed by the player
-   * @returns
+   * Handles a player's action within a match.
+   * Validates the action and updates the game state accordingly.
+   * @param action The player's action details.
+   * @throws TRPCError if the match or player is not found.
    */
   handlePlayerAction(action: PlayerAction): void {
     const currentState = this.getGameState(action.matchId);
-    const serverGame = this.serverGames.get(action.matchId); // Get the game instance
+    const serverGame = this.serverGames.get(action.matchId);
 
     if (!currentState || !serverGame) {
       throw new TRPCError({
@@ -78,17 +82,13 @@ export class GameStateManager extends EventEmitter {
         message: 'Match not found in manager',
       });
     }
-    serverGame.enqueueAction(action); // ← This is the key connection!
-
+    serverGame.enqueueAction(action);
+    //TODO: Update gameState in db
     if (action.action === 'ready') {
-      console.log(
-        `Player ${action.playerId} is ready in match ${currentState.matchId}.`
-      );
       const player = currentState.players.find((p) => p.id === action.playerId);
       if (player) {
         player.isReady = true;
         if (currentState.players.every((p) => p.isReady)) {
-          console.log(`All players ready in match ${action.matchId}.`);
           currentState.status = 'in_progress';
         }
       } else {
@@ -96,37 +96,6 @@ export class GameStateManager extends EventEmitter {
           `Player ${action.playerId} not found in match ${currentState.matchId}.`
         );
       }
-
-      // const player = currentState.players.find(
-      //   (p) => p.id === action.playerId
-      // ) as Player;
-      // if (!player) {
-      //   console.error('Player not found in match: ', action.matchId);
-      //   throw new TRPCError({
-      //     code: 'NOT_FOUND',
-      //     message: 'Player not found in this match ' + action.matchId,
-      //   });
-      // }
-      // switch (action.action) {
-      //   case '1':
-      //     player.action.action = action.action;
-      //     break;
-      //   case '-1':
-      //     player.action.action = action.action;
-      //     break;
-      //   case '0':
-      //     // Stop player's paddle
-      //     player.action.action = action.action;
-      //     break;
-      //   case 'ready':
-      //     player.isReady = true;
-      //     // Check if all players are ready to start the game
-      //     if (currentState.players.every((p) => p.isReady)) {
-      //       currentState.status = 'in_progress';
-      //       console.log(`All players ready in match Game starting.`);
-      //     }
-      //     break;
-      // }
       this.gameStates.set(action.matchId, currentState);
     }
   }

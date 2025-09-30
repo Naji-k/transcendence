@@ -31,33 +31,39 @@ export const GameStateSchema = z.object({
 });
 */
 export const PlayerActionSchema = z.object({
-playerId: z.number().optional(),
-matchId: z.number(),
+  playerId: z.number().optional(),
+  matchId: z.number(),
 action: z.enum(['1', '-1', '0' ]),
 });
 
 // export type Player = z.infer<typeof PlayerSchema>;
 // export type GameState = z.infer<typeof GameStateSchema>;
-// export type PlayerAction = z.infer<typeof PlayerActionSchema>; 
+// export type PlayerAction = z.infer<typeof PlayerActionSchema>;
 
-export interface Player
-{
-	id: number;
-	alias: string;
-	lives: number;
-	position: GamePos;
-	isAlive: boolean;
-	isReady: boolean;
-	action: PlayerAction[];
-};
-
-export interface PlayerAction
-{
-	action: '1' | '-1' | '0';
+export interface GameState {
+  matchId: number;
+  status: 'waiting' | 'in_progress' | 'finished';
+  players: Player[];
+  lastUpdate: number | Date;
+  balls: GamePos[];
+}
+export interface Player {
+  id: number;
+  alias: string;
+  lives: number;
+  position: GamePos;
+  isAlive: boolean;
+  isReady: boolean;
+  action: PlayerAction;
 }
 
-export interface GamePos
-{
-	x: number;
-	z: number;
+export interface PlayerAction {
+  action: '1' | '-1' | '0' | 'ready';
+  matchId: number;
+  playerId?: number;
+}
+
+export interface GamePos {
+  x: number;
+  z: number;
 }

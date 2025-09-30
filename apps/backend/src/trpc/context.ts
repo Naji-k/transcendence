@@ -1,6 +1,5 @@
-import { type Context } from '@repo/trpc/src/types';
-import { jwtUtils } from '../auth/jwt'; // Adjust the import path as necessary
-import { createNewUser, signIn } from '../auth/';
+import { UserToken, type Context } from '@repo/trpc/src/types';
+import { jwtUtils, createNewUser, signIn } from '../auth'; // Adjust the import path as necessary
 import { type CreateFastifyContextOptions } from '@trpc/server/adapters/fastify';
 import { db } from '../db/src/dbClientInit';
 import {
@@ -10,10 +9,13 @@ import {
 } from '../db/src/dbFunctions';
 import { GameStateManager } from '../game_server/game-state-manager';
 import { TournamentService } from '../tournament/tournament';
+import { MatchService } from '../tournament/match';
 
-const disableJWT = true; //for development,
+// const disableJWT = false; //for development,
 const gameStateManager = new GameStateManager();
 const tournamentService = new TournamentService();
+const matchService = new MatchService();
+
 /**
  * Parses the JWT token from the Authorization header.
  * @param authHeader - The Authorization header from the request.
@@ -38,11 +40,13 @@ export async function createTRPCContext({
   req,
   res,
 }: CreateFastifyContextOptions): Promise<Context> {
-  let userToken = null;
-  const token = parseToken(req.headers.authorization);
-  if (token && !disableJWT) {
+  let userToken: UserToken | undefined;
+  // 1. HTTP requests (headers)
+  let token = parseToken(req.headers.authorization);
+  if (token) {
     try {
-      userToken = jwtUtils.verify(token); // Verify the JWT token
+      userToken = jwtUtils.verify(token) as UserToken;
+      console.log('Verifying JWT token:', userToken);
     } catch (error) {
       console.error('JWT verification failed:', error);
     }
@@ -56,7 +60,6 @@ export async function createTRPCContext({
       signIn: signIn,
     },
     dbServices: {
-      // Add database-related services here
       getMatchPlayers: getMatchPlayers,
       playerExistsInMatch: playerExistsInMatch,
       matchExists: matchExists,
@@ -69,6 +72,7 @@ export async function createTRPCContext({
         gameStateManager.handlePlayerAction.bind(gameStateManager),
     },
     tournament: tournamentService,
+    match: matchService,
   };
   return { db, services, userToken };
 }

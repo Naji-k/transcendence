@@ -65,7 +65,7 @@
       error = null;
       console.log(`Starting game ${gameId}...`);
       await trpc.game.initializeMatch.mutate({ matchId: gameId });
-      await goto(`/game/`);
+      await goto(`/game?matchId=${gameId}`);
     } catch (err) {
       console.error(`Error starting game: ${err.message}`);
       error = `Failed to start game: ${err.message}`;

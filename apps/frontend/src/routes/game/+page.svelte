@@ -2,6 +2,7 @@
 
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
+  import { page } from '$app/stores';
   import { ClientGame } from '$lib/index';
   import { type GameState } from '@repo/trpc/src/types/gameState';
   import { trpc } from '$lib/trpc';
@@ -11,6 +12,7 @@
   let resizeObserver: ResizeObserver | null = null;
   let subscription: { unsubscribe(): void } | null = null;
 
+  $: matchId = Number($page.url.searchParams.get('matchId') ?? 1);
   function resizeCanvas() {
     if (!canvas) {
       return;
@@ -52,6 +54,7 @@
     const { startGame } = await import('$lib');
     if (game == null) {
       try {
+        initialState.matchId = matchId;
         game = await startGame('maps/standard2player.map', initialState);
       } catch (err) {
         console.warn(
@@ -60,7 +63,7 @@
         );
       }
       subscription = trpc.game.subscribeToGameState.subscribe(
-        { matchId: 8 },
+        { matchId: matchId },
         {
           onData: (data) => {
             if (game) game.updateFromServer(data as GameState);

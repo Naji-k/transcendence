@@ -67,10 +67,9 @@ export class GameStateManager extends EventEmitter {
   }
 
   /**
-   * Handles a player's action within a match.
-   * Validates the action and updates the game state accordingly.
-   * @param action The player's action details.
-   * @throws TRPCError if the match or player is not found.
+   * Handles a player action by enqueuing it in the corresponding ServerGame instance.
+   * @param action The player action to handle
+   * @throws TRPCError if the match is not found
    */
   handlePlayerAction(action: PlayerAction): void {
     const serverGame = this.serverGames.get(action.matchId);

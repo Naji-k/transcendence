@@ -29,9 +29,6 @@ export class ServerGame extends EventEmitter
 	private gameStateManager: GameStateManager;
 	private gameLoopInterval: NodeJS.Timeout | null = null;
 
-
-
-
 	constructor(havokInstance: any, gameState: GameState, gameStateManager: GameStateManager)
 	{
 		super();
@@ -127,12 +124,12 @@ export class ServerGame extends EventEmitter
 
 	private gameFinished()
 	{
+		//TODO: need to set game state to finished
 		this.gameIsRunning = false;
 		if (this.gameLoopInterval) {
 			clearInterval(this.gameLoopInterval);
 			this.gameLoopInterval = null;
 		}
-		
 		console.log('Game finished');
 	}
 
@@ -148,7 +145,6 @@ export class ServerGame extends EventEmitter
 
 	private updateGameState()
 	{		
-		
 		for (let i = 0; i < this.players.length; i++)
 		{
 			const p = this.paddles[i].getPosition();
@@ -168,8 +164,6 @@ export class ServerGame extends EventEmitter
 	private processActions() {
 		while (this.actionQueue.length) {
 		  const action = this.actionQueue.shift()!;
-		  
-		  // Apply action to your paddles/game objects
 		  const player = this.gameState.players.find(pl => pl.id === action.playerId);
 		  if (player) {
 			if (action.action === 'ready') {
@@ -264,7 +258,6 @@ export class ServerGame extends EventEmitter
 			clearInterval(this.gameLoopInterval);
 			this.gameLoopInterval = null;
 		}
-		
 		this.engine.stopRenderLoop();
 		this.scene.dispose();
 		this.engine.dispose();
@@ -295,4 +288,3 @@ export async function destroyGame(game: ServerGame)
 {
 	game.dispose();
 }
-

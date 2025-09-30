@@ -40,9 +40,6 @@ export class ClientGame
 	constructor(havokInstance: any, gameState: GameState)
 	{
 		this.gameState = gameState;
-		// window.addEventListener('keydown', (event) => {this.keys[event.key] = true;});
-		// window.addEventListener('keyup', (event) => {this.keys[event.key] = false;});			
-		
 		this.gameCanvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 		if (!this.gameCanvas)
 		{
@@ -196,7 +193,7 @@ export class ClientGame
 					advancedTexture.dispose();
 					this.showCountdown(this.scene, () =>
 						{
-							console.log('🎮 Starting render loop NOW');
+							console.log('Starting render loop NOW');
 						});
 						break; 
 				}

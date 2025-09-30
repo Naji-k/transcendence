@@ -123,7 +123,6 @@
   });
 </script>
 
-<!-- Tailwind classes: make the canvas fill the viewport layout-wise -->
 <canvas
   id="gameCanvas"
   bind:this={canvas}

@@ -18,7 +18,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@fastify/cookie": "^11.0.2",
+    "@babylonjs/core": "^8.28.3",
+    "@babylonjs/havok": "^1.3.10",
     "@fastify/websocket": "^11.2.0",
     "@libsql/client": "^0.15.10",
     "@repo/trpc": "workspace:*",

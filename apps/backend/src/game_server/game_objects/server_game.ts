@@ -1,20 +1,22 @@
-import { initTRPC } from '@trpc/server';
-import { Wall, Ball, Paddle, createSurroundingWalls, GameState,
+import { Wall, Ball, Paddle, createSurroundingWalls, GameState, PlayerAction,
 		createWalls, createBalls, createPlayers, createGoals,
 		createGround, createPaddles, Player, Goal, jsonToVector2, type GamePos } from '../index';
-import { Engine, Scene, Vector3, HavokPlugin } from '@babylonjs/core';
+import { Engine, Scene, Vector3, HavokPlugin, NullEngine } from '@babylonjs/core';
+import { EventEmitter } from 'stream';
+import { GameStateManager } from '../game-state-manager';
+import path  from 'path';
+import fs from 'fs/promises';
 
 const maxPlayerCount = 6;
 const playerLives = 3;
 
-export class ServerGame
+export class ServerGame extends EventEmitter
 {
 	private engine: Engine;
 	private scene: Scene;
 	private havokInstance: any;
 	private dimensions: [number, number];
 	private gameIsRunning: boolean;
-	private	gameCanvas: HTMLCanvasElement;
 	private gameState: GameState;
 	
 	private jsonMap: any;
@@ -24,34 +26,50 @@ export class ServerGame
 	private walls: Wall[] = [];
 	private goals: Goal[] = [];
 	private playerCount: number = 0;
+	private actionQueue: PlayerAction[] = [];
+	private gameStateManager: GameStateManager;
+	private gameLoopInterval: NodeJS.Timeout | null = null;
 
-	constructor(havokInstance: any, gameState: GameState)
+
+
+
+	constructor(havokInstance: any, gameState: GameState, gameStateManager: GameStateManager)
 	{
-		this.gameCanvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+		super();
 		this.havokInstance = havokInstance;
 		this.dimensions = [0, 0];
 		this.gameIsRunning = true;
-		this.engine = new Engine(this.gameCanvas, true, {antialias: true});
+		this.engine = new NullEngine();
 		this.scene = new Scene(this.engine);
 		this.gameState = gameState;
-		console.log('Game started');
+		this.gameStateManager = gameStateManager; 
+		console.log('Game_server started', gameState);
 	}
 
+	public enqueueAction(action: PlayerAction) 
+	{
+		console.log(`Enqueuing action from player ${action.playerId} in match ${action.matchId}: ${action.action}`);
+		this.actionQueue.push(action);
+	}
+	
 	async loadMap(inputFile: string)
 	{
-		const fileText = await loadFileText(inputFile);
-		
-		const map = JSON.parse(fileText);
-		
-		if (!map.dimensions || !map.balls || !map.goals)
-		{
-			throw new Error('Invalid map format');
+		try {
+			const fileText = await loadFileText(inputFile);
+			const map = JSON.parse(fileText);
+			if (!map.dimensions || !map.balls || !map.goals)
+			{
+				throw new Error('Invalid map format');
+			}
+			this.createScene(map);
+			this.initGameState();
+			this.jsonMap = map;
+		} catch (error) {
+			console.error('Error loading map:', error);
+			throw error;	
 		}
-		this.createScene(map);
-		this.initGameState();
-		this.jsonMap = map;
 	}
-
+	//Not agree with this function name, 
 	private initGameState()
 	{
 		if (this.players.length < 2)
@@ -97,80 +115,111 @@ export class ServerGame
 
 	private startGame()
 	{
+		if (this.gameLoopInterval) {
+			clearInterval(this.gameLoopInterval);
+		}
+	
 		this.gameIsRunning = true;
-		this.engine.runRenderLoop(this.gameLoop.bind(this));
+		// NullEngine is a headless engine designed for server-side rendering. It doesn't automatically run render loops like a regular engine!
+		// this.engine.runRenderLoop(this.gameLoop.bind(this));
+		this.gameLoopInterval = setInterval(() => {
+			this.gameLoop();
+		}, 16); // ~60 FPS (16ms per frame)
 	}
 
 	private gameFinished()
 	{
 		this.gameIsRunning = false;
-		this.engine.stopRenderLoop();
+		if (this.gameLoopInterval) {
+			clearInterval(this.gameLoopInterval);
+			this.gameLoopInterval = null;
+		}
+		
 		console.log('Game finished');
 	}
 
 	run()
 	{
-		// wait for everyone to be ready
-
-		// send confirmation to clients that game is starting
-
+		console.log('🕐 STARTING GAME - waiting for players');
 		/*	sets a timeout while clients display "3, 2, 1, START" + 100ms before commencing game	*/
-		setTimeout(() => { this.startGame(); }, 2100);
+		this.gameLoopInterval = setInterval(() => {
+			this.processActions();
+			this.updateGameState();
+		}, 100); // Update game state every 100ms while waiting
 	}
 
 	private updateGameState()
-	{
-		const state = this.gameState;
+	{		
 		
 		for (let i = 0; i < this.players.length; i++)
 		{
-			state.players[i].position = this.paddles[i].getPosition();
-			state.players[i].lives = this.players[i].getLives();
-			if (state.players[i].lives <= 0)
-			{
-				state.players[i].isAlive = false;
-			}
+			const p = this.paddles[i].getPosition();
+
+			this.gameState.players[i].position = { x: p.x, z: p.z };
+			this.gameState.players[i].lives = this.players[i].getLives?.() ?? this.gameState.players[i].lives;
+			this.gameState.players[i].isAlive = this.players[i].isAlive?.() ?? false;
 		}
-		state.balls = [];
-		for (let i = 0; i < this.balls.length; i++)
-		{
-			state.balls.push(this.balls[i].getPosition());
-		}
-		state.lastUpdate = Date.now();
-		// send updated game state to clients
+		this.gameState.balls = this.balls.map(ball => {
+			const pos = ball.getPosition();
+			return { x: pos.x, z: pos.z };
+		});
+		this.gameState.lastUpdate = Date.now();
+		this.gameStateManager.notifySubs(this.gameState.matchId, this.gameState);
 	}
 
-	private updatePlayerInput()
-	{
-		const state = this.gameState;
-		let direction = 0;
-
-		for (let i = 0; i < state.players.length; i++)
-		{
-			switch (state.players[i].action[0].action)
-			{
-				case '1':
-					direction = 1;
-					break;
-				case '-1':
-					direction = -1;
-					break;
-				case '0':
-					direction = 0;
-					break;
-				default:
-					direction = 0;
-					break;
+	private processActions() {
+		while (this.actionQueue.length) {
+		  const action = this.actionQueue.shift()!;
+		  
+		  // Apply action to your paddles/game objects
+		  const player = this.gameState.players.find(pl => pl.id === action.playerId);
+		  if (player) {
+			if (action.action === 'ready') {
+			  player.isReady = true;
+			  console.log(`Player ${action.playerId} is ready.`);
+			  console.log(this.gameState.players);
+			  if (this.gameState.players.every(p => p.isReady)) {
+				console.log('All players ready. Starting game...');
+				this.gameState.status = 'in_progress'
+				// this.startGame();
+				// Give clients time to show countdown
+				setTimeout(() => {
+					this.gameState.status = 'in_progress';
+					this.startGame(); // Now start the physics loop
+					}, 2100);
+			  }
+			} else {
+			  // Apply movement to paddle
+			  const paddleIndex = this.gameState.players.findIndex(p => p.id === action.playerId);
+			  if (paddleIndex >= 0) {
+				let direction = 0;
+				switch (action.action) {
+				  case '1': direction = 1; break;
+				  case '-1': direction = -1; break;
+				  case '0': direction = 0; break;
+				}
+				this.paddles[paddleIndex].update(direction, this.walls);
+			  }
 			}
-			this.paddles[i].update(direction, this.walls);
+		  }
 		}
-	}
+	  }
+
 
 	private gameLoop()
 	{
 		let scored = false;
-
-		this.updatePlayerInput();
+		if (this.balls.length > 0) {
+			const posBefore = this.balls[0].getPosition();
+		}
+		// Step physics engine manually (CRITICAL for NullEngine!)
+		const physicsEngine = this.scene.getPhysicsEngine();
+		if (physicsEngine) {
+			physicsEngine._step(16 / 1000); // 16ms in seconds
+		} else {
+			console.error('   ❌ NO PHYSICS ENGINE!');
+		}	
+		this.processActions(); // ← Add this call!
 		if (this.gameIsRunning == true)
 		{
 			for (let i = 0; i < this.balls.length; i++)
@@ -216,6 +265,11 @@ export class ServerGame
 
 	dispose()
 	{
+		if (this.gameLoopInterval) {
+			clearInterval(this.gameLoopInterval);
+			this.gameLoopInterval = null;
+		}
+		
 		this.engine.stopRenderLoop();
 		this.scene.dispose();
 		this.engine.dispose();
@@ -230,16 +284,15 @@ export class ServerGame
 	}
 }
 
-async function loadFileText(filePath: string): Promise<string>
-{
-	const response = await fetch(filePath);
-
-	if (response.ok == false)
-	{
-		throw new Error(`Failed to load file: ${filePath}`);
+export async function loadFileText(filePath: string): Promise<string> {
+	try {
+	  const absPath = path.resolve(__dirname, filePath);
+	  return await fs.readFile(absPath, 'utf-8');
+	} catch (err: any) {
+	  console.error(`Failed to load file: ${filePath}`, err);
+	  throw new Error(`Map file not found or unreadable: ${filePath}`);
 	}
-	return response.text();
-}
+  }
 
 /*	Destroys the resources associated with the game	*/
 

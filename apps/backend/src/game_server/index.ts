@@ -8,7 +8,7 @@ export * from './game_objects/goal';
 export * from './game_objects/server_game';
 export * from './initialize';
 export * from './main';
-export { GameState, type GamePos } from '@repo/trpc/src/types/gameState';
+export { GameState, type GamePos, PlayerAction } from '@repo/trpc/src/types/gameState';
 
 export function dot2D(a: Vector3, b: Vector3): number
 {

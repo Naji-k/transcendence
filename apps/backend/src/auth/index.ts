@@ -76,7 +76,7 @@ export async function signIn(email: string, password: string) {
     user: {
       id: user.id,
       email: user.email,
-      name: user.alias, // Assuming alias is used as the name
+      name: user.alias,
     },
     token,
   };

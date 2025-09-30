@@ -7,8 +7,7 @@ export class Wall
 
 	constructor(dimensions: Vector3, _position: Vector3, _surfaceNormal: Vector3, opacity: number, scene: Scene)
 	{
-		this.mesh = MeshBuilder.CreateBox
-		(
+		this.mesh = MeshBuilder.CreateBox(
 			'wall', 
 			{width: dimensions.x, height: dimensions.y, depth: dimensions.z},
 			scene

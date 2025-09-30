@@ -34,14 +34,15 @@
           console.error('Error handling key down:', err);
         }
       } else if (event.type === 'keyup') {
-        try {
-          trpc.game.sentPlayerAction.mutate({
-            matchId: matchId,
-            action: '0',
-          });
-        } catch (err) {
-          console.error('Error handling key up:', err);
-        }
+        //TODO: double check if this is needed
+        // try {
+        //   trpc.game.sentPlayerAction.mutate({
+        //     matchId: matchId,
+        //     action: '0',
+        //   });
+        // } catch (err) {
+        //   console.error('Error handling key up:', err);
+        // }
       }
       event.preventDefault();
     }

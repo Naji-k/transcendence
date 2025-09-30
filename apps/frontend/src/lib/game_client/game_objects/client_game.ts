@@ -27,7 +27,6 @@ export class ClientGame
 	private walls: Wall[] = [];
 	private goals: Goal[] = [];
 	private gameState: GameState | null = null;
-	private subscription: any;
 
 	// private lastState: GameState | null = null;
 
@@ -56,26 +55,6 @@ export class ClientGame
 		this.scene = new Scene(this.engine);
 		console.log('Game_client started');
 	}
-
-	/* Up is +1, down is -1, nothing or both pressed is 0 */
-
-	// keyEvents(): number
-	// {
-	// 	const up = Boolean(
-	// 		this.keys['ArrowUp'] ||
-	// 		this.keys['w'] ||
-	// 		this.keys['ArrowRight'] ||
-	// 		this.keys['d']
-	// 	);
-
-	// 	const down = Boolean(
-	// 		this.keys['ArrowDown'] ||
-	// 		this.keys['s'] ||
-	// 		this.keys['ArrowLeft'] ||
-	// 		this.keys['a']
-	// 	);
-	// 	return Number(up) - Number(down);
-	// }
 
 	private async loadSounds()
 	{
@@ -123,7 +102,6 @@ export class ClientGame
 			throw new Error('Invalid map format');
 		}
 		this.createScene(map);
-		// initGame();
 		const eliminationMat = new StandardMaterial('eliminatedMat', this.scene);
 		
 		eliminationMat.diffuseColor = new Color3(0.5, 0.5, 0.5);
@@ -212,9 +190,8 @@ export class ClientGame
 		while (true) 
 			{	
 				await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 1 second
-			if (this.gameState.status == 'in_progress')
+				if (this.gameState.status == 'in_progress')
 				{
-					console.log('Game is starting!');
 					advancedTexture.removeControl(waitingText);
 					advancedTexture.dispose();
 					this.showCountdown(this.scene, () =>
@@ -222,31 +199,19 @@ export class ClientGame
 							console.log('🎮 Starting render loop NOW');
 						});
 						break; 
-					}
 				}
+			}
 		}
 
 	run()
 	{
-		// this.subscribeToGame() //subscribe to server updates
-		// this.pauseGame();
 		this.scene.render();
-		
 		// send confirmation to server that client is ready to roll
 		trpc.game.sentPlayerAction.mutate({matchId: this.gameState.matchId, action: 'ready'});
 		console.log('Player is ready, waiting for other players...');
 
 		this.waitForStart();
 	}
-
-	/* run()
-	{
-		this.pauseGame();
-		this.showCountdown(this.scene, () =>
-		{
-			this.engine.runRenderLoop(this.gameLoop.bind(this));
-		});
-	} */
 
 	private showCountdown(scene: Scene, onFinish: () => void)
 	{
@@ -337,11 +302,6 @@ export class ClientGame
 
 	private gameLoop()
 	{
-		// const action = this.keyEvents();
-		// if (action != 0)
-		// {
-		// 	trpc.game.sentPlayerAction.mutate({matchId: this.gameState.matchId, action: action.toString()});
-		// }
 		this.updateBalls();
 		this.updatePaddles();
 		this.updateScoreboard();
@@ -384,20 +344,6 @@ async function loadFileText(filePath: string): Promise<string>
 	}
 	return response.text();
 }
-
-
-// async function initGame() {
-//     try {
-//       console.log('Initializing game...');
-//       const result = await trpc.game.initializeMatch.mutate({
-//         matchId: 1,
-//       });
-//       console.log(`Game initialized: ${JSON.stringify(result)}`);
-//     } catch (error) {
-//       console.log(`Error initializing: ${error.message}`);
-//     }
-//   }
-
 
 /*	Destroys the resources associated with the game	*/
 

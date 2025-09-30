@@ -1,6 +1,6 @@
 import { Wall, Ball, Paddle, createSurroundingWalls, GameState, PlayerAction,
 		createWalls, createBalls, createPlayers, createGoals,
-		createGround, createPaddles, Player, Goal, jsonToVector2, type GamePos } from '../index';
+		createGround, createPaddles, Player, Goal, jsonToVector2 } from '../index';
 import { Engine, Scene, Vector3, HavokPlugin, NullEngine } from '@babylonjs/core';
 import { EventEmitter } from 'stream';
 import { GameStateManager } from '../game-state-manager';
@@ -8,7 +8,6 @@ import path  from 'path';
 import fs from 'fs/promises';
 
 const maxPlayerCount = 6;
-const playerLives = 3;
 
 export class ServerGame extends EventEmitter
 {
@@ -25,7 +24,7 @@ export class ServerGame extends EventEmitter
 	private balls: Ball[] = [];
 	private walls: Wall[] = [];
 	private goals: Goal[] = [];
-	private playerCount: number = 0;
+	private playerCount= 0;
 	private actionQueue: PlayerAction[] = [];
 	private gameStateManager: GameStateManager;
 	private gameLoopInterval: NodeJS.Timeout | null = null;
@@ -140,7 +139,7 @@ export class ServerGame extends EventEmitter
 
 	run()
 	{
-		console.log('🕐 STARTING GAME - waiting for players');
+		console.log('STARTING GAME - waiting for players');
 		/*	sets a timeout while clients display "3, 2, 1, START" + 100ms before commencing game	*/
 		this.gameLoopInterval = setInterval(() => {
 			this.processActions();
@@ -177,11 +176,9 @@ export class ServerGame extends EventEmitter
 			if (action.action === 'ready') {
 			  player.isReady = true;
 			  console.log(`Player ${action.playerId} is ready.`);
-			  console.log(this.gameState.players);
 			  if (this.gameState.players.every(p => p.isReady)) {
 				console.log('All players ready. Starting game...');
 				this.gameState.status = 'in_progress'
-				// this.startGame();
 				// Give clients time to show countdown
 				setTimeout(() => {
 					this.gameState.status = 'in_progress';
@@ -189,7 +186,6 @@ export class ServerGame extends EventEmitter
 					}, 2100);
 			  }
 			} else {
-			  // Apply movement to paddle
 			  console.log("Processing action:", action);
 			  const paddleIndex = this.gameState.players.findIndex(p => p.id === action.playerId);
 			  if (paddleIndex >= 0) {
@@ -199,7 +195,10 @@ export class ServerGame extends EventEmitter
 				  case '-1': direction = -1; break;
 				  case '0': direction = 0; break;
 				}
-				this.paddles[paddleIndex].update(direction, this.walls);
+				if ([0,2,4].includes(paddleIndex)) {
+					direction *= -1; // Invert direction for left-side paddles
+				}
+				this.paddles[paddleIndex].simpleMove(direction, this.walls);
 			  }
 			}
 		  }
@@ -210,17 +209,14 @@ export class ServerGame extends EventEmitter
 	private gameLoop()
 	{
 		let scored = false;
-		if (this.balls.length > 0) {
-			const posBefore = this.balls[0].getPosition();
-		}
 		// Step physics engine manually (CRITICAL for NullEngine!)
 		const physicsEngine = this.scene.getPhysicsEngine();
 		if (physicsEngine) {
 			physicsEngine._step(16 / 1000); // 16ms in seconds
 		} else {
-			console.error('   ❌ NO PHYSICS ENGINE!');
+			console.error('NO PHYSICS ENGINE!');
 		}	
-		this.processActions(); // ← Add this call!
+		this.processActions();
 		if (this.gameIsRunning == true)
 		{
 			for (let i = 0; i < this.balls.length; i++)

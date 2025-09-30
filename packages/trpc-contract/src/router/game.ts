@@ -53,7 +53,10 @@ export const gameRouter = createRouter({
             console.log('emitting initial game state');
             emit.next(gameState);
           } else {
-            console.log('there is a game state');
+            throw new TRPCError({
+              code: 'NOT_FOUND',
+              message: 'Match not found',
+            });
           }
           const unsubscribe = ctx.services.gameStateManager.subscribe(
             input.matchId,

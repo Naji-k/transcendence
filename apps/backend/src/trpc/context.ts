@@ -42,11 +42,10 @@ export async function createTRPCContext({
 }: CreateFastifyContextOptions): Promise<Context> {
   let userToken: UserToken | undefined;
   // 1. HTTP requests (headers)
-  let token = parseToken(req.headers.authorization);
+  const token = parseToken(req.headers.authorization);
   if (token) {
     try {
       userToken = jwtUtils.verify(token) as UserToken;
-      console.log('Verifying JWT token:', userToken);
     } catch (error) {
       console.error('JWT verification failed:', error);
     }

@@ -5,7 +5,6 @@ export const matchRouter = createRouter({
   create: protectedProcedure
     .input(z.object({ max_players: z.number().min(2).max(6) }))
     .mutation(async ({ input, ctx }) => {
-      console.log("calling create match from user: ", ctx.userToken.id);
       return await ctx.services.match.createMultiplayerGame(
         ctx.userToken.id,
         input.max_players
@@ -24,5 +23,4 @@ export const matchRouter = createRouter({
         ctx.userToken.id
       );
     }),
-
 });

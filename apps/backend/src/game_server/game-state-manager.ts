@@ -5,7 +5,6 @@ import { startGame } from './main';
 import { ServerGame } from './index';
 
 export class GameStateManager extends EventEmitter {
-  private gameStates = new Map<number, GameState>();
   private serverGames = new Map<number, ServerGame>();
 
   subscribe(matchId: number, callback: (state: GameState) => void) {
@@ -21,7 +20,7 @@ export class GameStateManager extends EventEmitter {
   }
 
   getGameState(matchId: number): GameState | null {
-    return this.gameStates.get(matchId) ?? null;
+    return this.serverGames.get(matchId)?.gameState ?? null;
   }
 
   /**
@@ -38,9 +37,11 @@ export class GameStateManager extends EventEmitter {
     matchId: number,
     players: { id: number; alias: string }[]
   ): Promise<GameState> {
-    const state = this.getGameState(matchId);
-    if (state && state.status == 'waiting') {
-      return state;
+    if (this.serverGames.has(matchId)) {
+      const existingState = this.getGameState(matchId);
+      if (existingState) {
+        return existingState;
+      }
     }
     console.log(`Initializing game state for match ${matchId}...`);
     const initialState: GameState = {
@@ -59,7 +60,6 @@ export class GameStateManager extends EventEmitter {
       balls: [{ x: 0, z: 0 }],
     };
 
-    this.gameStates.set(matchId, initialState);
     const serverGame = await startGame(initialState, this);
     this.serverGames.set(matchId, serverGame);
     this.notifySubs(matchId, initialState);
@@ -73,10 +73,9 @@ export class GameStateManager extends EventEmitter {
    * @throws TRPCError if the match or player is not found.
    */
   handlePlayerAction(action: PlayerAction): void {
-    const currentState = this.getGameState(action.matchId);
     const serverGame = this.serverGames.get(action.matchId);
 
-    if (!currentState || !serverGame) {
+    if (!serverGame) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Match not found in manager',
@@ -85,18 +84,9 @@ export class GameStateManager extends EventEmitter {
     serverGame.enqueueAction(action);
     //TODO: Update gameState in db
     if (action.action === 'ready') {
-      const player = currentState.players.find((p) => p.id === action.playerId);
-      if (player) {
-        player.isReady = true;
-        if (currentState.players.every((p) => p.isReady)) {
-          currentState.status = 'in_progress';
-        }
-      } else {
-        console.log(
-          `Player ${action.playerId} not found in match ${currentState.matchId}.`
-        );
+      if (serverGame.gameState.players.every((p) => p.isReady)) {
+        //here update DB that match is starting
       }
-      this.gameStates.set(action.matchId, currentState);
     }
   }
 }

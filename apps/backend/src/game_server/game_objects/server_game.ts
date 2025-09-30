@@ -11,12 +11,12 @@ const maxPlayerCount = 6;
 
 export class ServerGame extends EventEmitter
 {
+	gameState: GameState;
 	private engine: Engine;
 	private scene: Scene;
 	private havokInstance: any;
 	private dimensions: [number, number];
 	private gameIsRunning: boolean;
-	private gameState: GameState;
 	
 	private jsonMap: any;
 	private players: Player[] = [];	
@@ -47,7 +47,6 @@ export class ServerGame extends EventEmitter
 
 	public enqueueAction(action: PlayerAction) 
 	{
-		console.log(`Enqueuing action from player ${action.playerId} in match ${action.matchId}: ${action.action}`);
 		this.actionQueue.push(action);
 	}
 	
@@ -186,7 +185,6 @@ export class ServerGame extends EventEmitter
 					}, 2100);
 			  }
 			} else {
-			  console.log("Processing action:", action);
 			  const paddleIndex = this.gameState.players.findIndex(p => p.id === action.playerId);
 			  if (paddleIndex >= 0) {
 				let direction = 0;

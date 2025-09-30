@@ -35,7 +35,6 @@
     //TODO: choose max players from UI
     try {
       error = null;
-      console.log('Creating game...');
       const result = await trpc.match.create.mutate({
         max_players: 2,
       });
@@ -50,7 +49,6 @@
   async function joinGame(gameId) {
     try {
       error = null;
-      console.log(`Joining game ${gameId}...`);
       const result = await trpc.match.joinGame.mutate({ matchId: gameId });
       console.log(`Joined game: ${JSON.stringify(result)}`);
       await fetchGames();

@@ -190,6 +190,7 @@ export class ServerGame extends EventEmitter
 			  }
 			} else {
 			  // Apply movement to paddle
+			  console.log("Processing action:", action);
 			  const paddleIndex = this.gameState.players.findIndex(p => p.id === action.playerId);
 			  if (paddleIndex >= 0) {
 				let direction = 0;

@@ -30,11 +30,11 @@ export const GameStateSchema = z.object({
 })
 });
 */
-export const PlayerActionSchema = z.object({
-  playerId: z.number().optional(),
-  matchId: z.number(),
-action: z.enum(['1', '-1', '0' ]),
-});
+// export const PlayerActionSchema = z.object({
+//   playerId: z.number().optional(),
+//   matchId: z.number(),
+// action: z.enum(['1', '-1', '0', 'ready' ]),
+// });
 
 // export type Player = z.infer<typeof PlayerSchema>;
 // export type GameState = z.infer<typeof GameStateSchema>;

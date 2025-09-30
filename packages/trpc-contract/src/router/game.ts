@@ -83,9 +83,6 @@ export const gameRouter = createRouter({
         ...input,
         playerId: ctx.userToken.id,
       };
-      console.log(
-        `Received action from player ${action.playerId} in match ${action.matchId}: ${action.action}`
-      );
       // const playerExists = await ctx.services.dbServices.playerExistsInMatch(
       // action,
       //   action.id!

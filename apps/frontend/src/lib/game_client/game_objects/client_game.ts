@@ -19,7 +19,7 @@ export class ClientGame
 	private gameIsRunning: boolean;
 	private	gameCanvas: HTMLCanvasElement;
 	
-	private keys: Record<string, boolean> = {};
+	// private keys: Record<string, boolean> = {};
 	private scoreboard: TextBlock[] = [];
 	private players: Player[] = [];	
 	private paddles: Paddle[] = [];
@@ -41,8 +41,8 @@ export class ClientGame
 	constructor(havokInstance: any, gameState: GameState)
 	{
 		this.gameState = gameState;
-		window.addEventListener('keydown', (event) => {this.keys[event.key] = true;});
-		window.addEventListener('keyup', (event) => {this.keys[event.key] = false;});			
+		// window.addEventListener('keydown', (event) => {this.keys[event.key] = true;});
+		// window.addEventListener('keyup', (event) => {this.keys[event.key] = false;});			
 		
 		this.gameCanvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 		if (!this.gameCanvas)
@@ -59,24 +59,23 @@ export class ClientGame
 
 	/* Up is +1, down is -1, nothing or both pressed is 0 */
 
-	keyEvents(): number
-	{
-		const up = Boolean(
-			this.keys['ArrowUp'] ||
-			this.keys['w'] ||
-			this.keys['ArrowRight'] ||
-			this.keys['d']
-		);
+	// keyEvents(): number
+	// {
+	// 	const up = Boolean(
+	// 		this.keys['ArrowUp'] ||
+	// 		this.keys['w'] ||
+	// 		this.keys['ArrowRight'] ||
+	// 		this.keys['d']
+	// 	);
 
-		const down = Boolean(
-			this.keys['ArrowDown'] ||
-			this.keys['s'] ||
-			this.keys['ArrowLeft'] ||
-			this.keys['a']
-		);
-
-		return Number(up) - Number(down);
-	}
+	// 	const down = Boolean(
+	// 		this.keys['ArrowDown'] ||
+	// 		this.keys['s'] ||
+	// 		this.keys['ArrowLeft'] ||
+	// 		this.keys['a']
+	// 	);
+	// 	return Number(up) - Number(down);
+	// }
 
 	private async loadSounds()
 	{
@@ -234,7 +233,7 @@ export class ClientGame
 		this.scene.render();
 		
 		// send confirmation to server that client is ready to roll
-		trpc.game.sentPlayerAction.mutate({matchId: 8, action: 'ready'});
+		trpc.game.sentPlayerAction.mutate({matchId: this.gameState.matchId, action: 'ready'});
 		console.log('Player is ready, waiting for other players...');
 
 		this.waitForStart();
@@ -338,11 +337,11 @@ export class ClientGame
 
 	private gameLoop()
 	{
-		const action = this.keyEvents();
-		if (action != 0)
-		{
-			trpc.game.sentPlayerAction.mutate({matchId: this.gameState.matchId, action: action.toString()});
-		}
+		// const action = this.keyEvents();
+		// if (action != 0)
+		// {
+		// 	trpc.game.sentPlayerAction.mutate({matchId: this.gameState.matchId, action: action.toString()});
+		// }
 		this.updateBalls();
 		this.updatePaddles();
 		this.updateScoreboard();

@@ -7,9 +7,8 @@
   let games = [];
   let loading = false;
   let error = null;
-  let selectedGameId = null;
 
-  // Reactive statements - these update automatically when dependencies change
+  //TODO: use this later to filter games
   $: availableGames = games.filter(game =>
     game.status === 'waiting' && game.playerCount < game.maxPlayers,
   );
@@ -232,13 +231,6 @@
           </table>
         </div>
       {/if}
-    </div>
-
-    <!-- Footer with retro style -->
-    <div class="mt-8 text-center">
-      <p class="text-xs text-cyan-300 drop-shadow-md select-none tracking-wide">
-        Ping. Pong. Transcend.
-      </p>
     </div>
   </div>
 </div>

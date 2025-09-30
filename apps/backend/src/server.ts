@@ -35,8 +35,8 @@ fastifyInstance.register(fastifyTRPCPlugin, {
   trpcOptions: { router: appRouter, createContext: createTRPCContext },
 });
 
-fastifyInstance.register(import('@fastify/cors'), {
-  origin: ['http://localhost:3000', 'http://localhost:8080'], // allow frontend origins
+fastifyInstance.register(fastifyCors, {
+  origin: true,
   credentials: true,
 });
 

@@ -27,9 +27,9 @@ export class Player
 		return this.lives;
 	}
 
-	loseLife()
+	setLive(lives: number)
 	{
-		this.lives--;
+		this.lives = lives;
 		if (this.lives <= 0)
 		{
 			this.eliminate();

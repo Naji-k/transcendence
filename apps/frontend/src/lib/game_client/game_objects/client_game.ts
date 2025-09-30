@@ -8,7 +8,7 @@ import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
 import { TextBlock, AdvancedDynamicTexture } from '@babylonjs/gui';
 import type { AudioEngineV2 } from '@babylonjs/core';
 import type { GameState } from '../../index';
-import { trpc } from '$lib/trpc';
+import { trpc } from '../../trpc';
 
 export class ClientGame
 {
@@ -26,7 +26,10 @@ export class ClientGame
 	private balls: Ball[] = [];
 	private walls: Wall[] = [];
 	private goals: Goal[] = [];
-	private lastState: GameState | null = null;
+	private gameState: GameState | null = null;
+	private subscription: any;
+
+	// private lastState: GameState | null = null;
 
 	private static wallhitSound: StreamingSound;
 	private static paddlehitSound: StreamingSound;
@@ -35,8 +38,9 @@ export class ClientGame
 	private static audioEngine: AudioEngineV2;
 	private static music: StreamingSound;
 
-	constructor(havokInstance: any)
+	constructor(havokInstance: any, gameState: GameState)
 	{
+		this.gameState = gameState;
 		window.addEventListener('keydown', (event) => {this.keys[event.key] = true;});
 		window.addEventListener('keyup', (event) => {this.keys[event.key] = false;});			
 		
@@ -50,7 +54,7 @@ export class ClientGame
 		this.gameIsRunning = true;
 		this.engine = new Engine(this.gameCanvas, true, {antialias: true});
 		this.scene = new Scene(this.engine);
-		console.log('Game started');
+		console.log('Game_client started');
 	}
 
 	/* Up is +1, down is -1, nothing or both pressed is 0 */
@@ -120,7 +124,7 @@ export class ClientGame
 			throw new Error('Invalid map format');
 		}
 		this.createScene(map);
-		initGame();
+		// initGame();
 		const eliminationMat = new StandardMaterial('eliminatedMat', this.scene);
 		
 		eliminationMat.diffuseColor = new Color3(0.5, 0.5, 0.5);
@@ -138,7 +142,7 @@ export class ClientGame
 		const scene = this.scene;
 		const havokPlugin = new HavokPlugin(true, this.havokInstance);
 		
-		scene.enablePhysics(new Vector3(0, -10, 0), havokPlugin);
+		// scene.enablePhysics(new Vector3(0, -10, 0), havokPlugin); unnecessary for client side
 		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
 		hemiLight.intensity = 0.6;
 
@@ -204,34 +208,34 @@ export class ClientGame
 		waitingText.horizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
 		waitingText.verticalAlignment = TextBlock.VERTICAL_ALIGNMENT_CENTER;
 		advancedTexture.addControl(waitingText);
-
-		// while (true)
-		// {
-			// logic to check if the game should start
-			// const serverInput = await loadServerInput((this.scene as any).socket) as string;
-			// const data = JSON.parse(serverInput);
-
-			// if (data.start == true)
-			// {
-			// 	advancedTexture.removeControl(waitingText);
-			// 	advancedTexture.dispose();
-			// 	this.showCountdown(this.scene, () =>
-			// 	{
-			// 	});
-			// 	break;
-			// }
-			// Optionally, add small delay to avoid spamming server
-			// await new Promise(r => setTimeout(r, 100));
-			this.engine.runRenderLoop(this.gameLoop.bind(this));
-		// }
-	}
+		
+		this.engine.runRenderLoop(this.gameLoop.bind(this));
+		while (true) 
+			{	
+				await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 1 second
+			if (this.gameState.status == 'in_progress')
+				{
+					console.log('Game is starting!');
+					advancedTexture.removeControl(waitingText);
+					advancedTexture.dispose();
+					this.showCountdown(this.scene, () =>
+						{
+							console.log('🎮 Starting render loop NOW');
+						});
+						break; 
+					}
+				}
+		}
 
 	run()
 	{
-		this.pauseGame();
+		// this.subscribeToGame() //subscribe to server updates
+		// this.pauseGame();
 		this.scene.render();
 		
 		// send confirmation to server that client is ready to roll
+		trpc.game.sentPlayerAction.mutate({matchId: 8, action: 'ready'});
+		console.log('Player is ready, waiting for other players...');
 
 		this.waitForStart();
 	}
@@ -277,47 +281,26 @@ export class ClientGame
 		next();
 	}
 
-	private async updateGameState()
+	public updateFromServer(gameState: GameState)
 	{
-		// const serverInput = await loadServerInput((this.scene as any).socket) as string;
-		subscribeToGameState();
-		const serverInput = trpc.game.subscribeToGameState.subscribe({matchId: 1}, {
-			onData(gameState) {
-				return JSON.stringify(gameState);
-			},
-			onError(err) {
-				console.error('Subscription error:', err);
-				return '';
-			},
-		});
-		if (!serverInput)
-		{
-			console.warn('No data received from server');
-			return;
-		}
-		//WHY TO PARSE IT!!
-		console.log(serverInput);
-		// this.lastState = JSON.parse(serverInput) as GameState;
+		this.gameState = gameState;
 	}
 
-	private updateScoreboard()
-	{
-		const players = this.lastState.players;
-
-		for (let i = 0; i < this.players.length; i++)
-		{
-			if (this.players[i].getLives() != players[i].lives)
-			{
-				this.players[i].loseLife();
-				this.scoreboard[i].text = `Player ${this.players[i].ID}: ${this.players[i].getLives()}`;
-			}
-		}
-	}
 
 	private updateBalls()
-	{
-		const ballUpdates = this.lastState.balls;
-
+	{		
+		if (!this.gameState) {
+			console.warn('⚠️ No gameState!');
+			return;
+		}
+		
+		if (!this.gameState.balls) {
+			console.warn('⚠️ No balls in gameState!');
+			return;
+		}
+		
+		const ballUpdates = this.gameState.balls;
+	
 		for (let i = 0; i < ballUpdates.length; i++)
 		{
 			this.balls[i].update(ballUpdates[i].x, ballUpdates[i].z);
@@ -326,7 +309,7 @@ export class ClientGame
 
 	private updatePaddles()
 	{
-		const playerUpdates = this.lastState.players;
+		const playerUpdates = this.gameState.players;
 		
 		for (let i = 0; i < playerUpdates.length; i++)
 		{
@@ -336,22 +319,30 @@ export class ClientGame
 
 	private updateScoreboard()
 	{
-		const players = this.lastState.players;
+		if (!this.gameState) {
+			return;
+		}
+		const serverPlayers = this.gameState.players;
 
 		for (let i = 0; i < this.players.length; i++)
 		{
-			if (this.players[i].getLives() != players[i].lives)
+			if (!serverPlayers[i]) continue;
+			
+			if (this.players[i].getLives() != serverPlayers[i].lives)
 			{
-				this.players[i].loseLife();
-				this.scoreboard[i].text = `Player ${this.players[i].ID}: ${this.players[i].getLives()}`;
+				this.players[i].setLive(serverPlayers[i].lives);
+				this.scoreboard[i].text = `Player ${this.players[i].ID}: ${serverPlayers[i].lives}`;
 			}
 		}
 	}
 
 	private gameLoop()
 	{
-		console.log("Game loop tick");
-		this.updateGameState();
+		const action = this.keyEvents();
+		if (action != 0)
+		{
+			trpc.game.sentPlayerAction.mutate({matchId: this.gameState.matchId, action: action.toString()});
+		}
 		this.updateBalls();
 		this.updatePaddles();
 		this.updateScoreboard();
@@ -395,52 +386,19 @@ async function loadFileText(filePath: string): Promise<string>
 	return response.text();
 }
 
-//here need to get data from server
-// async function loadServerInput(socket: WebSocket): Promise<string>
-// {
-// 	return new Promise((resolve, reject) =>
-// 	{
-// 		socket.onmessage = (event) =>
-// 		{
-// 			resolve(event.data);
-// 		};
-// 		socket.onerror = (event) =>
-// 		{
-// 			reject(new Error('WebSocket error'));
-// 		};
-// 	});
-// }
 
-async function initGame() {
-    try {
-      console.log('Initializing game...');
-      const result = await trpc.game.initializeMatch.mutate({
-        matchId: 1,
-      });
-      console.log(`Game initialized: ${JSON.stringify(result)}`);
-    } catch (error) {
-      console.log(`Error initializing: ${error.message}`);
-    }
-  }
+// async function initGame() {
+//     try {
+//       console.log('Initializing game...');
+//       const result = await trpc.game.initializeMatch.mutate({
+//         matchId: 1,
+//       });
+//       console.log(`Game initialized: ${JSON.stringify(result)}`);
+//     } catch (error) {
+//       console.log(`Error initializing: ${error.message}`);
+//     }
+//   }
 
-
-function subscribeToGameState()
-{
-	let subscription: any;
-	try {
-		subscription = trpc.game.subscribeToGameState.subscribe({matchId: 1}, {
-			onData(gameState) {
-				console.log('Received game state:', gameState);
-			},
-			onError(err) {
-				console.error('Subscription error:', err);
-			},
-		});
-	} catch(error) {
-		console.log(`Subscribe error: ${error.message}`);
-
-	}
-}
 
 /*	Destroys the resources associated with the game	*/
 

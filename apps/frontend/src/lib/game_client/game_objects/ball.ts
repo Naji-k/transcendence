@@ -6,7 +6,6 @@ export class Ball
 
 	constructor(_center: Vector3, _color: Color3, _diameter: number, scene: Scene)
 	{
-		//error comping from here
 		this.mesh = MeshBuilder.CreateSphere('sphere', {diameter: _diameter}, scene);
 		const mat = new StandardMaterial('ballMat', this.mesh.getScene());
 

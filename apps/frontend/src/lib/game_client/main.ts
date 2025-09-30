@@ -1,12 +1,12 @@
 import HavokPhysics from '@babylonjs/havok';
-import { ClientGame } from '../index';
+import { ClientGame, type GameState } from '../index';
 
 async function getPhysics(): Promise<any>
 {
 	return await HavokPhysics({locateFile: (file: string) => `/${file}`});
 }
 
-export async function startGame(map: string): Promise<ClientGame>
+export async function startGame(map: string, gameState: GameState): Promise<ClientGame>
 {
 	const havokInstance = await getPhysics();
 
@@ -15,7 +15,7 @@ export async function startGame(map: string): Promise<ClientGame>
 		console.error('Failed to initialize HavokPhysics.');
 		return;
 	}
-	const game = new ClientGame(havokInstance);
+	const game = new ClientGame(havokInstance, gameState);
 	
 	await game.loadMap(map);
 	game.run();

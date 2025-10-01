@@ -70,7 +70,7 @@
   const initialState: GameState = {
     matchId: 1,
     status: 'waiting' as const,
-    lastUpdate: Date.now(),
+    lastUpdate: 0,
     players: [],
     balls: [],
   };

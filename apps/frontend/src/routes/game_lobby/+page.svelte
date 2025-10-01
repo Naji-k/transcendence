@@ -16,6 +16,7 @@
     (game) => game.status === 'ready' && game.playerCount === game.maxPlayers
   );
 
+  // TODO: this must be called every few seconds or so to keep the game list updated
   async function fetchGames() {
     try {
       loading = true;

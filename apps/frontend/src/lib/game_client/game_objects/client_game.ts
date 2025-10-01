@@ -14,12 +14,9 @@ export class ClientGame
 {
 	private engine: Engine;
 	private scene: Scene;
-	private havokInstance: any;
 	private dimensions: [number, number];
-	private gameIsRunning: boolean;
 	private	gameCanvas: HTMLCanvasElement;
-	
-	// private keys: Record<string, boolean> = {};
+
 	private scoreboard: TextBlock[] = [];
 	private players: Player[] = [];	
 	private paddles: Paddle[] = [];
@@ -28,8 +25,6 @@ export class ClientGame
 	private goals: Goal[] = [];
 	private gameState: GameState | null = null;
 
-	// private lastState: GameState | null = null;
-
 	private static wallhitSound: StreamingSound;
 	private static paddlehitSound: StreamingSound;
 	private static playerOutSound: StreamingSound;
@@ -37,7 +32,7 @@ export class ClientGame
 	private static audioEngine: AudioEngineV2;
 	private static music: StreamingSound;
 
-	constructor(havokInstance: any, gameState: GameState)
+	constructor(gameState: GameState)
 	{
 		this.gameState = gameState;
 		this.gameCanvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
@@ -45,9 +40,7 @@ export class ClientGame
 		{
 			console.error('Game canvas not found');
 		}
-		this.havokInstance = havokInstance;
 		this.dimensions = [0, 0];
-		this.gameIsRunning = true;
 		this.engine = new Engine(this.gameCanvas, true, {antialias: true});
 		this.scene = new Scene(this.engine);
 		console.log('Game_client started');
@@ -61,7 +54,6 @@ export class ClientGame
 			ClientGame.audioEngine.volume = 0.5;
 			ClientGame.music = await CreateStreamingSoundAsync('music', 'sounds/frogs.mp3');
 			ClientGame.wallhitSound = await CreateStreamingSoundAsync('wallhit', 'sounds/wallhit.wav');
-			ClientGame.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', 'sounds/paddlehit.wav');
 			ClientGame.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', 'sounds/paddlehit.wav');
 			ClientGame.playerOutSound = await CreateStreamingSoundAsync('playerout', 'sounds/playerout.wav');
 			ClientGame.victorySound = await CreateStreamingSoundAsync('victory', 'sounds/victory.wav');
@@ -114,9 +106,7 @@ export class ClientGame
 	private createScene(map: any)
 	{
 		const scene = this.scene;
-		const havokPlugin = new HavokPlugin(true, this.havokInstance);
 		
-		// scene.enablePhysics(new Vector3(0, -10, 0), havokPlugin); unnecessary for client side
 		const hemiLight = new HemisphericLight('hemiLight', new Vector3(0, 10, 0), scene);
 		hemiLight.intensity = 0.6;
 
@@ -165,7 +155,6 @@ export class ClientGame
 
 	private pauseGame()
 	{
-		this.gameIsRunning = false;
 		this.engine.stopRenderLoop();
 	}
 
@@ -174,6 +163,7 @@ export class ClientGame
 		const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('waitingUI', true, this.scene);
 		const waitingText = new TextBlock();
 
+		console.log('Waiting for game to start...');
 		waitingText.text = "Waiting for players...";
 		waitingText.color = "white";
 		waitingText.fontSize = 60;
@@ -182,23 +172,23 @@ export class ClientGame
 		waitingText.horizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
 		waitingText.verticalAlignment = TextBlock.VERTICAL_ALIGNMENT_CENTER;
 		advancedTexture.addControl(waitingText);
-		
+
 		this.engine.runRenderLoop(this.gameLoop.bind(this));
 		while (true) 
-			{	
-				await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 1 second
-				if (this.gameState.status == 'in_progress')
+		{
+			if (this.gameState.status == 'in_progress')
+			{
+				advancedTexture.removeControl(waitingText);
+				advancedTexture.dispose();
+				this.showCountdown(this.scene, () =>
 				{
-					advancedTexture.removeControl(waitingText);
-					advancedTexture.dispose();
-					this.showCountdown(this.scene, () =>
-						{
-							console.log('Starting render loop NOW');
-						});
-						break; 
-				}
+					console.log('Starting render loop NOW');
+				});
+				break; 
 			}
+			await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 1 second
 		}
+	}
 
 	run()
 	{
@@ -310,7 +300,6 @@ export class ClientGame
 		this.engine.stopRenderLoop();
 		this.scene.dispose();
 		this.engine.dispose();
-		this.havokInstance = null;
 		this.gameCanvas = null;
 		this.players = [];
 		this.paddles = [];
@@ -319,7 +308,6 @@ export class ClientGame
 		this.goals = [];
 		this.scoreboard = [];
 		ClientGame.audioEngine.dispose();
-		this.gameIsRunning = false;
 		console.log('Game data deleted.');
 	}
 

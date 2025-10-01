@@ -15,7 +15,7 @@ export async function startGame(map: string, gameState: GameState): Promise<Clie
 		console.error('Failed to initialize HavokPhysics.');
 		return;
 	}
-	const game = new ClientGame(havokInstance, gameState);
+	const game = new ClientGame(gameState);
 	
 	await game.loadMap(map);
 	game.run();

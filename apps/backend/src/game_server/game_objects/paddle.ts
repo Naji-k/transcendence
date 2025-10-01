@@ -124,29 +124,6 @@ export class Paddle
 		this.velocity = Math.min(Paddle.maxSpeed, Math.max(-Paddle.maxSpeed, this.velocity));
 		this.move(walls);
 	}
-	
-	simpleMove(direction: number, walls: Wall[]) {
-	    if (this.frozen) return;
-	    const step = 0.3;
-
-		const originalX = this.mesh.position.x;
-	    const originalZ = this.mesh.position.z;
-
-    	this.mesh.position.x += this.upDirection.x * direction * step;
-	    this.mesh.position.z += this.upDirection.z * direction * step;
-
-		let collided = false;
-		for (const wall of walls) {
-			if (this.mesh.intersectsMesh(wall.getMesh(), true)) {
-				collided = true;
-				break;
-			}
-		}
-		if (collided) {
-			this.mesh.position.x = originalX;
-			this.mesh.position.z = originalZ;
-		}
-	}
 
 	hits(ball: Ball): boolean
 	{

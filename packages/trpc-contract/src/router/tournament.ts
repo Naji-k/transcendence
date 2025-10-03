@@ -2,22 +2,21 @@ import { z } from 'zod';
 import { createRouter, protectedProcedure, publicProcedure } from '../trpc';
 import { tournamentNameSchema, tournamentInput } from '../schemas';
 
-//TODO: switch to protectedProcedure and use ctx.userToken to get userId
 export const tournamentRouter = createRouter({
-  create: publicProcedure
+  create: protectedProcedure
     .input(tournamentInput)
     .mutation(async ({ input, ctx }) => {
       return await ctx.services.tournament.createTournament(
         input.name,
-        1,
+        ctx.userToken.id,
         input.playerLimit
       );
     }),
 
-  join: publicProcedure
+  join: protectedProcedure
     .input(z.object({ name: tournamentNameSchema }))
     .mutation(async ({ input, ctx }) => {
-      return await ctx.services.tournament.joinTournament(input.name, 1);
+      return await ctx.services.tournament.joinTournament(input.name, ctx.userToken.id);
     }),
 
   list: publicProcedure.query(async ({ ctx }) => {
@@ -26,7 +25,7 @@ export const tournamentRouter = createRouter({
     return [];
   }),
 
-  get: publicProcedure
+  get: protectedProcedure
     .input(z.object({ tournamentId: z.number().positive() }))
     .query(async ({ input, ctx }) => {
       const tournaments = await ctx.services.tournament.listAllTournaments();
@@ -40,7 +39,7 @@ export const tournamentRouter = createRouter({
       return null;
     }),
 
-  getPlayers: publicProcedure
+  getPlayers: protectedProcedure
     .input(z.object({ name: tournamentNameSchema }))
     .query(async ({ input, ctx }) => {
       const players = await ctx.services.tournament.getTournamentPlayers(
@@ -52,7 +51,7 @@ export const tournamentRouter = createRouter({
       return players;
     }),
 
-  start: publicProcedure
+  start: protectedProcedure
     .input(z.object({ name: tournamentNameSchema }))
     .mutation(async ({ input, ctx }) => {
       return await ctx.services.tournament.startTournament(input.name);

@@ -2,19 +2,20 @@ import { Ball, Wall, rotateVector } from '../../index';
 import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh,
 	PhysicsShapeType, PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
 
-const offset = 0.1;
+const offset = 0.3;
 
 export class Paddle
 {
 	private mesh:			Mesh;
 	private spawnPosition:	Vector3;
-	private velocity:		Vector3;
+	private velocity:		number;
 	private aggregate:		PhysicsAggregate;
-	private targetSpeed:	number = 0.5;
-	private acceleration: 	number = 0.03;
 	private frozen:			boolean;
+	private upDirection:	Vector3;
 
-	private static eliminatedMaterial: StandardMaterial;
+	private static eliminatedMaterial:	StandardMaterial;
+	private static maxSpeed:			number = 0.6;
+	private static acceleration:		number = 0.03;
 
 	constructor(dimensions: Vector3, _position: Vector3, surfaceNorm: Vector3, _color: Color3, scene: Scene)
 	{
@@ -26,7 +27,10 @@ export class Paddle
 		);
 		this.spawnPosition = _position.clone();
 		this.mesh.position = _position;
-		this.velocity = Vector3.Zero();
+		this.mesh.position.y = dimensions.y / 2;
+		this.velocity = 0;
+		this.upDirection = rotateVector(surfaceNorm, -Math.PI / 2);
+		this.mesh.rotate(Vector3.Up(), Math.atan2(surfaceNorm.x, surfaceNorm.z) + Math.PI / 2);
 
 		this.aggregate = new PhysicsAggregate(
 			this.mesh,
@@ -44,50 +48,31 @@ export class Paddle
 		mat.ambientColor = Color3.Black();
 		mat.alpha = 0.9;
 		mat.maxSimultaneousLights = 16;
-        this.mesh.material = mat;
+		this.mesh.material = mat;
 		this.frozen = false;
-		this.velocity = rotateVector(this.velocity, Math.PI / 2);
-		this.mesh.rotate(Vector3.Up(), Math.atan2(surfaceNorm.x, surfaceNorm.z) + Math.PI / 2);
 	}
-
-	// take a look at moving, move "offset" in up or down direction, probably store up & down as vectors in class
 
 	move(walls: Wall[])
 	{
-		this.mesh.position.x += this.velocity.x;
-		this.mesh.position.z += this.velocity.z;
+		this.mesh.position.x += this.upDirection.x * this.velocity;
+		this.mesh.position.z += this.upDirection.z * this.velocity;
 		for (let i = 0; i < walls.length; i++)
 		{
-			if (this.mesh.intersectsMesh(walls[i].getMesh(), true) == true)
+			if (this.mesh.intersectsMesh(walls[i].getMesh(), true))
 			{
-				if (this.velocity.x != 0)
+				let reverse: number;
+				if (this.velocity > 0)
 				{
-					this.mesh.position.x -= this.velocity.x;
-					if (this.mesh.position.x < 0)
-					{
-						this.mesh.position.x += offset;
-					}
-					else
-					{
-						this.mesh.position.x -= offset;
-					}
+					reverse = this.velocity + offset;
 				}
-				if (this.velocity.z != 0)
+				else
 				{
-					this.mesh.position.z -= this.velocity.z;
-					if (this.mesh.position.z < 0)
-					{
-						this.mesh.position.z += offset;
-					}
-					else
-					{
-						this.mesh.position.z -= offset;
-					}
+					reverse = this.velocity - offset;
 				}
-
-				this.velocity.x = 0;
-				this.velocity.z = 0;
-				return;
+				this.mesh.position.x -= this.upDirection.x * reverse;
+				this.mesh.position.z -= this.upDirection.z * reverse;
+				this.velocity = 0;
+				break;
 			}
 		}
 	}
@@ -112,8 +97,7 @@ export class Paddle
 		}
 		this.mesh.position.x = this.spawnPosition.x;
 		this.mesh.position.z = this.spawnPosition.z;
-		this.velocity.x = 0;
-		this.velocity.z = 0;
+		this.velocity = 0;
 	}
 
 	update(direction: number, pressed: boolean, walls: Wall[])
@@ -122,32 +106,38 @@ export class Paddle
 		{
 			return;
 		}
-		const currentSpeed = this.velocity.length();
-	
-		if (pressed == false && currentSpeed > 0)
+		if (pressed == false)
 		{
-			if (this.velocity.z > 0)
+			if (Math.abs(this.velocity) < Paddle.acceleration * 1.5)
 			{
-				direction = 1;
+				this.velocity = 0;
 			}
 			else
 			{
-				direction = -1;
-			}
-			this.velocity.z -= this.acceleration * direction;
-			if (Math.abs(this.velocity.z) < Math.abs(this.acceleration * direction * 1.5))
-			{
-				this.velocity.z = 0;
+				if (this.velocity > 0)
+				{
+					this.velocity -= Paddle.acceleration;
+				}
+				else
+				{
+					this.velocity += Paddle.acceleration;
+				}
 			}
 		}
-		if (pressed == true && currentSpeed < this.targetSpeed)
+		else if (pressed == true && Math.abs(this.velocity) < Paddle.maxSpeed)
 		{
-			if (this.velocity.z > 0 && direction < 0 || this.velocity.z < 0 && direction > 0)
+			if ((this.velocity > 0 && direction < 0) ||
+				(this.velocity < 0 && direction > 0))
 			{
 				direction *= 2;
 			}
-			this.velocity.z += this.acceleration * direction;
+			this.velocity += direction * Paddle.acceleration;
 		}
+		if (this.velocity == 0)
+		{
+			return;
+		}
+		this.velocity = Math.min(Paddle.maxSpeed, Math.max(-Paddle.maxSpeed, this.velocity));
 		this.move(walls);
 	}
 
@@ -162,6 +152,11 @@ export class Paddle
 		this.mesh.material = Paddle.eliminatedMaterial;
 		this.frozen = true;
 		this.aggregate.body.setLinearVelocity(Vector3.Zero());
+	}
+
+	getBody(): any
+	{
+		return this.aggregate.body;
 	}
 
 	static setEliminatedMaterial(mat: StandardMaterial)

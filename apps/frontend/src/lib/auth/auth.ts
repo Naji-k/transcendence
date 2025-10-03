@@ -31,13 +31,14 @@ export async function login(email: string, password: string) {
     });
     if (!validInput.success) {
       const messages = validInput.error.issues.map((err) => err.message);
-      console.error('login failed: ', messages);
+      console.error('login validation failed: ', messages);
       throw messages;
     }
     const res = await trpc.auth.login.mutate(validInput.data);
-    if (res.status !== 200) {
-      console.error('login failed: ', res.message);
-    }
+    // if (res.status !== 200) {
+    //   console.error('login failed: ', res);
+    //   throw res.message;
+    // }
     setAuthToken(res.token);
     console.log('logged in :', res.user);
     return res.user;

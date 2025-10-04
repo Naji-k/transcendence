@@ -77,7 +77,7 @@ export const gameRouter = createRouter({
    * @input { matchId: number, playerId: string, actionType: string} - The player's action details.
    * @returns { success: boolean } - The result of the action handling.
    */
-  sentPlayerAction: protectedProcedure
+  sendPlayerAction: protectedProcedure
     .input(z.custom<PlayerAction>())
     .mutation(async ({ ctx, input }) => {
       //here should check if the game is exist

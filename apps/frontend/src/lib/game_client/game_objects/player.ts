@@ -27,7 +27,7 @@ export class Player
 		return this.lives;
 	}
 
-	setLive(lives: number)
+	setLives(lives: number)
 	{
 		this.lives = lives;
 		if (this.lives <= 0)

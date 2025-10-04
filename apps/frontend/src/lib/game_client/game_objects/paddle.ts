@@ -1,10 +1,8 @@
-import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh,
-		PhysicsAggregate, Scene } from '@babylonjs/core';
+import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, Scene, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
 
 export class Paddle
 {
-	private mesh:			Mesh;
-	private aggregate:		PhysicsAggregate;
+	private mesh:		Mesh;
 
 	private static eliminatedMaterial:	StandardMaterial;
 
@@ -50,7 +48,6 @@ export class Paddle
 	eliminate()
 	{
 		this.mesh.material = Paddle.eliminatedMaterial;
-		this.aggregate.body.setLinearVelocity(Vector3.Zero());
 	}
 
 	static setEliminatedMaterial(mat: StandardMaterial)

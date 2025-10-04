@@ -178,8 +178,8 @@ export class TournamentService {
         .set({ status: 'ongoing' })
         .where(eq(tournamentTable.name, tournamentName));
 
-        //createTournamentMatches logic here
-        //need to create matches and assign players to matches
+      //createTournamentMatches logic here
+      //need to create matches and assign players to matches
       return {
         success: true,
         message: 'Tournament started successfully',

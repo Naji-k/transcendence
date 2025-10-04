@@ -37,10 +37,10 @@ export const friendshipsTable = sqliteTable(
     id: int().primaryKey({ autoIncrement: true }),
     userId: int()
       .notNull()
-      .references((): AnySQLiteColumn => usersTable.id),
+      .references(() => usersTable.id),
     friendId: int()
       .notNull()
-      .references((): AnySQLiteColumn => usersTable.id),
+      .references(() => usersTable.id),
   },
   (table) => [
     check('check_befriend_self', sql`${table.userId} != ${table.friendId}`),
@@ -92,9 +92,10 @@ export const tournamentPlayersTable = sqliteTable(
  */
 export const matchTable = sqliteTable('match_table', {
   id: int().primaryKey({ autoIncrement: true }),
-  tournamentId: int().references((): AnySQLiteColumn => tournamentTable.id),
-  victor: int().references((): AnySQLiteColumn => usersTable.id), // This field will contain the player with placement 1 after the end of the match
-  date: int({ mode: 'timestamp' }).notNull(),
+  tournamentId: int().references(() => tournamentTable.id),
+  maxPlayers: int().notNull().default(2),
+  victor: int().references(() => usersTable.id), // This field will contain the player with placement 1 after the end of the match
+  date: text().default(sql`CURRENT_TIMESTAMP`),
 });
 
 /**
@@ -107,10 +108,10 @@ export const singleMatchPlayersTable = sqliteTable(
     id: int().primaryKey({ autoIncrement: true }),
     matchId: int()
       .notNull()
-      .references((): AnySQLiteColumn => matchTable.id),
+      .references(() => matchTable.id),
     playerId: int()
       .notNull()
-      .references((): AnySQLiteColumn => usersTable.id),
+      .references(() => usersTable.id),
     placement: int().notNull().default(0), // This will be the the position that players finish at, only position 1 will be considered a victory
   },
   (table) => [

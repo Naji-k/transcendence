@@ -1,6 +1,12 @@
 <script lang="ts">
   import { trpc } from '$lib/trpc';
   import type { GameState } from '@repo/trpc/src/types/gameState';
+  import {
+    createTournament,
+    joinTournament,
+    listTournaments,
+    getPlayersInTournament,
+  } from '$lib/tournament/tournament';
 
   // State variables
   let matchId = 1; // Example match ID
@@ -9,6 +15,7 @@
   let isSubscribed = false;
   let connectionStatus = 'Disconnected';
   let playerID: number = 1;
+  let maxPlayers: 2 | 4 | 6 = 2;
   let tournamentName: string;
   let messages: string[] = [];
 
@@ -35,7 +42,7 @@
         { matchId },
         {
           onData: (data) => {
-            gameState = data;
+            gameState = data as GameState;
             connectionStatus = 'Connected';
             isSubscribed = true;
             console.log(`Received update: ${JSON.stringify(data)}`);
@@ -44,7 +51,7 @@
             connectionStatus = 'Error';
             console.log(`Subscription error: ${error.message}`);
           },
-        },
+        }
       );
     } catch (error) {
       console.log(`Subscribe error: ${error.message}`);
@@ -52,16 +59,15 @@
   }
 
   // Send ready action
-  async function sendReady(id: number) {
+  async function sendReady() {
     try {
       console.log('Sending ready action...');
       const result = await trpc.game.sentPlayerAction.mutate({
         matchId,
-        playerId: id,
-        action: 'ready',
+        action: '-1',
       });
       console.log(
-        `Ready action sent for player ${id}: ${JSON.stringify(result)}`,
+        `Ready action sent for player ${id}: ${JSON.stringify(result)}`
       );
     } catch (error) {
       console.log(`Error sending ready: ${error.message}`);
@@ -77,56 +83,6 @@
       console.log('Disconnected from game updates');
     }
   }
-
-  async function createTournament() {
-    try {
-      const result = await trpc.tournament.create.mutate({
-        name: tournamentName,
-        playerLimit: 4,
-      });
-      console.log(`Tournament created: ${JSON.stringify(result)}`);
-    } catch (error) {
-      alert('Error creating tournament: ' + error.message);
-      console.log(`Error creating tournament: ${error.message}`);
-    }
-    console.log('Creating tournament with name:', tournamentName);
-    tournamentName = '';
-  }
-
-  async function listTournaments() {
-    try {
-      const tournaments = await trpc.tournament.list.query();
-      messages = [`${JSON.stringify(tournaments)}`];
-    } catch (error) {
-      alert('Error listing tournaments: ' + error.message);
-    }
-  }
-
-  async function getPlayersInTournament(tournamentName: string) {
-    messages = [];
-    try {
-      const tournamentPlayers = await trpc.tournament.getPlayers.query({
-        name: tournamentName,
-      });
-      console.log(`Players in tournament: ${JSON.stringify(tournamentPlayers)}`);
-      messages = [`${JSON.stringify(tournamentPlayers)}`];
-    } catch (error) {
-      alert('Error getting players: ' + error.message);
-      console.log(`Error getting players: ${error.message}`);
-    }
-  }
-
-  async function joinTournament(tournamentName: string) {
-    try {
-      const result = await trpc.tournament.join.mutate({
-        name: tournamentName, playerId: playerID,
-      });
-      console.log(`Joined tournament: ${JSON.stringify(result)}`);
-    } catch (error) {
-      alert('Error joining tournament: ' + error.message);
-      console.log(`Error joining tournament: ${error.message}`);
-    }
-  }
 </script>
 
 <div class="container">
@@ -135,18 +91,13 @@
   <!-- Connection Status -->
   <div class="status-bar">
     <span
-    >Status: <strong class:connected={connectionStatus === 'Connected'}
-    >{connectionStatus}</strong
-    ></span
+      >Status: <strong class:connected={connectionStatus === 'Connected'}
+        >{connectionStatus}</strong
+      ></span
     >
     <label>
       Match ID:
-      <input
-      type="number"
-      bind:value={matchId}
-      min="1"
-      style="width: 100px;"
-      />
+      <input type="number" bind:value={matchId} min="1" style="width: 100px;" />
     </label>
   </div>
 
@@ -163,7 +114,7 @@
       placeholder="Player ID"
       style="width: 100px;"
     />
-    <button on:click={() => sendReady(playerID)}>✅ Send Ready</button>
+    <button on:click={() => sendReady()}>✅ Send Ready</button>
     <p>Current Player ID: {playerID}</p>
     <button on:click={disconnect} disabled={!isSubscribed}>🔌 Disconnect
     </button
@@ -175,7 +126,6 @@
     <div class="game-state">
       <h2>Current Game State</h2>
       <p><strong>Status:</strong> {gameState.status}</p>
-      <p><strong>Round:</strong> {gameState.currentRound}</p>
       <p><strong>Last Update:</strong> {gameState.lastUpdate}</p>
 
       <h3>Players:</h3>
@@ -189,10 +139,7 @@
 
       <h3>Ball:</h3>
       <p>
-        Position: ({gameState.ball.position.x}, {gameState.ball.position.y})
-      </p>
-      <p>
-        Velocity: ({gameState.ball.velocity.x}, {gameState.ball.velocity.y})
+        Position: ({gameState.balls[0].x}, {gameState.balls[0].z})
       </p>
     </div>
   {/if}
@@ -207,9 +154,19 @@
       bind:value={tournamentName}
       placeholder="tournament Name"
     />
+    <div class="status-bar">
+      <select bind:value={maxPlayers}>
+        <option value={2}>2</option>
+        <option value={4}>4</option>
+        <option value={6}>6</option>
+      </select>
+      <p>maxPlayers</p>
+    </div>
   </div>
   <div class="buttons">
-    <button on:click={createTournament}>🏆 Create Tournament</button>
+    <button on:click={() => void createTournament(tournamentName, maxPlayers)}
+      >🏆 Create Tournament</button
+    >
     <button on:click={listTournaments}>📋 List All Tournaments</button>
     <!--    <input type="number" bind:value={tournamentId} placeholder="tournament ID" />-->
     <button on:click={() => joinTournament(tournamentName)}>➕ Join Tournament : {tournamentName} </button>

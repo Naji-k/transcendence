@@ -14,13 +14,6 @@ export class Wall
 		);
 		this.mesh.position = _position;
 
-		new PhysicsAggregate(
-			this.mesh,
-			PhysicsShapeType.BOX,
-			{ mass: 0, restitution: 1 },
-			scene
-		);
-
 		const mat = new StandardMaterial('wallMat', this.mesh.getScene());
 		mat.diffuseColor = _color;
 		mat.alpha = opacity;

@@ -4,7 +4,7 @@ import { GameState, PlayerAction } from './types/gameState';
 
 export interface Services {
   jwtUtils: {
-    sign: (userId: number, email: string) => string;
+    sign: (id: number, email: string) => string;
   };
   auth: {
     signUp: (name: string, email: string, password: string) => Promise<any>;
@@ -28,7 +28,7 @@ export interface Services {
     initGameState: (
       matchId: number,
       players: { id: number; alias: string }[]
-    ) => GameState;
+    ) => Promise<GameState>;
     getGameState: (matchId: number) => GameState | null;
     handlePlayerAction: (action: PlayerAction) => void;
   };
@@ -43,12 +43,25 @@ export interface Services {
     getTournamentPlayers: (tournamentName: string) => Promise<any>;
     startTournament: (tournamentName: string) => Promise<any>;
   };
+  match: {
+    createMultiplayerGame: (
+      playerId: number,
+      maxPlayers: number
+    ) => Promise<any>;
+    getAvailableMatches: () => Promise<any>;
+    joinMultiplayerGame: (matchId: number, playerId: number) => Promise<any>;
+  };
 }
 
 export interface Context {
   db: any; // Replace with actual database connection type
   services: Services;
-  userToken?: any; // Optional, if logged in
+  userToken: UserToken | undefined; // Optional, if logged in
+}
+
+export interface UserToken {
+  id: number;
+  email: string;
 }
 
 // generic response type for API responses

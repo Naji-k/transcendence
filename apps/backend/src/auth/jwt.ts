@@ -4,15 +4,15 @@ import { config } from 'dotenv';
 config(); // Load environment variables from .env file
 const secret = process.env.JWT_SECRET;
 if (!secret) {
-  throw new Error('JWT_SECTRET is not defined in the environment variables');
+  throw new Error('JWT_SECRET is not defined in the environment variables');
 }
 
-function sign(userId: number, email: string): string {
+function sign(id: number, email: string): string {
   const options: jwt.SignOptions = {
     algorithm: 'HS256', //using SHA-256 hash algorithm (default)
     expiresIn: '5d',
   };
-  const token = jwt.sign({ userId, email }, secret!, options);
+  const token = jwt.sign({ id, email }, secret!, options);
   if (!token) {
     console.error('Failed to sign JWT token');
     return '';

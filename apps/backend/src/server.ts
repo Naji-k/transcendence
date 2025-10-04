@@ -6,6 +6,8 @@ import websocket from '@fastify/websocket';
 import { setupGoogleAuthRoutes } from './auth/google';
 import pino from 'pino';
 import cookie from '@fastify/cookie';
+import fastifyCors from '@fastify/cors';
+
 // Create a Fastify instance
 const fastifyInstance = Fastify({
   disableRequestLogging: true,
@@ -35,8 +37,8 @@ fastifyInstance.register(fastifyTRPCPlugin, {
   trpcOptions: { router: appRouter, createContext: createTRPCContext },
 });
 
-fastifyInstance.register(import('@fastify/cors'), {
-  origin: ['http://localhost:3000', 'http://localhost:8080'], // allow frontend origins
+fastifyInstance.register(fastifyCors, {
+  origin: true,
   credentials: true,
 });
 

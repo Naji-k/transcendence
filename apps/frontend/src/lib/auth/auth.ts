@@ -40,6 +40,7 @@ export async function login(email: string, password: string) {
     //   throw res.message;
     // }
     setAuthToken(res.token);
+    localStorage.setItem('id', res.user.id.toString());
     console.log('logged in :', res.user);
     return res.user;
   } catch (e) {

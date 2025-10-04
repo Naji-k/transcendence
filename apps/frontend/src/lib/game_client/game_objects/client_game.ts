@@ -4,7 +4,7 @@ import { Wall, Ball, Paddle, createSurroundingWalls,
 		Colors, meshesIntersect } from '$lib/index';
 import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
 		Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
-		StandardMaterial, Layer, HavokPlugin } from '@babylonjs/core';
+		StandardMaterial, Layer } from '@babylonjs/core';
 import { TextBlock, AdvancedDynamicTexture } from '@babylonjs/gui';
 import type { AudioEngineV2 } from '@babylonjs/core';
 import type { GameState } from '$lib/index';
@@ -16,6 +16,16 @@ export class ClientGame
 	private scene: Scene;
 	private dimensions: [number, number];
 	private	gameCanvas: HTMLCanvasElement;
+	private localPlayerIndex: number = -1;
+
+	private camera: FreeCamera;
+	private cameraTransitionActive: boolean = false;
+	private cameraTransitionStartTime: number = 0;
+	private cameraTransitionDuration: number = 1500;
+	private cameraStartPos: Vector3 = Vector3.Zero();
+	private cameraEndPos: Vector3 = Vector3.Zero();
+	private cameraStartTarget: Vector3 = Vector3.Zero();
+	private cameraEndTarget: Vector3 = Vector3.Zero();
 
 	private scoreboard: TextBlock[] = [];
 	private players: Player[] = [];	
@@ -68,7 +78,7 @@ export class ClientGame
 			ClientGame.paddlehitSound.setVolume(1);
 			ClientGame.wallhitSound.setVolume(1);
 			ClientGame.playerOutSound.setVolume(0.6);
-			// ClientGame.music.play();
+			ClientGame.music.play();
 
 			await ClientGame.audioEngine.unlockAsync();
 		}
@@ -123,13 +133,33 @@ export class ClientGame
 		createPaddles(scene, this.paddles, map.goals);
 		createPlayers(this.players, this.goals, this.paddles);
 		createScoreboard(this.scoreboard, this.players);
+
 		const cameraHeight = Math.max(this.dimensions[0], this.dimensions[1]) + 10;
-		const camera = new FreeCamera('camera1', new Vector3(0, cameraHeight, 0), scene);
+		const camera = new FreeCamera('camera1', new Vector3(0, cameraHeight, -5), scene);
 		camera.setTarget(Vector3.Zero());
 		
 		const background = new Layer('background', 'backgrounds/volcano.jpg', scene, true);
 		background.isBackground = true;
 		this.scene = scene;
+		this.camera = camera;
+
+		this.updateFromServer(this.gameState);
+		const userId = localStorage.getItem('id');
+		if (userId)
+		{
+			const localPlayerIndex = this.players.findIndex(p => p.ID.toString() == userId);
+			if (localPlayerIndex != -1)
+			{
+				this.localPlayerIndex = localPlayerIndex;
+			}
+		}
+		for (let i = 0; i < this.gameState.players.length; i++)
+		{
+			if (this.gameState.players[i].alias)
+			{
+				this.players[i].setName(this.gameState.players[i].alias);
+			}
+		}
 	}
 
 	private victory()
@@ -152,7 +182,12 @@ export class ClientGame
 		victoryText.outlineWidth = 10;
 		victoryText.outlineColor = 'black';
 		advancedTexture.addControl(victoryText);
-		this.engine.stopRenderLoop();
+		setTimeout(() =>
+		{
+			this.engine.stopRenderLoop();
+			advancedTexture.removeControl(victoryText);
+			advancedTexture.dispose();
+		}, 100);
 		// TODO: Logic to exit game, return to main lobby, etc.
 	}
 
@@ -170,7 +205,10 @@ export class ClientGame
 		waitingText.verticalAlignment = TextBlock.VERTICAL_ALIGNMENT_CENTER;
 		advancedTexture.addControl(waitingText);
 		
-		this.engine.runRenderLoop(this.gameLoop.bind(this));
+		this.engine.runRenderLoop(() =>
+		{
+			this.updateCameraTransition(performance.now());
+		});
 		while (true) 
 		{	
 			await new Promise(resolve => setTimeout(resolve, 100));
@@ -181,6 +219,8 @@ export class ClientGame
 				this.showCountdown(this.scene, () =>
 				{
 					console.log('Starting render loop NOW');
+					this.engine.stopRenderLoop();
+					this.engine.runRenderLoop(this.gameLoop.bind(this));
 				});
 				break; 
 			}
@@ -209,7 +249,7 @@ export class ClientGame
 
 		const sequence = ['3', '2', '1', 'START'];
 		let step = 0;
-		
+		this.startCameraTransitionForPlayer(this.localPlayerIndex, 1500);
 		function next()
 		{
 			scene.render();
@@ -360,6 +400,44 @@ export class ClientGame
 		});
 	}
 
+	private updateCameraTransition(now: number)
+	{
+		if (this.cameraTransitionActive == false)
+		{
+			return;
+		}
+		const elapsed = now - this.cameraTransitionStartTime;
+		let t = Math.min(1, elapsed / Math.max(1, this.cameraTransitionDuration));
+		const easeT = easeInOutQuad(t);
+		const newPos = Vector3.Lerp(this.cameraStartPos, this.cameraEndPos, easeT);
+
+		this.camera.position.copyFrom(newPos);
+		this.camera.setTarget(Vector3.Zero());
+
+		if (t >= 1)
+		{
+			this.cameraTransitionActive = false;
+		}
+		this.gameLoop();
+	}
+
+	private startCameraTransitionForPlayer(playerIndex: number, durationMs: number)
+	{
+		if (!this.camera || !this.paddles || !this.paddles[playerIndex]) { return; }
+
+		const paddle = this.paddles[playerIndex];
+		const paddleMesh = paddle.getMesh();
+		const backDir = paddle.getSurfaceNormal().scale((Math.max(this.dimensions[0], this.dimensions[1]) / 2) * -1);
+
+		this.cameraStartPos = this.camera.position.clone();
+		this.cameraEndPos = paddleMesh.position.add(backDir);
+		this.cameraEndPos.y = this.camera.position.y - 15;
+
+		this.cameraTransitionDuration = durationMs;
+		this.cameraTransitionStartTime = performance.now();
+		this.cameraTransitionActive = true;
+	}
+
 	dispose()
 	{
 		this.removeInputListeners();
@@ -401,4 +479,9 @@ async function loadFileText(filePath: string): Promise<string>
 export async function destroyGame(game: ClientGame)
 {
 	game.dispose();
+}
+
+function easeInOutQuad(t: number): number
+{
+	return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 }

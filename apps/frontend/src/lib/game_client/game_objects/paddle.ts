@@ -1,13 +1,15 @@
-import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, Scene, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
+import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, Scene } from '@babylonjs/core';
 
 export class Paddle
 {
 	private mesh:		Mesh;
+	private surfaceNorm:	Vector3;
 
 	private static eliminatedMaterial:	StandardMaterial;
 
 	constructor(dimensions: Vector3, _position: Vector3, surfaceNorm: Vector3, _color: Color3, scene: Scene)
 	{
+		this.surfaceNorm = surfaceNorm;
 		this.mesh = MeshBuilder.CreateBox
 		(
 			'box', 
@@ -53,5 +55,10 @@ export class Paddle
 	static setEliminatedMaterial(mat: StandardMaterial)
 	{
 		Paddle.eliminatedMaterial = mat;
+	}
+
+	getSurfaceNormal(): Vector3
+	{
+		return this.surfaceNorm;
 	}
 }

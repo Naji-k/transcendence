@@ -41,6 +41,11 @@ export class Player
 		return this.lives > 0;
 	}
 
+	setName(name: string)
+	{
+		this.name = name;
+	}
+
 	private eliminate()
 	{
 		this.paddle.eliminate();

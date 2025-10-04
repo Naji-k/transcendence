@@ -7,16 +7,13 @@
   let tournaments: any[] = [];
   let loading = true;
 
-  // Map tournamentName -> players array
   let tournamentPlayersMap: Record<string, any[]> = {};
-
-  const userId = 1; // Replace with actual auth ID
 
   async function fetchTournaments() {
     loading = true;
     try {
       tournaments = await trpc.tournament.list.query();
-      // Preload players for all tournaments
+
       for (const t of tournaments) {
         await fetchPlayers(t.name);
       }
@@ -39,10 +36,7 @@
 
   async function handleCreate() {
     if (!name) return;
-    console.log("Creating tournament with:", { name, limit, typeofLimit: typeof limit });
-
     try {
-      // Call the router without ownerId; the backend uses ctx.userToken
       await trpc.tournament.create.mutate({
         name,
         playerLimit: limit,
@@ -52,25 +46,31 @@
       name = "";
       limit = 4;
 
-      // Refresh tournament list
       await fetchTournaments();
     } catch (err) {
       console.error("Failed to create tournament:", err);
-      alert("Failed to create tournament. Check console for details.");
+      alert("Failed to create tournament.");
     }
   }
 
   async function joinTournament(tournamentName: string) {
-    await trpc.tournament.join.mutate({
-      name: tournamentName,
-      playerId: userId,
-    });
-    await fetchTournaments();
+    try {
+      await trpc.tournament.join.mutate({ name: tournamentName });
+      await fetchTournaments();
+    } catch (err) {
+      console.error("Failed to join tournament:", err);
+      alert("Failed to join tournament. Check console for details.");
+    }
   }
 
   async function startTournament(tournamentName: string) {
-    await trpc.tournament.start.mutate({ name: tournamentName });
-    await fetchTournaments();
+    try {
+      await trpc.tournament.start.mutate({ name: tournamentName });
+      await fetchTournaments();
+    } catch (err) {
+      console.error("Failed to start tournament:", err);
+      alert("Failed to start tournament.");
+    }
   }
 </script>
 
@@ -83,7 +83,7 @@
     <select bind:value={limit} class="p-3 rounded-lg text-black text-sm">
       <option value={2}>2 Players</option>
       <option value={4}>4 Players</option>
-      <option value={8}>6 Players</option>
+      <option value={6}>6 Players</option>
     </select>
     <button class="bg-black text-cyan-400 py-3 rounded-xl shadow-md hover:scale-105 transition" on:click={handleCreate}>Create Tournament</button>
   </div>
@@ -125,7 +125,7 @@
             {#if tournamentPlayersMap[t.name]?.length > 0}
               <ul class="list-disc ml-5">
                 {#each tournamentPlayersMap[t.name] as player}
-                  <li>{player.playerId} {player.alias || ''}</li>
+                  <li>{player.name || `Player ${player.playerId}`}</li>
                 {/each}
               </ul>
             {:else}

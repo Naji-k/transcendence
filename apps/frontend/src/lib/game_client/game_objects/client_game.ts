@@ -58,6 +58,7 @@ export class ClientGame
 		this.engine = new Engine(this.gameCanvas, true, {antialias: true});
 		this.scene = new Scene(this.engine);
 		console.log('Game_client started');
+		console.log('players: ', gameState.players);
 	}
 
 	private async loadSounds()
@@ -221,6 +222,7 @@ export class ClientGame
 					console.log('Starting render loop NOW');
 					this.engine.stopRenderLoop();
 					this.engine.runRenderLoop(this.gameLoop.bind(this));
+					console.log('players: ', this.gameState.players);
 				});
 				break; 
 			}
@@ -275,17 +277,7 @@ export class ClientGame
 	}
 
 	private updateBalls()
-	{		
-		// if (!this.gameState) {
-		// 	console.warn('⚠️ No gameState!');
-		// 	return;
-		// }
-		
-		// if (!this.gameState.balls) {
-		// 	console.warn('⚠️ No balls in gameState!');
-		// 	return;
-		// }
-		
+	{
 		const ballUpdates = this.gameState.balls;
 	
 		for (let i = 0; i < ballUpdates.length; i++)
@@ -306,15 +298,10 @@ export class ClientGame
 
 	private updateScoreboard()
 	{
-		// if (!this.gameState) {
-		// 	return;
-		// }
 		const serverPlayers = this.gameState.players;
 
 		for (let i = 0; i < this.players.length; i++)
 		{
-			if (!serverPlayers[i]) continue;
-			
 			if (this.players[i].getLives() != serverPlayers[i].lives)
 			{
 				ClientGame.playPlayerOutSound();

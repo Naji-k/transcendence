@@ -1,5 +1,5 @@
 import { loginInput, signUpInput } from '@repo/trpc/src/schemas';
-import { trpc, setAuthToken } from '../trpc';
+import { trpc } from '../trpc';
 import { authStoreMethods } from '$lib/auth/store';
 import { goto } from '$app/navigation';
 
@@ -16,13 +16,11 @@ export async function signUp(name: string, email: string, password: string) {
       throw messages;
     }
     const res = await trpc.auth.signUp.mutate(validInput.data);
-    console.error('signed up: ', res.user);
-    setAuthToken(res.token);
     console.log('logged in :', res.user);
-		// authStoreMethods.setUser(res.user);
+    authStoreMethods.login(res.token, res.user);
     await goto('/profile');
   } catch (e) {
-    console.error('signup failed ', e);
+    console.error('signup failed ', e.message || e);
     throw e;
   }
 }
@@ -39,17 +37,16 @@ export async function login(email: string, password: string) {
       throw messages;
     }
     const res = await trpc.auth.login.mutate(validInput.data);
-    // if (res.status !== 200) {
-    //   console.error('login failed: ', res);
-    //   throw res.message;
-    // }
-    setAuthToken(res.token);
-    localStorage.setItem('id', res.user.id.toString());
     console.log('logged in :', res.user);
-    // authStoreMethods.setUser(res.user);
+    authStoreMethods.login(res.token, res.user);
     await goto('/profile');
   } catch (e) {
     console.error('login failed: ', e);
     throw e.message || e;
   }
+}
+
+export function logout() {
+  authStoreMethods.logout();
+  goto('/login');
 }

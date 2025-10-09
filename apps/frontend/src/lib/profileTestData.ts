@@ -30,7 +30,7 @@ export interface MatchHistoryEntry {
   id: number;
   date: Date;
   placement: number;
-  opponent?: User;
+  opponent?: [User];
   isWin: boolean;
 }
 
@@ -287,7 +287,7 @@ export function getUserMatchHistory(userId: number): MatchHistoryEntry[] {
       id: participation.matchId,
       date: match.date,
       placement: participation.placement,
-      opponent,
+      opponent: opponent ? [opponent] : undefined,
       isWin: participation.placement === 1
     }
   }).filter(entry => entry != null) as MatchHistoryEntry[];

@@ -164,6 +164,7 @@
 		</section>
 	
 		<!-- Available tournaments section - Scrollable -->
+		 <!-- TODO: update tournament_lobby link -->
 		<section id="tournaments" class="mt-6">
 			<div class="flex justify-between items-center mb-2">
 				<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-4 text-amber-300">Tournaments</h3>

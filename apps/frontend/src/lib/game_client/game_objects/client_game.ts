@@ -1,13 +1,12 @@
 import { Wall, Ball, Paddle, createSurroundingWalls,
 		createWalls, createBalls, createPlayers, createGoals,
 		createGround, createPaddles, createScoreboard, Player, Goal, jsonToVector2,
-		Colors, meshesIntersect } from '$lib/index';
+		Colors, type GameState } from '$lib/index';
 import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
 		Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		StandardMaterial, Layer } from '@babylonjs/core';
 import { TextBlock, AdvancedDynamicTexture } from '@babylonjs/gui';
 import type { AudioEngineV2 } from '@babylonjs/core';
-import type { GameState } from '$lib/index';
 import { trpc } from '../../trpc';
 
 export class ClientGame
@@ -24,8 +23,6 @@ export class ClientGame
 	private cameraTransitionDuration: number = 1500;
 	private cameraStartPos: Vector3 = Vector3.Zero();
 	private cameraEndPos: Vector3 = Vector3.Zero();
-	private cameraStartTarget: Vector3 = Vector3.Zero();
-	private cameraEndTarget: Vector3 = Vector3.Zero();
 
 	private scoreboard: TextBlock[] = [];
 	private players: Player[] = [];	
@@ -39,8 +36,6 @@ export class ClientGame
     private upKeys: string[] = ['ArrowUp', 'ArrowRight', 'w', 'd'];
     private downKeys: string[] = ['ArrowDown', 'ArrowLeft', 's', 'a'];
 
-	private static wallhitSound: StreamingSound;
-	private static paddlehitSound: StreamingSound;
 	private static playerOutSound: StreamingSound;
 	private static victorySound: StreamingSound;
 	private static audioEngine: AudioEngineV2;
@@ -68,16 +63,10 @@ export class ClientGame
 			ClientGame.audioEngine = await CreateAudioEngineAsync();
 			ClientGame.audioEngine.volume = 0.5;
 			ClientGame.music = await CreateStreamingSoundAsync('music', 'sounds/frogs.mp3');
-			ClientGame.wallhitSound = await CreateStreamingSoundAsync('wallhit', 'sounds/wallhit.wav');
-			ClientGame.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', 'sounds/paddlehit.wav');
-			ClientGame.paddlehitSound = await CreateStreamingSoundAsync('paddlehit', 'sounds/paddlehit.wav');
 			ClientGame.playerOutSound = await CreateStreamingSoundAsync('playerout', 'sounds/playerout.wav');
 			ClientGame.victorySound = await CreateStreamingSoundAsync('victory', 'sounds/victory.wav');
-			ClientGame.paddlehitSound.maxInstances = 1;
-			ClientGame.wallhitSound.maxInstances = 1;
+			ClientGame.victorySound.maxInstances = 1;
 
-			ClientGame.paddlehitSound.setVolume(1);
-			ClientGame.wallhitSound.setVolume(1);
 			ClientGame.playerOutSound.setVolume(0.6);
 			ClientGame.music.play();
 
@@ -206,15 +195,15 @@ export class ClientGame
 		waitingText.verticalAlignment = TextBlock.VERTICAL_ALIGNMENT_CENTER;
 		advancedTexture.addControl(waitingText);
 		
-		this.engine.runRenderLoop(() =>
-		{
-			this.updateCameraTransition(performance.now());
-		});
 		while (true) 
 		{	
 			await new Promise(resolve => setTimeout(resolve, 100));
 			if (this.gameState.status == 'in_progress')
 			{
+				this.engine.runRenderLoop(() =>
+				{
+					this.updateCameraTransition(performance.now());
+				});
 				advancedTexture.removeControl(waitingText);
 				advancedTexture.dispose();
 				this.showCountdown(this.scene, () =>
@@ -226,6 +215,7 @@ export class ClientGame
 				});
 				break; 
 			}
+			this.scene.render();
 		}
 	}
 
@@ -279,7 +269,7 @@ export class ClientGame
 	private updateBalls()
 	{
 		const ballUpdates = this.gameState.balls;
-	
+
 		for (let i = 0; i < ballUpdates.length; i++)
 		{
 			this.balls[i].update(ballUpdates[i].x, ballUpdates[i].z);
@@ -311,27 +301,6 @@ export class ClientGame
 		}
 	}
 
-	private playSounds()
-	{
-		for (const ball of this.balls)
-		{
-			for (const wall of this.walls)
-			{
-				if (meshesIntersect(ball.getMesh(), wall.getMesh()) == true)
-				{
-					ClientGame.playWallHitSound();
-				}
-			}
-			for (const paddle of this.paddles)
-			{
-				if (meshesIntersect(ball.getMesh(), paddle.getMesh()) == true)
-				{
-					ClientGame.playPaddleHitSound();
-				}
-			}
-		}
-	}
-
 	private gameLoop()
 	{
 		if (this.gameState.status == 'finished')
@@ -341,7 +310,6 @@ export class ClientGame
 		this.sendKeyPresses();
 		this.updatePaddles();
 		this.updateBalls();
-		this.playSounds();
 		this.updateScoreboard();
 		this.scene.render();
 	}
@@ -442,11 +410,8 @@ export class ClientGame
 		console.log('Game data deleted.');
 	}
 
-	static playBallHitSound() { ClientGame.paddlehitSound.play(); }
-	static playPaddleHitSound() { ClientGame.paddlehitSound.play(); }
 	static playPlayerOutSound() { ClientGame.playerOutSound.play(); }
 	static playVictorySound() { ClientGame.victorySound.play(); }
-	static playWallHitSound() { ClientGame.wallhitSound.play(); }
 }
 
 async function loadFileText(filePath: string): Promise<string>

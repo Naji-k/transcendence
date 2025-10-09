@@ -2,7 +2,7 @@ import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, Scene } from '@ba
 
 export class Paddle
 {
-	private mesh:		Mesh;
+	private mesh:			Mesh;
 	private surfaceNorm:	Vector3;
 
 	private static eliminatedMaterial:	StandardMaterial;

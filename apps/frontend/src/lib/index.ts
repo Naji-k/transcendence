@@ -51,23 +51,3 @@ export function roundNumber(n: number): number
 {
 	return Math.round(n * 1000) / 1000;
 }
-
-export function meshesIntersect(a: Mesh, b: Mesh): boolean
-{
-	a.computeWorldMatrix(true);
-	b.computeWorldMatrix(true);
-
-	const ba = a.getBoundingInfo().boundingBox;
-	const bb = b.getBoundingInfo().boundingBox;
-
-	const aMin = ba.minimumWorld;
-	const aMax = ba.maximumWorld;
-	const bMin = bb.minimumWorld;
-	const bMax = bb.maximumWorld;
-
-	return (
-		aMin.x <= bMax.x && aMax.x >= bMin.x &&
-		aMin.y <= bMax.y && aMax.y >= bMin.y &&
-		aMin.z <= bMax.z && aMax.z >= bMin.z
-	);
-}

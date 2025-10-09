@@ -1,5 +1,4 @@
 import {
-  AnySQLiteColumn,
   int,
   sqliteTable,
   text,
@@ -20,7 +19,7 @@ export const usersTable = sqliteTable('users_table', {
   email: text().notNull().unique(), // Do we want email to be a mandatory field?
   avatarPath: text().default('avatar_default'),
   backgroundPath: text().default('background_default'),
-  googleId: text()
+  googleId: text(),
   // lastLoginTime: int({ mode: 'timestamp' }),
   // lastActivityTime: int({ mode: 'timestamp' }), // we can use this to display last seen status, I understand that online status will come from memory
 });

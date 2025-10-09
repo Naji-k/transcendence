@@ -1,6 +1,6 @@
-import { and, count, eq, isNull, sql } from 'drizzle-orm';
+import { count, eq, isNull } from 'drizzle-orm';
 import { db } from '../db/src/dbClientInit';
-import { matchTable, singleMatchPlayersTable } from '../db/src/dbSchema/schema';
+import { matchTable, singleMatchPlayersTable } from '@repo/db/dbSchema';
 import { TRPCError } from '@trpc/server';
 
 export class MatchService {

@@ -2,12 +2,10 @@ import {
   matchTable,
   singleMatchPlayersTable,
   usersTable,
-} from './dbSchema/schema';
+} from '@repo/db/dbSchema';
 import { db } from './dbClientInit';
 import { eq, and } from 'drizzle-orm';
-
-type NewUser = typeof usersTable.$inferInsert;
-type ExistingUser = typeof usersTable.$inferSelect;
+import { ExistingUser } from '@repo/db/dbTypes';
 
 /**
  * Create and return a user, [createdUser] is destructuring the array returned from returning(),
@@ -22,7 +20,7 @@ export async function createUser(
   newEmail: string,
   newPassword: string,
   newGoogleId?: string
-): Promise<NewUser> {
+): Promise<ExistingUser> {
   try {
     const [createdUser] = await db
       .insert(usersTable)

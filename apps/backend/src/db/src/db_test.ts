@@ -9,8 +9,7 @@ import {
   tournamentPlayersTable,
   tournamentTable,
   usersTable,
-} from './dbSchema/schema';
-import { reset } from 'drizzle-seed';
+} from '@repo/db/dbSchema';
 import { db } from './dbClientInit';
 import {
   createUser,

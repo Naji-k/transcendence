@@ -5,7 +5,6 @@
   import { login } from '$lib/auth/auth';
   import { isAuthenticated, currentUser } from '$lib/auth/store';
   import { onMount } from 'svelte';
-  //   import { goto } from '$app/navigation';
 
   function handleSignIn() {
     login(email, password)

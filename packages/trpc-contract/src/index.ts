@@ -1,8 +1,11 @@
-import { userRouter, authRouter } from './router';
-import { gameRouter } from './router/game';
-import { tournamentRouter } from './router/tournament';
+import {
+  userRouter,
+  authRouter,
+  gameRouter,
+  tournamentRouter,
+  matchRouter,
+} from './router';
 import { createRouter, publicProcedure } from './trpc';
-import { matchRouter } from './router/match';
 
 /**
  * Main application router that combines all individual routers.

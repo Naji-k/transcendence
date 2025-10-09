@@ -70,7 +70,7 @@
 					<dd>{user.wins}</dd>
 					<dt class="text-red-400">Losses</dt>
 					<dd>{user.losses}</dd>
-					<dt class="text-cyan-400">Winrate</dt>
+					<dt class="text-cyan-400">Win rate</dt>
 					<dd>{user.wins && user.losses ? Math.round((user.wins / (user.wins + user.losses)) * 100) : 0}%</dd>
 				</dl>
 			</section>

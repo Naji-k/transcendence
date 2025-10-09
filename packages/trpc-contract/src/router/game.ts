@@ -114,25 +114,4 @@ export const gameRouter = createRouter({
       ctx.services.gameStateManager.handlePlayerAction(action);
       return { success: true };
     }),
-
-  createTestMatch: publicProcedure
-    .input(z.object({ matchId: z.number() }))
-    .mutation(async ({ input, ctx }) => {
-      // Hardcoded test players
-      const testPlayers = [
-        { id: 1, alias: 'TestPlayer1' },
-        { id: 2, alias: 'TestPlayer2' },
-      ];
-
-      const gameState = ctx.services.gameStateManager.initGameState(
-        1,
-        testPlayers
-      );
-
-      return {
-        success: true,
-        message: 'Test match created successfully',
-        gameState,
-      };
-    }),
 });

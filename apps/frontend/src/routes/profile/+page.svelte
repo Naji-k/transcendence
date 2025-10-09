@@ -146,7 +146,7 @@
 		<section id="lobbies" class="mt-6">
 			<div class="flex justify-between items-center mb-4">
 				<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-2 text-amber-300">Match lobbies</h3>
-				<button onclick={() => goto('/match_lobby')} class="text-xs sm:text-sm md:text-md lg:text-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mr-1 mb-2 text-white">
+				<button onclick={() => goto('/game_lobby')} class="text-xs sm:text-sm md:text-md lg:text-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mr-1 mb-2 text-white">
 					+ Create match
 				</button>
 			</div>

@@ -40,8 +40,9 @@ export class ClientGame
 	private static victorySound: StreamingSound;
 	private static audioEngine: AudioEngineV2;
 	private static music: StreamingSound;
+	private userId: number;
 
-	constructor(gameState: GameState)
+	constructor(gameState: GameState, userId: number)
 	{
 		this.gameState = gameState;
 		this.gameCanvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
@@ -52,6 +53,7 @@ export class ClientGame
 		this.dimensions = [0, 0];
 		this.engine = new Engine(this.gameCanvas, true, {antialias: true});
 		this.scene = new Scene(this.engine);
+		this.userId = userId;
 		console.log('Game_client started');
 		console.log('players: ', gameState.players);
 	}
@@ -134,10 +136,9 @@ export class ClientGame
 		this.camera = camera;
 
 		this.updateFromServer(this.gameState);
-		const userId = localStorage.getItem('id');
-		if (userId)
+		if (this.userId)
 		{
-			const localPlayerIndex = this.players.findIndex(p => p.ID.toString() == userId);
+			const localPlayerIndex = this.players.findIndex(p => p.ID == this.userId);
 			if (localPlayerIndex != -1)
 			{
 				this.localPlayerIndex = localPlayerIndex;

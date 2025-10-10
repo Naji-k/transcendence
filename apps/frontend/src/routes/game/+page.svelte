@@ -6,6 +6,7 @@
   import { ClientGame } from '$lib/index';
   import { type GameState } from '@repo/trpc/src/types/gameState';
   import { trpc } from '$lib/trpc';
+  import { isAuthenticated, currentUser } from '$lib/auth/store';
 
   let canvas: HTMLCanvasElement | null = null;
   let game: ClientGame | null = null;
@@ -43,6 +44,9 @@
   };
 
   onMount(async () => {
+    if ($isAuthenticated) {
+      console.log('Welcome back!', $currentUser.id);
+    }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('orientationchange', resizeCanvas);
@@ -56,7 +60,7 @@
     if (game == null) {
       try {
         initialState.matchId = matchId;
-        game = await startGame('maps/standard2player.map', initialState);
+        game = await startGame('maps/standard2player.map', initialState, $currentUser.id);
       } catch (err) {
         console.warn(`Game ${matchId}) failed to start:`, err);
       }

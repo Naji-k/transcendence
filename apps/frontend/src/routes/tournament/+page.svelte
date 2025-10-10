@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { trpc } from "$lib/trpc";
+  import {tournamentInput} from '@repo/trpc/src/schemas';
 
   let name: string = "";
   let limit: number = 4;
@@ -37,17 +38,22 @@
   onMount(fetchTournaments);
 
   async function handleCreate() {
-    if (!name) return;
     try {
-      await trpc.tournament.create.mutate({
+      const validInput = tournamentInput.safeParse({
         name,
         playerLimit: limit,
       });
-      name = "";
-      limit = 4;
+      if (!validInput.success) {
+        const messages = validInput.error.issues.map((err) => err.message);
+        console.error('create tournament validation failed: ', messages);
+        throw new Error(messages.join(', '));
+      }
+      const result = await trpc.tournament.create.mutate(validInput.data);
+      console.log(`Tournament created: ${JSON.stringify(result)}`);
       await fetchTournaments();
-    } catch (err) {
-      error = "Failed to create tournament.";
+    } catch (error) {
+      alert('Error creating tournament: ' + error.message);
+      console.log(`Error creating tournament: ${error.message}`);
     }
   }
 
@@ -108,7 +114,7 @@
         <select bind:value={limit} class="px-4 py-2 rounded-lg text-black text-sm font-bold">
           <option value={2}>2 Players</option>
           <option value={4}>4 Players</option>
-          <option value={6}>6 Players</option>
+          <option value={8}>8 Players</option>
         </select>
         <button
           on:click={handleCreate}

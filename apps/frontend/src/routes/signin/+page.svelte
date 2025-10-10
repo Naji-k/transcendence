@@ -3,6 +3,8 @@
   let email = '';
   let password = '';
   import { login } from '$lib/auth/auth';
+  import { isAuthenticated, currentUser } from '$lib/auth/store';
+  import { onMount } from 'svelte';
 
   function handleSignIn() {
     login(email, password)
@@ -14,6 +16,13 @@
         alert(`Login failed:\n ${error}`);
       });
   }
+
+  onMount(() => {
+    if ($isAuthenticated) {
+      console.log('Welcome back!', $currentUser);
+      goto('/game_lobby');
+    }
+  });
 
   function handleGoogleLogin() {
     window.location.href = 'http://localhost:3000/api/auth/google';
@@ -58,7 +67,10 @@
     <!-- Don't have an account? -->
     <p class="text-xs drop-shadow-md select-none">
       Don't have an account?
-      <a href="/signup" class="!text-cyan-200 hover:text-white font-semibold transition-colors">
+      <a
+        href="/signup"
+        class="!text-cyan-200 hover:text-white font-semibold transition-colors"
+      >
         Sign up
       </a>
     </p>
@@ -86,6 +98,8 @@
     </button>
 
     <!-- Footer -->
-    <p class="mt-6 text-xs text-cyan-300 drop-shadow-md select-none">Ping. Pong. Transcend.</p>
+    <p class="mt-6 text-xs text-cyan-300 drop-shadow-md select-none">
+      Ping. Pong. Transcend.
+    </p>
   </div>
 </div>

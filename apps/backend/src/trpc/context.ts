@@ -3,6 +3,7 @@ import { jwtUtils, createNewUser, signIn } from '../auth'; // Adjust the import 
 import { type CreateFastifyContextOptions } from '@trpc/server/adapters/fastify';
 import { db } from '../db/src/dbClientInit';
 import {
+  findUserById,
   getMatchPlayers,
   playerExistsInMatch,
   matchExists,
@@ -59,6 +60,7 @@ export async function createTRPCContext({
       signIn: signIn,
     },
     dbServices: {
+      findUserById: findUserById,
       getMatchPlayers: getMatchPlayers,
       playerExistsInMatch: playerExistsInMatch,
       matchExists: matchExists,
@@ -73,5 +75,8 @@ export async function createTRPCContext({
     tournament: tournamentService,
     match: matchService,
   };
+
+  // let user = { id: 1, email: 'example11758728678904@example.com', name: '' }; // default guest user
+  // return { db, services, userToken, user};
   return { db, services, userToken };
 }

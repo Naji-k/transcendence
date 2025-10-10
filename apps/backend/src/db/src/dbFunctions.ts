@@ -2,12 +2,10 @@ import {
   matchTable,
   singleMatchPlayersTable,
   usersTable,
-} from './dbSchema/schema';
+} from '@repo/db/dbSchema';
 import { db } from './dbClientInit';
 import { eq, and } from 'drizzle-orm';
-
-type NewUser = typeof usersTable.$inferInsert;
-type ExistingUser = typeof usersTable.$inferSelect;
+import { ExistingUser } from '@repo/db/dbTypes';
 
 /**
  * Create and return a user, [createdUser] is destructuring the array returned from returning(),
@@ -22,7 +20,7 @@ export async function createUser(
   newEmail: string,
   newPassword: string,
   newGoogleId?: string
-): Promise<NewUser> {
+): Promise<ExistingUser> {
   try {
     const [createdUser] = await db
       .insert(usersTable)
@@ -128,7 +126,6 @@ export async function playerExistsInMatch(
   matchId: number,
   playerId: number
 ): Promise<boolean> {
-  return true;
   if (!matchId || !playerId) {
     throw new Error(
       'playerExistsInMatch error: matchId and playerId must be provided'
@@ -159,7 +156,6 @@ export async function matchExists(matchId: number): Promise<boolean> {
   if (!matchId) {
     throw new Error('matchExists error: matchId must be provided');
   }
-  return true;
   try {
     const matchExists = await db
       .select()
@@ -177,10 +173,6 @@ export async function matchExists(matchId: number): Promise<boolean> {
 export async function getMatchPlayers(
   matchId: number
 ): Promise<{ id: number; alias: string }[]> {
-  return [
-    { id: 1, alias: 'player 1' },
-    { id: 2, alias: 'player 2' },
-  ];
   if (!matchId) {
     throw new Error('getMatchPlayers error: matchId must be provided');
   }

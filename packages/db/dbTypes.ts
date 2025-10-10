@@ -1,0 +1,21 @@
+import {
+  tournamentTable,
+  usersTable,
+  tournamentPlayersTable,
+  friendshipsTable,
+  singleMatchPlayersTable,
+  matchTable,
+} from './dbSchema';
+
+/**
+ * Inferred types from the database schema
+ * these types represent the shape of the data in each table
+ * returning the type of a row in the respective table
+ * e.g., ExistingUser represents a row in the usersTable
+ */
+export type ExistingUser = typeof usersTable.$inferSelect;
+export type Tournament = typeof tournamentTable.$inferSelect;
+export type TournamentPlayer = typeof tournamentPlayersTable.$inferSelect;
+export type Friendship = typeof friendshipsTable.$inferSelect;
+export type Match = typeof matchTable.$inferSelect;
+export type MatchParticipation = typeof singleMatchPlayersTable.$inferSelect;

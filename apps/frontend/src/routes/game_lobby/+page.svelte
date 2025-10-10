@@ -7,6 +7,7 @@
   let games = [];
   let loading = false;
   let error = null;
+  let limit = 2;
 
   //TODO: use this later to filter games
   $: availableGames = games.filter(
@@ -33,11 +34,10 @@
   }
 
   async function createGame() {
-    //TODO: choose max players from UI
     try {
       error = null;
       const result = await trpc.match.create.mutate({
-        max_players: 2,
+        max_players: limit,
       });
       console.log(`Game created: ${JSON.stringify(result)}`);
       await fetchGames();
@@ -118,6 +118,14 @@
       class="bg-gradient-to-br from-purple-700 to-indigo-900 rounded-3xl shadow-2xl p-6 mb-8"
     >
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <select
+          bind:value={limit}
+          class="px-4 py-2 rounded-lg text-black text-sm font-bold"
+        >
+          <option value={2}>2 Players</option>
+          <option value={4}>4 Players</option>
+          <option value={6}>6 Players</option>
+        </select>
         <button
           on:click={createGame}
           disabled={loading}

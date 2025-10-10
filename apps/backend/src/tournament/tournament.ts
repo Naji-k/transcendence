@@ -1,16 +1,14 @@
 import { and, eq } from 'drizzle-orm';
 import { db } from '../db/src/dbClientInit';
-import {
-  tournamentPlayersTable,
-  tournamentTable,
-} from '../db/src/dbSchema/schema';
+import { tournamentPlayersTable, tournamentTable } from '@repo/db/dbSchema';
+import { Tournament } from '@repo/db/dbTypes';
 import { TRPCError } from '@trpc/server';
 
 async function insertTournament(
   name: string,
   ownerId: number,
   playerLimit: number
-) {
+): Promise<Tournament> {
   try {
     const [tournament] = await db
       .insert(tournamentTable)
@@ -23,8 +21,11 @@ async function insertTournament(
       .returning();
     return tournament;
   } catch (error) {
-    console.log(error);
-    throw error;
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to create tournament',
+      cause: error,
+    });
   }
 }
 
@@ -45,7 +46,9 @@ async function isPlayerInTournament(
 }
 
 // Get all players in a tournament by tournament ID
-function tournamentPlayers(tournamentId: number) {
+function tournamentPlayers(
+  tournamentId: number
+): Promise<{ playerId: number }[]> {
   return db
     .select()
     .from(tournamentPlayersTable)
@@ -62,7 +65,7 @@ async function addPlayerToTournament(tournamentId: number, playerId: number) {
     .returning();
 }
 
-async function tournamentExists(tournamentName: string) {
+async function tournamentExists(tournamentName: string): Promise<Tournament> {
   const [tournament] = await db
     .select()
     .from(tournamentTable)

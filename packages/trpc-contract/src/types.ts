@@ -11,6 +11,7 @@ export interface Services {
     signIn: (email: string, password: string) => Promise<any>;
   };
   dbServices: {
+    findUserById: (id: number) => Promise<any>;
     getMatchPlayers: (
       matchId: number
     ) => Promise<{ id: number; alias: string }[]>;

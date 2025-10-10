@@ -9,8 +9,7 @@ import {
   tournamentPlayersTable,
   tournamentTable,
   usersTable,
-} from './dbSchema/schema';
-import { reset } from 'drizzle-seed';
+} from '@repo/db/dbSchema';
 import { db } from './dbClientInit';
 import {
   createUser,
@@ -24,6 +23,7 @@ import {
 import * as readline from 'readline/promises';
 import { match } from 'assert';
 import { configDotenv } from 'dotenv';
+import { hashPassword } from '../../auth/password';
 
 console.log(__dirname);
 
@@ -80,22 +80,22 @@ async function testUserEntries() {
     await createUser(
       `first${Date.now()}`,
       `example1${Date.now()}@example.com`,
-      `pass${Date.now()}`
+      await hashPassword(`Pass42$@`)
     );
     await createUser(
       `second${Date.now()}`,
       `example2${Date.now()}@example.com`,
-      `pass${Date.now()}`
+      await hashPassword(`Pass42$@`)
     );
     await createUser(
       `third${Date.now()}`,
       `example3${Date.now()}@example.com`,
-      `pass${Date.now()}`
+      await hashPassword(`Pass42$@`)
     );
     await createUser(
       `fourth${Date.now()}`,
       `example4${Date.now()}@example.com`,
-      `pass${Date.now()}`
+      await hashPassword(`Pass42$@`)
     );
   } catch (error) {
     process.exit(3);
@@ -251,8 +251,8 @@ async function testMatchPlayers() {
       .insert(singleMatchPlayersTable)
       .values(participant2)
       .returning();
-    console.log('p1:', p1.playerId);
-    console.log('p2:', p2.playerId);
+    console.log('p1:', p1.playerId, p1.placement);
+    console.log('p2:', p2.playerId, p2.placement);
     await db
       .update(matchTable)
       .set({ victor: participant1.playerId })
@@ -262,6 +262,16 @@ async function testMatchPlayers() {
     // const participant4: NewParticipant = { playerId: 1, placement: 2, matchId: 1};
     // await db.insert(singleMatchPlayersTable).values(participant3);
     // await db.insert(singleMatchPlayersTable).values(participant4);
+    const participants_1 = await getMatchPlayers(lastMatchId);
+    console.log('Showing participant info for matchId: ', lastMatchId);
+    console.log(participants_1);
+    console.log(`${participants_1[0].alias}: ${p1.placement}`);
+    console.log(`${participants_1[1].alias}: ${p2.placement}`);
+    const [confirmVictor] = await db
+      .select({ victor: matchTable.victor })
+      .from(matchTable)
+      .where(eq(matchTable.id, lastMatchId));
+    console.log(`\nConfirming victor for added match: ${confirmVictor.victor}`);
   } catch (error) {
     if (
       error instanceof Error &&
@@ -276,16 +286,6 @@ async function testMatchPlayers() {
   }
 
   /* Show participant info for a match, there is probably a better way to do it */
-  const participants_1 = await getMatchPlayers(lastMatchId);
-  console.log('Showing participant info for matchId: ', lastMatchId);
-  console.log(participants_1);
-  console.log(`${participants_1[0].alias}: ${participant1.placement}`);
-  console.log(`${participants_1[1].alias}: ${participant2.placement}`);
-  const [confirmVictor] = await db
-    .select({ victor: matchTable.victor })
-    .from(matchTable)
-    .where(eq(matchTable.id, lastMatchId));
-  console.log(`\nConfirming victor for added match: ${confirmVictor.victor}`);
   // const users_4 = await db.all(sql`SELECT * FROM user_table`);
   // console.log('Result from SQL-like query: ', users_4);
   // const playerExists = await playerExistsInMatch(7, 19);
@@ -322,12 +322,12 @@ async function testMenu() {
 async function main() {
   await testDbExistence();
   /* Reset the tables (doesn't reset the ids) */
-  await reset(db, { usersTable });
-  await reset(db, { matchTable });
-  await reset(db, { singleMatchPlayersTable });
-  await reset(db, { friendshipsTable });
-  await reset(db, { tournamentTable });
-  await reset(db, { tournamentPlayersTable });
+  // await reset(db, { usersTable });
+  // await reset(db, { matchTable });
+  // await reset(db, { singleMatchPlayersTable });
+  // await reset(db, { friendshipsTable });
+  // await reset(db, { tournamentTable });
+  // await reset(db, { tournamentPlayersTable });
   /* or */
   // await db.delete(singleMatchPlayersTable);
   // await db.delete(matchTable);

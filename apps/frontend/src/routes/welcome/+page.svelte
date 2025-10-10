@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { setAuthToken } from '$lib/trpc';
+  import { authStoreMethods } from '$lib/auth/store';
 
   let name = '';
 
@@ -17,9 +17,12 @@
 
       const data = await res.json();
       name = data.name;
-
+	  
+	  console.log(data)
       if (data.token) {
-        setAuthToken(data.token);
+
+        // setAuthToken(data.token);
+		authStoreMethods.login(data.token, null);
       }
     } catch (err) {
       console.error('Error fetching user:', err);

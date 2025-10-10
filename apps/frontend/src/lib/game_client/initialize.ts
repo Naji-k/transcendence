@@ -1,7 +1,7 @@
 import { Wall, Ball, Paddle, Goal, Player, Colors,
 		 ColorMap, jsonToVector3 } from '../index';
-import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
-import { AdvancedDynamicTexture, Rectangle, TextBlock, Control, Button } from '@babylonjs/gui';
+import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder } from '@babylonjs/core';
+import { AdvancedDynamicTexture, Rectangle, TextBlock, Control} from '@babylonjs/gui';
 
 const ballDiameter = 0.5;
 

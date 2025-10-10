@@ -1,4 +1,4 @@
-import { Color3, Vector3 } from "@babylonjs/core";
+import { Color3, Vector3, Mesh } from "@babylonjs/core";
 
 export * from './game_client/game_objects/ball';
 export * from './game_client/game_objects/paddle';

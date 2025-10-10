@@ -1,4 +1,4 @@
-import { Ball, Wall, rotateVector, type GamePos } from '../index';
+import { Ball, Wall, meshesIntersect, rotateVector, type GamePos } from '../index';
 import { Vector3, MeshBuilder, Mesh, PhysicsShapeType,
 		 PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
 
@@ -42,28 +42,38 @@ export class Paddle
 		this.aggregate.body.disablePreStep = false;
 		this.frozen = false;
 	}
-
+	
 	private move(walls: Wall[])
 	{
-		this.mesh.position.x += this.upDirection.x * this.velocity;
-		this.mesh.position.z += this.upDirection.z * this.velocity;
-		for (let i = 0; i < walls.length; i++)
+		if (this.frozen) return;
+
+		const dx = this.upDirection.x * this.velocity;
+		const dz = this.upDirection.z * this.velocity;
+		const distance = Math.hypot(dx, dz);
+
+		if (distance == 0) return;
+
+		const stepSize = 0.08;
+		const steps = Math.max(1, Math.ceil(distance / stepSize));
+		const stepX = dx / steps;
+		const stepZ = dz / steps;
+
+		for (let s = 0; s < steps; s++)
 		{
-			if (this.mesh.intersectsMesh(walls[i].getMesh(), true))
+			this.mesh.position.x += stepX;
+			this.mesh.position.z += stepZ;
+
+			this.mesh.computeWorldMatrix(true);
+			for (const wall of walls)
 			{
-				let reverse: number;
-				if (this.velocity > 0)
+				wall.getMesh().computeWorldMatrix(true);
+				if (meshesIntersect(this.mesh, wall.getMesh()) == true)
 				{
-					reverse = this.velocity + offset;
+					this.mesh.position.x -= stepX;
+					this.mesh.position.z -= stepZ;
+					this.velocity = 0;
+					return;
 				}
-				else
-				{
-					reverse = this.velocity - offset;
-				}
-				this.mesh.position.x -= this.upDirection.x * reverse;
-				this.mesh.position.z -= this.upDirection.z * reverse;
-				this.velocity = 0;
-				break;
 			}
 		}
 	}
@@ -108,7 +118,7 @@ export class Paddle
 				}
 			}
 		}
-		else if (direction != 0 && Math.abs(this.velocity) < Paddle.maxSpeed)
+		else if (Math.abs(this.velocity) < Paddle.maxSpeed)
 		{
 			if ((this.velocity > 0 && direction < 0) ||
 				(this.velocity < 0 && direction > 0))
@@ -123,34 +133,6 @@ export class Paddle
 		}
 		this.velocity = Math.min(Paddle.maxSpeed, Math.max(-Paddle.maxSpeed, this.velocity));
 		this.move(walls);
-	}
-	
-	simpleMove(direction: number, walls: Wall[]) {
-	    if (this.frozen) return;
-	    const step = 0.3;
-
-		const originalX = this.mesh.position.x;
-	    const originalZ = this.mesh.position.z;
-
-    	this.mesh.position.x += this.upDirection.x * direction * step;
-	    this.mesh.position.z += this.upDirection.z * direction * step;
-
-		let collided = false;
-		for (const wall of walls) {
-			if (this.mesh.intersectsMesh(wall.getMesh(), true)) {
-				collided = true;
-				break;
-			}
-		}
-		if (collided) {
-			this.mesh.position.x = originalX;
-			this.mesh.position.z = originalZ;
-		}
-	}
-
-	hits(ball: Ball): boolean
-	{
-		return this.mesh.intersectsMesh(ball.getMesh(), false);
 	}
 
 	getPosition(): GamePos

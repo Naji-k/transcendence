@@ -27,7 +27,7 @@ export class Player
 		return this.lives;
 	}
 
-	setLive(lives: number)
+	setLives(lives: number)
 	{
 		this.lives = lives;
 		if (this.lives <= 0)
@@ -39,6 +39,11 @@ export class Player
 	isAlive(): boolean
 	{
 		return this.lives > 0;
+	}
+
+	setName(name: string)
+	{
+		this.name = name;
 	}
 
 	private eliminate()

@@ -62,7 +62,7 @@
   async function sendReady() {
     try {
       console.log('Sending ready action...');
-      const result = await trpc.game.sentPlayerAction.mutate({
+      const result = await trpc.game.sendPlayerAction.mutate({
         matchId,
         action: '-1',
       });

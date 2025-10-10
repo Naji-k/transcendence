@@ -1,0 +1,396 @@
+{
+  "dimensions": {
+    "width": 50,
+    "height": 50
+  },
+  "balls": [
+    {
+      "type": "sphere",
+      "location": {
+        "x": -0.5,
+        "y": 0.25,
+        "z": -0.5
+      },
+      "diameter": 0.5
+    },
+    {
+      "type": "sphere",
+      "location": {
+        "x": 0.5,
+        "y": 0.25,
+        "z": -0.5
+      },
+      "diameter": 0.5
+    },
+    {
+      "type": "sphere",
+      "location": {
+        "x": -0.5,
+        "y": 0.25,
+        "z": -1.5
+      },
+      "diameter": 0.5
+    },
+    {
+      "type": "sphere",
+      "location": {
+        "x": 0.5,
+        "y": 0.25,
+        "z": -1.5
+      },
+      "diameter": 0.5
+    }
+  ],
+  "walls": [
+    {
+      "type": "wall",
+      "location": {
+        "x": -5.5,
+        "y": 0.25,
+        "z": 4
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 6
+      },
+      "surfaceNormal": {
+        "x": -0.743,
+        "y": 0,
+        "z": -0.669
+      }
+    },
+    {
+      "type": "wall",
+      "location": {
+        "x": 5.5,
+        "y": 0.25,
+        "z": 4
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 6
+      },
+      "surfaceNormal": {
+        "x": -0.743,
+        "y": 0,
+        "z": 0.669
+      }
+    },
+    {
+      "type": "wall",
+      "location": {
+        "x": -5.5,
+        "y": 0.25,
+        "z": -7.5
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 6
+      },
+      "surfaceNormal": {
+        "x": -0.743,
+        "y": 0,
+        "z": 0.669
+      }
+    },
+    {
+      "type": "wall",
+      "location": {
+        "x": 5.5,
+        "y": 0.25,
+        "z": -7.5
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 6
+      },
+      "surfaceNormal": {
+        "x": -0.743,
+        "y": 0,
+        "z": -0.669
+      }
+    },
+    {
+      "type": "wall",
+      "location": {
+        "x": -0.5,
+        "y": 0.25,
+        "z": 20.5
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 8
+      },
+      "surfaceNormal": {
+        "x": -1,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "type": "wall",
+      "location": {
+        "x": 20,
+        "y": 0.25,
+        "z": 12.5
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 9
+      },
+      "surfaceNormal": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      }
+    },
+    {
+      "type": "wall",
+      "location": {
+        "x": 20,
+        "y": 0.25,
+        "z": -12.5
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 9
+      },
+      "surfaceNormal": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      }
+    },
+    {
+      "type": "wall",
+      "location": {
+        "x": -0.5,
+        "y": 0.25,
+        "z": -20
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 9
+      },
+      "surfaceNormal": {
+        "x": -1,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "type": "wall",
+      "location": {
+        "x": -20,
+        "y": 0.25,
+        "z": -12
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 9
+      },
+      "surfaceNormal": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      }
+    },
+    {
+      "type": "wall",
+      "location": {
+        "x": -20,
+        "y": 0.25,
+        "z": 12.5
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 9
+      },
+      "surfaceNormal": {
+        "x": 0,
+        "y": 0,
+        "z": 1
+      }
+    }
+  ],
+  "goals": [
+    {
+      "type": "goal",
+      "location": {
+        "x": 23.5,
+        "y": 0.25,
+        "z": 0.5
+      },
+      "post1": {
+        "x": 23,
+        "y": 0.25,
+        "z": -5.5
+      },
+      "post2": {
+        "x": 23,
+        "y": 0.25,
+        "z": 6.5
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 12
+      },
+      "surfaceNormal": {
+        "x": -1,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "type": "goal",
+      "location": {
+        "x": 18.5,
+        "y": 0.25,
+        "z": -21.5
+      },
+      "post1": {
+        "x": 13.054,
+        "y": 0.25,
+        "z": -24.067
+      },
+      "post2": {
+        "x": 23.446,
+        "y": 0.25,
+        "z": -18.067
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 12
+      },
+      "surfaceNormal": {
+        "x": -0.5,
+        "y": 0,
+        "z": 0.866
+      }
+    },
+    {
+      "type": "goal",
+      "location": {
+        "x": -19,
+        "y": 0.25,
+        "z": -21
+      },
+      "post1": {
+        "x": -23.946,
+        "y": 0.25,
+        "z": -17.567
+      },
+      "post2": {
+        "x": -13.554,
+        "y": 0.25,
+        "z": -23.567
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 12
+      },
+      "surfaceNormal": {
+        "x": 0.5,
+        "y": 0,
+        "z": 0.866
+      }
+    },
+    {
+      "type": "goal",
+      "location": {
+        "x": -24,
+        "y": 0.25,
+        "z": 0.5
+      },
+      "post1": {
+        "x": -23.5,
+        "y": 0.25,
+        "z": 6.5
+      },
+      "post2": {
+        "x": -23.5,
+        "y": 0.25,
+        "z": -5.5
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 12
+      },
+      "surfaceNormal": {
+        "x": 1,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "type": "goal",
+      "location": {
+        "x": 19,
+        "y": 0.25,
+        "z": 21.5
+      },
+      "post1": {
+        "x": 23.946,
+        "y": 0.25,
+        "z": 18.067
+      },
+      "post2": {
+        "x": 13.554,
+        "y": 0.25,
+        "z": 24.067
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 12
+      },
+      "surfaceNormal": {
+        "x": -0.5,
+        "y": 0,
+        "z": -0.866
+      }
+    },
+    {
+      "type": "goal",
+      "location": {
+        "x": -19,
+        "y": 0.25,
+        "z": 21
+      },
+      "post1": {
+        "x": -13.554,
+        "y": 0.25,
+        "z": 23.567
+      },
+      "post2": {
+        "x": -23.946,
+        "y": 0.25,
+        "z": 17.567
+      },
+      "dimensions": {
+        "x": 0.5,
+        "y": 1,
+        "z": 12
+      },
+      "surfaceNormal": {
+        "x": 0.5,
+        "y": 0,
+        "z": -0.866
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { Vector3 } from "@babylonjs/core";
+import { Vector3, Mesh } from "@babylonjs/core";
 
 export * from './game_objects/ball';
 export * from './game_objects/paddle';
@@ -42,4 +42,24 @@ export function rotateVector(vector: Vector3, angle: number): Vector3
 	const x = vector.x * cos - vector.z * sin;
 	const z = vector.x * sin + vector.z * cos;
 	return new Vector3(x, vector.y, z);
+}
+
+export function meshesIntersect(a: Mesh, b: Mesh): boolean
+{
+	a.computeWorldMatrix(true);
+	b.computeWorldMatrix(true);
+
+	const ba = a.getBoundingInfo().boundingBox;
+	const bb = b.getBoundingInfo().boundingBox;
+
+	const aMin = ba.minimumWorld;
+	const aMax = ba.maximumWorld;
+	const bMin = bb.minimumWorld;
+	const bMax = bb.maximumWorld;
+
+	return (
+		aMin.x <= bMax.x && aMax.x >= bMin.x &&
+		aMin.y <= bMax.y && aMax.y >= bMin.y &&
+		aMin.z <= bMax.z && aMax.z >= bMin.z
+	);
 }

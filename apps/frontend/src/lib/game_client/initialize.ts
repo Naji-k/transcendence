@@ -150,12 +150,6 @@ export function	createGround(scene: Scene, dimensions: number[])
 		{width: dimensions[1], height: dimensions[0], updatable: false},
 		scene
 	);
-	// new PhysicsAggregate(
-	// 	ground,
-	// 	PhysicsShapeType.BOX,
-	// 	{ mass: 0, restitution: 0.5 },
-	// 	scene
-	// );
 	const mat = new StandardMaterial('floor', ground.getScene());
 	mat.diffuseColor = Color3.Gray();
 	mat.ambientColor = Color3.Gray();

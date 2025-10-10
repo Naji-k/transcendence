@@ -1,5 +1,5 @@
-import { StandardMaterial, Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, PointLight, Scene } from '@babylonjs/core';
-import { Ball } from '../index';
+import { Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
+import { Ball, meshesIntersect } from '../index';
 
 const goalPostDiameter = 0.5;
 
@@ -60,22 +60,19 @@ export class Goal
 		{
 			return false;
 		}
-		if (this.plate.intersectsMesh(ball.getMesh(), false) == false)
-		{
-			return false;
-		}
-
-		if (this.scoringCooldown == 3)
-		{
-			this.scoringCooldown = 0;
-		}
-
 		if (this.scoringCooldown > 0)
 		{
 			this.scoringCooldown++;
+			if (this.scoringCooldown == 3)
+			{
+				this.scoringCooldown = 0;
+			}
 			return false;
 		}
-
+		if (meshesIntersect(ball.getMesh(), this.plate) == false)
+		{
+			return false;
+		}
 		const linearVelocity = ball.getDirection();
 
 		if (linearVelocity == null)
@@ -84,7 +81,12 @@ export class Goal
 		}
 		const ballDirection = linearVelocity.normalize();
 
-		return Vector3.Dot(ballDirection, this.normal) < 0;
+		if (Vector3.Dot(ballDirection, this.normal) < 0)
+		{
+			this.scoringCooldown = 1;
+			return true;
+		}
+		return false;
 	}
 
 	getPlateMesh(): Mesh

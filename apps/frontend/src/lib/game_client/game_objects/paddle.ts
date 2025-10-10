@@ -1,15 +1,15 @@
-import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh,
-		PhysicsAggregate, Scene } from '@babylonjs/core';
+import { StandardMaterial, Color3, Vector3, MeshBuilder, Mesh, Scene } from '@babylonjs/core';
 
 export class Paddle
 {
 	private mesh:			Mesh;
-	private aggregate:		PhysicsAggregate;
+	private surfaceNorm:	Vector3;
 
 	private static eliminatedMaterial:	StandardMaterial;
 
 	constructor(dimensions: Vector3, _position: Vector3, surfaceNorm: Vector3, _color: Color3, scene: Scene)
 	{
+		this.surfaceNorm = surfaceNorm;
 		this.mesh = MeshBuilder.CreateBox
 		(
 			'box', 
@@ -50,11 +50,15 @@ export class Paddle
 	eliminate()
 	{
 		this.mesh.material = Paddle.eliminatedMaterial;
-		this.aggregate.body.setLinearVelocity(Vector3.Zero());
 	}
 
 	static setEliminatedMaterial(mat: StandardMaterial)
 	{
 		Paddle.eliminatedMaterial = mat;
+	}
+
+	getSurfaceNormal(): Vector3
+	{
+		return this.surfaceNorm;
 	}
 }

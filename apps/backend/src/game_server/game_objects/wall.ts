@@ -3,9 +3,8 @@ import { Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene }
 export class Wall
 {
 	private mesh:		Mesh;
-	private aggregate:	PhysicsAggregate;
 
-	constructor(dimensions: Vector3, _position: Vector3, _surfaceNormal: Vector3, opacity: number, scene: Scene)
+	constructor(dimensions: Vector3, _position: Vector3, _surfaceNormal: Vector3, scene: Scene)
 	{
 		this.mesh = MeshBuilder.CreateBox(
 			'wall', 
@@ -14,7 +13,7 @@ export class Wall
 		);
 		this.mesh.position = _position;
 
-		this.aggregate = new PhysicsAggregate(
+		new PhysicsAggregate(
 			this.mesh,
 			PhysicsShapeType.BOX,
 			{ mass: 0, restitution: 1 },

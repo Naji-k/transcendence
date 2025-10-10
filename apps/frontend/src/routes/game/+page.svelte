@@ -11,42 +11,9 @@
   let game: ClientGame | null = null;
   let resizeObserver: ResizeObserver | null = null;
   let subscription: { unsubscribe(): void } | null = null;
-  const upKeys = ['w', 'ArrowUp', 'd', 'ArrowRight'];
-  const downKeys = ['s', 'ArrowDown', 'a', 'ArrowLeft'];
 
   $: matchId = Number($page.url.searchParams.get('matchId') ?? 1);
 
-  function keyToAction(key: string): number {
-    const up = upKeys.includes(key);
-    const down = downKeys.includes(key);
-    return Number(up) - Number(down);
-  }
-
-  function playerInput(event: KeyboardEvent) {
-    if (game != null) {
-      if (event.type === 'keydown') {
-        try {
-          trpc.game.sentPlayerAction.mutate({
-            matchId: matchId,
-            action: keyToAction(event.key).toString() as '1' | '0' | '-1',
-          });
-        } catch (err) {
-          console.error('Error handling key down:', err);
-        }
-      } else if (event.type === 'keyup') {
-        //TODO: double check if this is needed
-        // try {
-        //   trpc.game.sentPlayerAction.mutate({
-        //     matchId: matchId,
-        //     action: '0',
-        //   });
-        // } catch (err) {
-        //   console.error('Error handling key up:', err);
-        // }
-      }
-      event.preventDefault();
-    }
-  }
   function resizeCanvas() {
     if (!canvas) {
       return;
@@ -70,7 +37,7 @@
   const initialState: GameState = {
     matchId: 1,
     status: 'waiting' as const,
-    lastUpdate: Date.now(),
+    lastUpdate: 0,
     players: [],
     balls: [],
   };
@@ -91,10 +58,7 @@
         initialState.matchId = matchId;
         game = await startGame('maps/standard2player.map', initialState);
       } catch (err) {
-        console.warn(
-          'startGame(canvas, map) failed — falling back to startGame(map):',
-          err
-        );
+        console.warn(`Game ${matchId}) failed to start:`, err);
       }
       subscription = trpc.game.subscribeToGameState.subscribe(
         { matchId: matchId },
@@ -128,4 +92,3 @@
   bind:this={canvas}
   class="block w-screen h-screen touch-none bg-black"
 ></canvas>
-<svelte:window on:keydown={playerInput} on:keyup={playerInput} />

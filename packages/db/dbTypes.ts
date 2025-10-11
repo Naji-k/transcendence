@@ -27,3 +27,11 @@ export interface MatchHistoryEntry {
   participants: string[];
   isWin: boolean;
 }
+
+export interface TournamentHistoryEntry {
+  id: number;
+  date: string | null;
+  tournamentName: string;
+  playerLimit: number;
+  isWin: boolean;
+}

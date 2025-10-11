@@ -1,12 +1,15 @@
 import {
   matchTable,
   singleMatchPlayersTable,
+  tournamentPlayersTable,
+  tournamentTable,
   usersTable,
 } from '@repo/db/dbSchema';
 import { db } from './dbClientInit';
 import { eq, and, inArray } from 'drizzle-orm';
-import { ExistingUser, Match, MatchHistoryEntry } from '@repo/db/dbTypes';
-import { SingleStoreVector } from 'drizzle-orm/singlestore-core';
+import { ExistingUser, Match, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db/dbTypes';
+import { TRPCError } from '@trpc/server';
+
 
 /**
  * Create and return a user, [createdUser] is destructuring the array returned from returning(),
@@ -50,7 +53,11 @@ export async function createUser(
 
 export async function findUserById(id: number): Promise<ExistingUser | null> {
   if (!id) {
-    throw new Error('findUserById error: id must be provided');
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'findUserById error: Provide user ID',
+      cause: 'User ID is not valid',
+    });
   }
 
   try {
@@ -61,9 +68,11 @@ export async function findUserById(id: number): Promise<ExistingUser | null> {
       .where(eq(usersTable.id, id));
     return foundUser ?? null;
   } catch (error) {
-    console.error('findUserById error');
-    console.error(error);
-    throw error;
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'findUserById error',
+      cause: error,
+    });
   }
 }
 
@@ -76,7 +85,11 @@ export async function findUserByAlias(
   alias: string
 ): Promise<ExistingUser | null> {
   if (!alias) {
-    throw new Error('findUserByAlias error: alias must be provided');
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'findUserByAlias error: Provide user alias',
+      cause: 'User alias is not valid',
+    });
   }
 
   try {
@@ -87,9 +100,11 @@ export async function findUserByAlias(
       .where(eq(usersTable.alias, alias));
     return foundUser ?? null;
   } catch (error) {
-    console.error('findUserByAlias error');
-    console.error(error);
-    throw error;
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'findUserByAlias error',
+      cause: error,
+    });
   }
 }
 
@@ -102,7 +117,11 @@ export async function findUserByEmail(
   email: string
 ): Promise<ExistingUser | null> {
   if (!email) {
-    throw new Error('findUserByAlias error: email must be provided');
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'findUserByEmail error: email address must be provided',
+      cause: 'email address is not valid',
+    });
   }
 
   try {
@@ -113,9 +132,11 @@ export async function findUserByEmail(
       .where(eq(usersTable.email, email));
     return foundUser ?? null;
   } catch (error) {
-    console.error('findUserByEmail error');
-    console.error(error);
-    throw error;
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'findUserByEmail error',
+      cause: error,
+    });
   }
 }
 
@@ -124,9 +145,11 @@ export async function playerExistsInMatch(
   playerId: number
 ): Promise<boolean> {
   if (!matchId || !playerId) {
-    throw new Error(
-      'playerExistsInMatch error: matchId and playerId must be provided'
-    );
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'playerExistsInMatch error: match ID and player ID must be provided',
+      cause: 'match ID and/or player ID not valid',
+    });
   }
   try {
     const playerExists = await db
@@ -141,15 +164,21 @@ export async function playerExistsInMatch(
     if (playerExists.length > 0) return true;
     return false;
   } catch (error) {
-    console.error('playerExistsInMatch error');
-    console.error(error);
-    throw error;
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'playerExistsInMatch error',
+      cause: error,
+    });
   }
 }
 
 export async function matchExists(matchId: number): Promise<boolean> {
   if (!matchId) {
-    throw new Error('matchExists error: matchId must be provided');
+     throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'matchExists error: match ID must be provided',
+      cause: 'match ID is not valid',
+    });
   }
   try {
     const matchExists = await db
@@ -159,9 +188,11 @@ export async function matchExists(matchId: number): Promise<boolean> {
     if (matchExists.length > 0) return true;
     return false;
   } catch (error) {
-    console.error('matchExists error');
-    console.error(error);
-    throw error;
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'matchExists error',
+      cause: error,
+    });
   }
 }
 
@@ -169,7 +200,11 @@ export async function getMatchPlayers(
   matchId: number
 ): Promise<{ id: number; alias: string }[]> {
   if (!matchId) {
-    throw new Error('getMatchPlayers error: matchId must be provided');
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'getMatchPlayers error: match ID must be provided',
+      cause: 'match ID is not valid',
+    });
   }
   try {
     const matchPlayers = await db
@@ -182,9 +217,11 @@ export async function getMatchPlayers(
       .where(eq(singleMatchPlayersTable.matchId, matchId));
     return matchPlayers ?? [];
   } catch (error) {
-    console.error('getMatchPlayers error');
-    console.error(error);
-    throw error;
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'getMatchPlayers error',
+      cause: error,
+    });
   }
 }
 
@@ -196,10 +233,13 @@ export async function getMatchPlayers(
 
 export async function getUserMatchHistory(userId: number): Promise<MatchHistoryEntry[]> {
   if (!userId) {
-    throw new Error('getUserMatchHistory error: userId must be provided');
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'getUserMatchHistory error: user ID must be provided',
+      cause: 'user ID is not valid',
+    });
   }
   try {
-    
     const userMatches = await db
       .select({ 
         matchId: singleMatchPlayersTable.matchId,
@@ -235,8 +275,55 @@ export async function getUserMatchHistory(userId: number): Promise<MatchHistoryE
     }
     return entries;
   } catch (error) {
-    console.error('getUserMatchHistory error');
-    console.error(error);
-    throw error;
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'getUserMatchHistory error',
+      cause: error,
+    });
   }
+}
+
+export async function getUserTournamentHistory(userId: number): Promise<TournamentHistoryEntry[]> {
+  if (!userId) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'getUserMatchHistory error: user ID must be provided',
+      cause: 'user ID is not valid',
+    });
+  }
+  try {
+    const userTournaments = await db
+      .select({ 
+        tournamentId: tournamentPlayersTable.tournamentId,
+        date: tournamentTable.date,
+        tournamentName: tournamentTable.name,
+        victor: tournamentTable.victor,
+        playerLimit: tournamentTable.playerLimit,
+        status: tournamentTable.status,
+      })
+      .from(tournamentTable)
+      .innerJoin(tournamentPlayersTable, eq(tournamentPlayersTable.tournamentId, tournamentTable.id))
+      .where(and(
+        eq(tournamentTable.status, 'completed'),
+        eq(tournamentPlayersTable.playerId, userId)));
+    
+    const entries: TournamentHistoryEntry[] = [];
+    for (const tournament of userTournaments) {
+      entries.push({
+        id: tournament.tournamentId,
+        date: tournament.date,
+        tournamentName: tournament.tournamentName,
+        playerLimit: tournament.playerLimit,
+        isWin: tournament.victor === userId,
+      })
+    }
+    return entries;
+  } catch (error) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'getUserMatchHistory error',
+      cause: error,
+    });
+  }
+
 }

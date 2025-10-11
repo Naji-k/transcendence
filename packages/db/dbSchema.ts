@@ -60,7 +60,8 @@ export const tournamentTable = sqliteTable('tournament_table', {
   status: text('status', {
     enum: ['waiting', 'ready', 'ongoing', 'completed'],
   }).default('waiting'),
-  createdAt: text().default(sql`CURRENT_TIMESTAMP`),
+  victor: int().references(() => usersTable.id), // This field will contain the player with placement 1 after the end of the tournament
+  date: text().default(sql`CURRENT_TIMESTAMP`),
 });
 
 /**

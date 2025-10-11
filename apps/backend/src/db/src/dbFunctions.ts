@@ -4,8 +4,9 @@ import {
   usersTable,
 } from '@repo/db/dbSchema';
 import { db } from './dbClientInit';
-import { eq, and } from 'drizzle-orm';
-import { ExistingUser } from '@repo/db/dbTypes';
+import { eq, and, inArray } from 'drizzle-orm';
+import { ExistingUser, Match, MatchHistoryEntry } from '@repo/db/dbTypes';
+import { SingleStoreVector } from 'drizzle-orm/singlestore-core';
 
 /**
  * Create and return a user, [createdUser] is destructuring the array returned from returning(),
@@ -37,10 +38,10 @@ export async function createUser(
       error instanceof Error &&
       error.message.includes('Failed query: insert into "users_table"')
     ) {
-      console.error('CreateUser error: failed to store user');
+      console.error('createUser error: failed to store user');
       console.error(error.message);
     } else {
-      console.error('CreateUser error: unknown error');
+      console.error('createUser error');
       console.error(error);
     }
     throw error;
@@ -60,7 +61,7 @@ export async function findUserById(id: number): Promise<ExistingUser | null> {
       .where(eq(usersTable.id, id));
     return foundUser ?? null;
   } catch (error) {
-    console.error('findUserById error: unknown error searching for user by id');
+    console.error('findUserById error');
     console.error(error);
     throw error;
   }
@@ -86,9 +87,7 @@ export async function findUserByAlias(
       .where(eq(usersTable.alias, alias));
     return foundUser ?? null;
   } catch (error) {
-    console.error(
-      'findUserByAlias error: unknown error searching for user by alias'
-    );
+    console.error('findUserByAlias error');
     console.error(error);
     throw error;
   }
@@ -114,9 +113,7 @@ export async function findUserByEmail(
       .where(eq(usersTable.email, email));
     return foundUser ?? null;
   } catch (error) {
-    console.error(
-      'findUserByEmail error: unknown error searching for user by email'
-    );
+    console.error('findUserByEmail error');
     console.error(error);
     throw error;
   }
@@ -144,9 +141,7 @@ export async function playerExistsInMatch(
     if (playerExists.length > 0) return true;
     return false;
   } catch (error) {
-    console.error(
-      'playerExistsInMatch error: unknown error searching if a player exists in a match'
-    );
+    console.error('playerExistsInMatch error');
     console.error(error);
     throw error;
   }
@@ -164,7 +159,7 @@ export async function matchExists(matchId: number): Promise<boolean> {
     if (matchExists.length > 0) return true;
     return false;
   } catch (error) {
-    console.error('matchExists error: unknown error');
+    console.error('matchExists error');
     console.error(error);
     throw error;
   }
@@ -187,7 +182,60 @@ export async function getMatchPlayers(
       .where(eq(singleMatchPlayersTable.matchId, matchId));
     return matchPlayers ?? [];
   } catch (error) {
-    console.error('getMatchPlayers error: unknown error');
+    console.error('getMatchPlayers error');
+    console.error(error);
+    throw error;
+  }
+}
+
+/**
+ * Get the match history of a specific user
+ * @param userId The id of the user we need the match history of
+ * @returns A MatchHistoryEntry[] with all the relevant matches, dates, participants, placement, win-loss boolean
+ */
+
+export async function getUserMatchHistory(userId: number): Promise<MatchHistoryEntry[]> {
+  if (!userId) {
+    throw new Error('getUserMatchHistory error: userId must be provided');
+  }
+  try {
+    
+    const userMatches = await db
+      .select({ 
+        matchId: singleMatchPlayersTable.matchId,
+        date: matchTable.date,
+        placement: singleMatchPlayersTable.placement,
+      })
+      .from(singleMatchPlayersTable)
+      .innerJoin(matchTable, eq(singleMatchPlayersTable.matchId, matchTable.id))
+      .where(eq(singleMatchPlayersTable.playerId, userId));
+
+    const matchIds = userMatches.map(m => m.matchId);
+    
+    const participants = await db
+      .select({ 
+        matchId: singleMatchPlayersTable.matchId,
+        participantId: singleMatchPlayersTable.playerId,
+        alias: usersTable.alias
+      })
+      .from(singleMatchPlayersTable)
+      .innerJoin(usersTable, eq(singleMatchPlayersTable.playerId, usersTable.id))
+      .where(inArray(singleMatchPlayersTable.matchId, matchIds));
+      
+      const entries: MatchHistoryEntry[] = [];
+      for (const match of userMatches) {
+        const participantsAlias = participants.filter(p => p.matchId === match.matchId).map(p => p.alias);
+        entries.push({
+          id: match.matchId,
+          date: match.date,
+          placement: match.placement,
+          participants: participantsAlias,
+          isWin: match.placement === 1
+        })
+    }
+    return entries;
+  } catch (error) {
+    console.error('getUserMatchHistory error');
     console.error(error);
     throw error;
   }

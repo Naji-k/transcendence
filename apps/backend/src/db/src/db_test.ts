@@ -1,7 +1,7 @@
 /* THIS FILE CONTAINS SEVERAL SEPARATE TESTS,
 EACH SECTION HAS A COMMENT ABOVE IT, SEPARATE SECTIONS CAN BE
 COMMENTED OUT IF YOU DON'T WANT TO RUN ALL THE DIFFERENT TESTS */
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import {
   friendshipsTable,
   matchTable,
@@ -19,6 +19,7 @@ import {
   playerExistsInMatch,
   matchExists,
   getMatchPlayers,
+  getUserMatchHistory,
 } from './dbFunctions';
 import * as readline from 'readline/promises';
 import { match } from 'assert';
@@ -180,7 +181,7 @@ async function testMatchHistory() {
       .orderBy(usersTable.id)
   ).map((u) => u.id);
   const randomId1 = allIds[Math.floor(Math.random() * allIds.length)];
-  const match: NewMatch = { date: new Date() };
+  const match: NewMatch = { date: new Date().toISOString() };
   // error match
   // match = { victor: "sec", date: new Date() };
   let allInsertedIds;
@@ -333,16 +334,18 @@ async function main() {
   // await db.delete(matchTable);
   // await db.delete(usersTable);
 
-  await testMenu();
-  const input = await getTestInput('Choose a test: ');
-  const test = dbTests[input];
-  if (test) {
-    console.log(`Executing: ${test.name}`);
-    await test.fn();
-  } else {
-    console.log('Invalid option');
-  }
-  rl.close();
+  // await testMenu();
+  // const input = await getTestInput('Choose a test: ');
+  // const test = dbTests[input];
+  // if (test) {
+  //   console.log(`Executing: ${test.name}`);
+  //   await test.fn();
+  // } else {
+  //   console.log('Invalid option');
+  // }
+  // rl.close();
+  const userMatchHistory = await getUserMatchHistory(2);
+  console.log(userMatchHistory);
 }
 
 main();

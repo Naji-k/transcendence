@@ -19,3 +19,11 @@ export type TournamentPlayer = typeof tournamentPlayersTable.$inferSelect;
 export type Friendship = typeof friendshipsTable.$inferSelect;
 export type Match = typeof matchTable.$inferSelect;
 export type MatchParticipation = typeof singleMatchPlayersTable.$inferSelect;
+
+export interface MatchHistoryEntry {
+  id: number;
+  date: string | null;
+  placement: number;
+  participants: string[];
+  isWin: boolean;
+}

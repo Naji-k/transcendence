@@ -1,7 +1,7 @@
 // It defines the context type used in tRPC routers
 
 import { GameState, PlayerAction } from './types/gameState';
-import { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db/dbTypes';
+import { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry, Tournament } from '@repo/db/dbTypes';
 
 
 export interface Services {
@@ -44,10 +44,11 @@ export interface Services {
       userId: number,
       playerLimit: number
     ) => Promise<any>;
-    joinTournament: (tournamentName: string, playerId: number) => Promise<any>;
-    listAllTournaments: () => Promise<any>;
+    joinTournament: (tournamentName: string, playerId: number) => Promise<Tournament | null>;
+    listAllTournaments: () => Promise<Tournament[]>;
     getTournamentPlayers: (tournamentName: string) => Promise<any>;
     startTournament: (tournamentName: string) => Promise<any>;
+    getTournamentBracket: (tournamentName: string) => Promise<TournamentBrackets>;
   };
   match: {
     createMultiplayerGame: (
@@ -88,3 +89,19 @@ export interface User {
   name: string;
   twofa_enabled: number;
 }
+export interface TournamentPlayer {
+  id: number;
+  userAlias: string;
+  placement: number;
+}
+
+export interface TournamentMatches {
+  id: number;
+  players: TournamentPlayer [];
+  victor: TournamentPlayer | null ;
+  status: string;
+}
+export interface TournamentBrackets {
+  tournament: Tournament;
+  matches: TournamentMatches [];
+}   

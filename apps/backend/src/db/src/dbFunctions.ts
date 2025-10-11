@@ -325,5 +325,28 @@ export async function getUserTournamentHistory(userId: number): Promise<Tourname
       cause: error,
     });
   }
+}
 
+export async function updateUser2FASecret(email: string, secret: string) {
+  try {
+    await db
+      .update(usersTable)
+      .set({ twofa_secret: secret })
+      .where(eq(usersTable.email, email));
+  } catch (error) {
+    console.error('updateUser2FASecret error:', error);
+    throw error;
+  }
+}
+
+export async function enableUser2FA(email: string) {
+  try {
+    await db
+      .update(usersTable)
+      .set({ twofa_enabled: 1 })
+      .where(eq(usersTable.email, email));
+  } catch (error) {
+    console.error('enableUser2FA error:', error);
+    throw error;
+  }
 }

@@ -3,6 +3,8 @@ import { TRPCError } from '@trpc/server';
 import { findUserByEmail, createUser } from '../db/src/dbFunctions';
 import { jwtUtils } from './jwt';
 import { hashPassword, verifyPassword } from './password';
+import { setup2FA, verify2FA } from './2fa';
+import { FastifyInstance } from 'fastify';
 
 /**
  * It checks if the user already exists by email, hashes the password,
@@ -59,9 +61,9 @@ export async function signIn(email: string, password: string) {
     });
   }
   if (user.googleId) {
-    throw new TRPCError({ 
-      code: 'UNAUTHORIZED', 
-      message: 'Please log in with Google' 
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'Please log in with Google',
     });
   }
   const isPasswordValid = await verifyPassword(user.password, password);
@@ -80,4 +82,24 @@ export async function signIn(email: string, password: string) {
     },
     token,
   };
+}
+
+export function setup2FARoutes(app: FastifyInstance) {
+  app.post<{ Body: { email: string } }>(
+    '/api/auth/2fa/setup',
+    async (req, reply) => {
+      const { email } = req.body;
+      const otpauth = await setup2FA(email);
+      reply.send({ otpauth });
+    }
+);
+
+  app.post<{ Body: { email: string; token: string } }>(
+    '/api/auth/2fa/verify',
+    async (req, reply) => {
+      const { email, token } = req.body;
+      const ok = await verify2FA(email, token);
+      reply.send({ ok });
+    }
+  );
 }

@@ -455,11 +455,21 @@ async function testTournamentTable() {
     // Show all tournament participants
     const allTournamentParticipants = await db.select().from(tournamentPlayersTable);
     console.log('All tournament participants:', allTournamentParticipants);
-
+    
   } catch (error) {
     console.error('Error creating tournament test data:', error);
   }
   
+  console.log('---------------------------------------------');
+}
+
+async function testHistories() {
+  console.log('----------Match History----------');
+  const userMatchHistory = await getUserMatchHistory(21);
+  console.log(userMatchHistory);
+  console.log('------------Tournament History-------------');
+  const userTournamentHistory = await getUserTournamentHistory(21);
+  console.log(userTournamentHistory);
   console.log('---------------------------------------------');
 }
 
@@ -470,6 +480,7 @@ const dbTests: Record<string, functionEntry> = {
   '4': { name: 'Test match history', fn: testMatchHistory },
   '5': { name: 'Test match players', fn: testMatchPlayers },
   '6': { name: 'Test tournament entries', fn: testTournamentTable },
+  '7': { name: 'Test histories', fn: testHistories },
   all: {
     name: 'All tests',
     fn: async () => {
@@ -479,6 +490,7 @@ const dbTests: Record<string, functionEntry> = {
       await testMatchHistory();
       await testMatchPlayers();
       await testTournamentTable();
+      await testHistories();
     },
   },
 };
@@ -515,10 +527,6 @@ async function main() {
     console.log('Invalid option');
   }
   rl.close();
-  // const userMatchHistory = await getUserMatchHistory(2);
-  // console.log(userMatchHistory);
-  // const userTournamentHistory = await getUserTournamentHistory(6);
-  // console.log(userTournamentHistory);
 }
 
 main();

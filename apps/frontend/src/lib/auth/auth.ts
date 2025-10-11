@@ -37,11 +37,39 @@ export async function login(email: string, password: string) {
       throw messages;
     }
     const res = await trpc.auth.login.mutate(validInput.data);
+
+    // 2FA
+    if (res.twofaRequired) {
+      return { twofaRequired: true, userId: res.userId };
+    }
+
+    // Normal login
     console.log('logged in :', res.user);
     authStoreMethods.login(res.token, res.user);
     await goto('/profile');
+    return { success: true };
   } catch (e) {
     console.error('login failed: ', e);
+    throw e.message || e;
+  }
+}
+
+export async function verify2FA(userId: number, token: string) {
+  try {
+    const res = await fetch('http://localhost:3000/api/auth/2fa/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, token }),
+    });
+    const data = await res.json();
+    if (data.ok && data.token && data.user) {
+      authStoreMethods.login(data.token, data.user);
+      await goto('/profile');
+      return { success: true };
+    } else {
+      throw new Error('Invalid 2FA code');
+    }
+  } catch (e) {
     throw e.message || e;
   }
 }

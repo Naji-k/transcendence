@@ -73,6 +73,9 @@ export async function signIn(email: string, password: string) {
       message: 'Invalid password',
     });
   }
+  if (user.twofa_enabled) {
+    return { twofaRequired: true, userId: user.id };
+  }
   const token = jwtUtils.sign(user.id, user.email);
   return {
     user: {
@@ -85,21 +88,23 @@ export async function signIn(email: string, password: string) {
 }
 
 export function setup2FARoutes(app: FastifyInstance) {
-  app.post<{ Body: { email: string } }>(
+  app.post<{ Body: { userId: number } }>(
     '/api/auth/2fa/setup',
     async (req, reply) => {
-      const { email } = req.body;
-      const otpauth = await setup2FA(email);
-      reply.send({ otpauth });
+      const { userId } = req.body;
+      if (!userId) return reply.status(400).send({ error: 'Missing userId' });
+      const otpauth = await setup2FA(userId);
+      return reply.send({ otpauth });
     }
 );
 
-  app.post<{ Body: { email: string; token: string } }>(
+  app.post<{ Body: { userId: number; token: string } }>(
     '/api/auth/2fa/verify',
     async (req, reply) => {
-      const { email, token } = req.body;
-      const ok = await verify2FA(email, token);
-      reply.send({ ok });
+      const { userId, token } = req.body;
+      if (!userId || !token) return reply.status(400).send({ ok: false, error: 'Missing userId or token' });
+      const ok = await verify2FA(userId, token);
+      return reply.send({ ok });
     }
   );
 }

@@ -2,19 +2,35 @@
   import { goto } from '$app/navigation';
   let email = '';
   let password = '';
-  import { login } from '$lib/auth/auth';
+  import { login, verify2FA } from '$lib/auth/auth';
   import { isAuthenticated, currentUser } from '$lib/auth/store';
   import { onMount } from 'svelte';
 
-  function handleSignIn() {
-    login(email, password)
-      .then((res) => {
-        alert(`Login successful! Welcome ${res?.name || res?.alias}`);
-        goto('/game_lobby');
-      })
-      .catch((error) => {
-        alert(`Login failed:\n ${error}`);
-      });
+  let twofaRequired = false;
+  let userId = null;
+  let token = '';
+  let error = '';
+
+  async function handleSignIn() {
+    error = '';
+    try {
+      const res = await login(email, password);
+      if (res.twofaRequired) {
+        twofaRequired = true;
+        userId = res.userId;
+      }
+    } catch (e) {
+      error = e;
+    }
+  }
+
+  async function handle2FAVerify() {
+    error = '';
+    try {
+      await verify2FA(userId, token);
+    } catch (e) {
+      error = e;
+    }
   }
 
   onMount(() => {
@@ -103,3 +119,31 @@
     </p>
   </div>
 </div>
+
+{#if twofaRequired}
+  <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg p-6 max-w-sm w-full space-y-4">
+      <h2 class="text-lg font-semibold text-center">
+        Two-Factor Authentication
+      </h2>
+      <p class="text-center text-sm text-gray-600">
+        Please enter the verification code.
+      </p>
+      {#if error}
+        <p class="text-red-500 text-xs text-center">{error}</p>
+      {/if}
+      <input
+        type="text"
+        placeholder="Verification code"
+        bind:value={token}
+        class="w-full rounded-xl px-4 py-3 text-black font-bold focus:outline-none focus:ring-2 focus:ring-cyan-400"
+      />
+      <button
+        on:click={handle2FAVerify}
+        class="bg-cyan-500 hover:bg-cyan-600 active:scale-95 shadow-lg active:shadow-inner transition-transform rounded-xl px-6 py-3 font-bold text-black w-full"
+      >
+        Verify
+      </button>
+    </div>
+  </div>
+{/if}

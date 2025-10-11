@@ -3,7 +3,7 @@
   import { currentUser } from '$lib/auth/store';
   import { get } from 'svelte/store';
 
-  let email = get(currentUser)?.email ?? '';
+  let userId = get(currentUser)?.id ?? 1;
   let otpauth = '';
   let qrDataUrl = '';
   let token = '';
@@ -16,7 +16,7 @@
       const res = await fetch('http://localhost:3000/api/auth/2fa/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ userId }),
       });
       if (!res.ok) throw new Error('Failed to setup 2FA');
       const data = await res.json();
@@ -33,7 +33,7 @@
       const res = await fetch('http://localhost:3000/api/auth/2fa/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, token }),
+        body: JSON.stringify({ userId, token }),
       });
       if (!res.ok) throw new Error('Failed to verify 2FA');
       const data = await res.json();
@@ -41,6 +41,26 @@
       error = verified ? '' : 'Invalid code. Try again.';
     } catch (e) {
       error = e.message || 'Error verifying 2FA';
+    }
+  }
+
+  async function disable2FA() {
+    error = '';
+    try {
+      const res = await fetch('http://localhost:3000/api/auth/2fa/disable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+      if (!res.ok) throw new Error('Failed to disable 2FA');
+      
+      otpauth = '';
+      qrDataUrl = '';
+      token = '';
+      verified = false;
+      error = '';
+    } catch (e) {
+      error = e.message || 'Error disabling 2FA';
     }
   }
 </script>
@@ -56,6 +76,9 @@
     <input type="text" bind:value={token} placeholder="Enter 6-digit code" class="mt-2 p-2 rounded" />
     <button on:click={verify2FA} class="bg-green-500 px-4 py-2 rounded ml-2">Verify</button>
     {#if error}<p class="text-red-500">{error}</p>{/if}
-    {#if verified}<p class="text-green-500">2FA enabled!</p>{/if}
+    {#if verified}
+      <p class="text-green-500">2FA enabled!</p>
+      <button on:click={disable2FA} class="bg-red-500 px-4 py-2 rounded mt-2">Disable 2FA</button>
+    {/if}
   </div>
 {/if}

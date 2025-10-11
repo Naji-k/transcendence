@@ -327,26 +327,38 @@ export async function getUserTournamentHistory(userId: number): Promise<Tourname
   }
 }
 
-export async function updateUser2FASecret(email: string, secret: string) {
+export async function updateUser2FASecret(userId: number, secret: string) {
   try {
     await db
       .update(usersTable)
       .set({ twofa_secret: secret })
-      .where(eq(usersTable.email, email));
+      .where(eq(usersTable.id, userId));
   } catch (error) {
     console.error('updateUser2FASecret error:', error);
     throw error;
   }
 }
 
-export async function enableUser2FA(email: string) {
+export async function enableUser2FA(userId: number) {
   try {
     await db
       .update(usersTable)
       .set({ twofa_enabled: 1 })
-      .where(eq(usersTable.email, email));
+      .where(eq(usersTable.id, userId));
   } catch (error) {
     console.error('enableUser2FA error:', error);
+    throw error;
+  }
+}
+
+export async function disableUser2FA(userId: number) {
+  try {
+    await db
+      .update(usersTable)
+      .set({ twofa_secret: null, twofa_enabled: 0 })
+      .where(eq(usersTable.id, userId));
+  } catch (error) {
+    console.error('disableUser2FA error:', error);
     throw error;
   }
 }

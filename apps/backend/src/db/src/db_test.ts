@@ -1,7 +1,8 @@
 /* THIS FILE CONTAINS SEVERAL SEPARATE TESTS,
 EACH SECTION HAS A COMMENT ABOVE IT, SEPARATE SECTIONS CAN BE
 COMMENTED OUT IF YOU DON'T WANT TO RUN ALL THE DIFFERENT TESTS */
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
+import { reset } from 'drizzle-seed'
 import {
   friendshipsTable,
   matchTable,
@@ -19,10 +20,10 @@ import {
   playerExistsInMatch,
   matchExists,
   getMatchPlayers,
+  getUserMatchHistory,
+  getUserTournamentHistory
 } from './dbFunctions';
 import * as readline from 'readline/promises';
-import { match } from 'assert';
-import { configDotenv } from 'dotenv';
 import { hashPassword } from '../../auth/password';
 
 console.log(__dirname);
@@ -180,7 +181,7 @@ async function testMatchHistory() {
       .orderBy(usersTable.id)
   ).map((u) => u.id);
   const randomId1 = allIds[Math.floor(Math.random() * allIds.length)];
-  const match: NewMatch = { date: new Date() };
+  const match: NewMatch = { date: new Date().toISOString() };
   // error match
   // match = { victor: "sec", date: new Date() };
   let allInsertedIds;
@@ -293,12 +294,193 @@ async function testMatchPlayers() {
   console.log('---------------------------------------------');
 }
 
+async function testTournamentTable() {
+  console.log('-------------Testing tournament entries------------');
+  
+  // Get existing users to assign as creators and participants
+  const allIds = (
+    await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .orderBy(usersTable.id)
+  ).map((u) => u.id);
+
+  if (allIds.length < 4) {
+    console.log('Need at least 4 users to create tournament test data');
+    return;
+  }
+
+  try {
+    // Create 3 tournaments with different statuses
+    const tournament1 = await db
+      .insert(tournamentTable)
+      .values({
+        creator: allIds[0],
+        name: `Spring Championship ${Date.now()}`,
+        playerLimit: 8,
+        status: 'completed',
+        victor: allIds[1], // User 1 won this tournament
+        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
+      })
+      .returning({ id: tournamentTable.id });
+
+    const tournament2 = await db
+      .insert(tournamentTable)
+      .values({
+        creator: allIds[1],
+        name: `Summer Cup ${Date.now()}`,
+        playerLimit: 4,
+        status: 'completed',
+        victor: allIds[2], // User 2 won this tournament
+        date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+      })
+      .returning({ id: tournamentTable.id });
+
+    const tournament3 = await db
+      .insert(tournamentTable)
+      .values({
+        creator: allIds[2],
+        name: `Autumn Masters ${Date.now()}`,
+        playerLimit: 6,
+        status: 'ongoing',
+        victor: null, // No victor yet
+        date: new Date().toISOString(), // Today
+      })
+      .returning({ id: tournamentTable.id });
+
+    const t1Id = tournament1[0].id;
+    const t2Id = tournament2[0].id;
+    const t3Id = tournament3[0].id;
+
+    // Add participants to tournaments
+    // Tournament 1 participants (user 0, 1, 2, 3)
+    await db.insert(tournamentPlayersTable).values([
+      { tournamentId: t1Id, playerId: allIds[0] },
+      { tournamentId: t1Id, playerId: allIds[1] },
+      { tournamentId: t1Id, playerId: allIds[2] },
+      { tournamentId: t1Id, playerId: allIds[3] },
+    ]);
+
+    // Tournament 2 participants (user 1, 2, 3, and first user if more exist)
+    const t2Participants = [
+      { tournamentId: t2Id, playerId: allIds[1] },
+      { tournamentId: t2Id, playerId: allIds[2] },
+      { tournamentId: t2Id, playerId: allIds[3] },
+    ];
+    if (allIds.length > 4) {
+      t2Participants.push({ tournamentId: t2Id, playerId: allIds[4] });
+    }
+    await db.insert(tournamentPlayersTable).values(t2Participants);
+
+    // Tournament 3 participants (user 0, 2, 3)
+    await db.insert(tournamentPlayersTable).values([
+      { tournamentId: t3Id, playerId: allIds[0] },
+      { tournamentId: t3Id, playerId: allIds[2] },
+      { tournamentId: t3Id, playerId: allIds[3] },
+    ]);
+
+    // Create some tournament matches
+    // Tournament 1 matches
+    const t1Match1 = await db
+      .insert(matchTable)
+      .values({
+        tournamentId: t1Id,
+        maxPlayers: 2,
+        victor: allIds[1],
+        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      })
+      .returning({ id: matchTable.id });
+
+    const t1Match2 = await db
+      .insert(matchTable)
+      .values({
+        tournamentId: t1Id,
+        maxPlayers: 2,
+        victor: allIds[2],
+        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      })
+      .returning({ id: matchTable.id });
+
+    // Tournament 1 final match
+    const t1Final = await db
+      .insert(matchTable)
+      .values({
+        tournamentId: t1Id,
+        maxPlayers: 2,
+        victor: allIds[1], // User 1 wins tournament
+        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      })
+      .returning({ id: matchTable.id });
+
+    // Add match participants for tournament 1
+    await db.insert(singleMatchPlayersTable).values([
+      // Match 1: User 0 vs User 1 (User 1 wins)
+      { matchId: t1Match1[0].id, playerId: allIds[0], placement: 2 },
+      { matchId: t1Match1[0].id, playerId: allIds[1], placement: 1 },
+      
+      // Match 2: User 2 vs User 3 (User 2 wins)
+      { matchId: t1Match2[0].id, playerId: allIds[2], placement: 1 },
+      { matchId: t1Match2[0].id, playerId: allIds[3], placement: 2 },
+      
+      // Final: User 1 vs User 2 (User 1 wins)
+      { matchId: t1Final[0].id, playerId: allIds[1], placement: 1 },
+      { matchId: t1Final[0].id, playerId: allIds[2], placement: 2 },
+    ]);
+
+    // Tournament 2 matches (simpler structure)
+    const t2Match = await db
+      .insert(matchTable)
+      .values({
+        tournamentId: t2Id,
+        maxPlayers: 2,
+        victor: allIds[2],
+        date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      })
+      .returning({ id: matchTable.id });
+
+    await db.insert(singleMatchPlayersTable).values([
+      { matchId: t2Match[0].id, playerId: allIds[1], placement: 2 },
+      { matchId: t2Match[0].id, playerId: allIds[2], placement: 1 },
+    ]);
+
+    console.log('Created tournament test data:');
+    console.log(`Tournament 1 (${t1Id}): Spring Championship - COMPLETED - Victor: User ${allIds[1]}`);
+    console.log(`Tournament 2 (${t2Id}): Summer Cup - COMPLETED - Victor: User ${allIds[2]}`);
+    console.log(`Tournament 3 (${t3Id}): Autumn Masters - ONGOING - No victor yet`);
+    
+    // Show all tournaments
+    const allTournaments = await db.select().from(tournamentTable);
+    console.log('All tournaments:', allTournaments);
+    
+    // Show all tournament participants
+    const allTournamentParticipants = await db.select().from(tournamentPlayersTable);
+    console.log('All tournament participants:', allTournamentParticipants);
+    
+  } catch (error) {
+    console.error('Error creating tournament test data:', error);
+  }
+  
+  console.log('---------------------------------------------');
+}
+
+async function testHistories() {
+  console.log('----------Match History----------');
+  const userMatchHistory = await getUserMatchHistory(21);
+  console.log(userMatchHistory);
+  console.log('------------Tournament History-------------');
+  const userTournamentHistory = await getUserTournamentHistory(21);
+  console.log(userTournamentHistory);
+  console.log('---------------------------------------------');
+}
+
 const dbTests: Record<string, functionEntry> = {
   '1': { name: 'Test user entries', fn: testUserEntries },
   '2': { name: 'Test db functions', fn: testDbFunctions },
   '3': { name: 'Test friendships', fn: testFriendships },
   '4': { name: 'Test match history', fn: testMatchHistory },
   '5': { name: 'Test match players', fn: testMatchPlayers },
+  '6': { name: 'Test tournament entries', fn: testTournamentTable },
+  '7': { name: 'Test histories', fn: testHistories },
   all: {
     name: 'All tests',
     fn: async () => {
@@ -307,6 +489,8 @@ const dbTests: Record<string, functionEntry> = {
       await testFriendships();
       await testMatchHistory();
       await testMatchPlayers();
+      await testTournamentTable();
+      await testHistories();
     },
   },
 };

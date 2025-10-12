@@ -16,24 +16,16 @@ async function insertTournament(
   ownerId: number,
   playerLimit: number
 ): Promise<Tournament> {
-  try {
-    const [tournament] = await db
-      .insert(tournamentTable)
-      .values({
-        creator: ownerId,
-        name: name,
-        playerLimit: playerLimit,
-        status: 'waiting',
-      })
-      .returning();
-    return tournament;
-  } catch (error) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'Failed to create tournament',
-      cause: error,
-    });
-  }
+  const [tournament] = await db
+    .insert(tournamentTable)
+    .values({
+      creator: ownerId,
+      name: name,
+      playerLimit: playerLimit,
+      status: 'waiting',
+    })
+    .returning();
+  return tournament;
 }
 
 async function isPlayerInTournament(
@@ -147,8 +139,6 @@ export class TournamentService {
       await addPlayerToTournament(tournament.id, playerId);
       const players = await tournamentPlayers(tournament.id);
       if (players.length >= tournament.playerLimit) {
-        // automatically start the tournament when full
-        // await this.startTournament(tournamentName);
         console.log("Tournament is full, updating status to 'ready'");
         await db
           .update(tournamentTable)
@@ -302,7 +292,6 @@ export class TournamentService {
     tournamentName: string
   ): Promise<TournamentBrackets> {
     const tournament = await tournamentExists(tournamentName);
-
     const matches = await getTournamentMatches(tournament.id);
     if (tournament === null) {
       throw new TRPCError({

@@ -2,23 +2,21 @@
   import { goto } from '$app/navigation';
   let email = '';
   let password = '';
-  import { login, verify2FA } from '$lib/auth/auth';
+  import { login, verify2FAToLogin } from '$lib/auth/auth';
   import { isAuthenticated, currentUser } from '$lib/auth/store';
   import { onMount } from 'svelte';
 
   let twofaRequired = false;
   let userId = null;
-  let token = '';
+  let code = '';
   let error = '';
 
   async function handleSignIn() {
     error = '';
     try {
       const res = await login(email, password);
-      if (res.twofaRequired) {
-        twofaRequired = true;
-        userId = res.userId;
-      }
+      twofaRequired = res.twofaRequired;
+      userId = res.userId;
     } catch (e) {
       error = e;
     }
@@ -27,7 +25,7 @@
   async function handle2FAVerify() {
     error = '';
     try {
-      await verify2FA(userId, token);
+      await verify2FAToLogin(userId, code);
     } catch (e) {
       error = e;
     }
@@ -135,7 +133,7 @@
       <input
         type="text"
         placeholder="Verification code"
-        bind:value={token}
+        bind:value={code}
         class="w-full rounded-xl px-4 py-3 text-black font-bold focus:outline-none focus:ring-2 focus:ring-cyan-400"
       />
       <button

@@ -3,6 +3,7 @@
 import { GameState, PlayerAction } from './types/gameState';
 import { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db/dbTypes';
 
+
 export interface Services {
   jwtUtils: {
     sign: (id: number, email: string) => string;

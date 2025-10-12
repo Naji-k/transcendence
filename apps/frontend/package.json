@@ -29,7 +29,8 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
-    "@repo/trpc": "workspace:*",
+		"@repo/db": "workspace:*",
+		"@repo/trpc": "workspace:*",
 		"@trpc/client": "^11.4.4",
 		"qrcode": "^1.5.4",
     "@repo/db": "workspace:*",

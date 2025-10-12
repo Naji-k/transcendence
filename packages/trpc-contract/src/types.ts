@@ -49,6 +49,7 @@ export interface Services {
     getTournamentPlayers: (tournamentName: string) => Promise<any>;
     startTournament: (tournamentName: string) => Promise<any>;
     getTournamentBracket: (tournamentName: string) => Promise<TournamentBrackets>;
+    endTournament: (tournamentName: string, playerId: number) => Promise<any>;
   };
   match: {
     createMultiplayerGame: (
@@ -99,7 +100,7 @@ export interface TournamentMatches {
   id: number;
   players: TournamentPlayer [];
   victor: TournamentPlayer | null ;
-  status: string;
+  status: 'waiting' | 'ready' | 'playing' | 'finished';
 }
 export interface TournamentBrackets {
   tournament: Tournament;

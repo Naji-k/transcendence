@@ -3,8 +3,6 @@ import { TRPCError } from '@trpc/server';
 import { findUserByEmail, createUser } from '../db/src/dbFunctions';
 import { jwtUtils } from './jwt';
 import { hashPassword, verifyPassword } from './password';
-import { setup2FA, verify2FA } from './2fa';
-import { FastifyInstance } from 'fastify';
 
 /**
  * It checks if the user already exists by email, hashes the password,
@@ -74,7 +72,10 @@ export async function signIn(email: string, password: string) {
     });
   }
   if (user.twofa_enabled) {
-    return { twofaRequired: true, userId: user.id };
+    return {
+      twofaRequired: true,
+      userId: user.id
+    };
   }
   const token = jwtUtils.sign(user.id, user.email);
   return {
@@ -82,29 +83,8 @@ export async function signIn(email: string, password: string) {
       id: user.id,
       email: user.email,
       name: user.alias,
+      twofa_enabled: user.twofa_enabled,
     },
     token,
   };
-}
-
-export function setup2FARoutes(app: FastifyInstance) {
-  app.post<{ Body: { userId: number } }>(
-    '/api/auth/2fa/setup',
-    async (req, reply) => {
-      const { userId } = req.body;
-      if (!userId) return reply.status(400).send({ error: 'Missing userId' });
-      const otpauth = await setup2FA(userId);
-      return reply.send({ otpauth });
-    }
-);
-
-  app.post<{ Body: { userId: number; token: string } }>(
-    '/api/auth/2fa/verify',
-    async (req, reply) => {
-      const { userId, token } = req.body;
-      if (!userId || !token) return reply.status(400).send({ ok: false, error: 'Missing userId or token' });
-      const ok = await verify2FA(userId, token);
-      return reply.send({ ok });
-    }
-  );
 }

@@ -1,14 +1,23 @@
 <script lang="ts">
   import QRCode from 'qrcode';
-  import { currentUser } from '$lib/auth/store';
-  import { get } from 'svelte/store';
+  import { currentUser, authStoreMethods } from '$lib/auth/store';
+  import { onMount } from 'svelte';
 
-  let userId = get(currentUser)?.id ?? 1;
+  let userId = -1;
   let otpauth = '';
   let qrDataUrl = '';
   let token = '';
   let verified = false;
   let error = '';
+  let twofaEnabled = false;
+
+  onMount(() => {
+    const unsubscribe = currentUser.subscribe(user => {
+      userId = user?.id ?? -1;
+      twofaEnabled = user?.twofa_enabled ?? false;
+    });
+    return unsubscribe;
+  });
 
   async function setup2FA() {
     error = '';
@@ -38,6 +47,10 @@
       if (!res.ok) throw new Error('Failed to verify 2FA');
       const data = await res.json();
       verified = data.ok;
+      if (verified) {
+        twofaEnabled = true;
+        authStoreMethods.setUser({ ...$currentUser, twofa_enabled: true });
+      }
       error = verified ? '' : 'Invalid code. Try again.';
     } catch (e) {
       error = e.message || 'Error verifying 2FA';
@@ -53,19 +66,23 @@
         body: JSON.stringify({ userId }),
       });
       if (!res.ok) throw new Error('Failed to disable 2FA');
-      
       otpauth = '';
       qrDataUrl = '';
       token = '';
       verified = false;
+      twofaEnabled = false;
       error = '';
+      authStoreMethods.setUser({ ...$currentUser, twofa_enabled: false });
     } catch (e) {
       error = e.message || 'Error disabling 2FA';
     }
   }
 </script>
 
-{#if !otpauth}
+{#if twofaEnabled}
+  <p class="text-green-500">2FA is enabled on your account.</p>
+  <button on:click={disable2FA} class="bg-red-500 px-4 py-2 rounded mt-2">Disable 2FA</button>
+{:else if !otpauth}
   <button on:click={setup2FA} class="bg-cyan-500 px-4 py-2 rounded">Enable 2FA</button>
 {:else}
   <div>
@@ -76,9 +93,5 @@
     <input type="text" bind:value={token} placeholder="Enter 6-digit code" class="mt-2 p-2 rounded" />
     <button on:click={verify2FA} class="bg-green-500 px-4 py-2 rounded ml-2">Verify</button>
     {#if error}<p class="text-red-500">{error}</p>{/if}
-    {#if verified}
-      <p class="text-green-500">2FA enabled!</p>
-      <button on:click={disable2FA} class="bg-red-500 px-4 py-2 rounded mt-2">Disable 2FA</button>
-    {/if}
   </div>
 {/if}

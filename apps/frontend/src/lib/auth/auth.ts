@@ -3,12 +3,13 @@ import { trpc } from '../trpc';
 import { authStoreMethods } from '$lib/auth/store';
 import { goto } from '$app/navigation';
 
-export async function signUp(name: string, email: string, password: string) {
+export async function signUp(name: string, email: string, password: string, twofa_enabled: boolean = false) {
   try {
     const validInput = signUpInput.safeParse({
       name,
       email,
       password,
+      twofa_enabled
     });
     if (!validInput.success) {
       const messages = validInput.error.issues.map((err) => err.message);

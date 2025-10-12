@@ -60,7 +60,7 @@ export async function verify2FAToLogin(userId: number, code: string) {
     const res = await fetch('http://localhost:3000/api/auth/2fa/verify_login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, code }),
+      body: JSON.stringify({ userId, token: code }),
     });
     const data = await res.json();
     if (data.ok && data.token && data.user) {

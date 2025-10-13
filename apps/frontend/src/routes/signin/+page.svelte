@@ -6,6 +6,13 @@
   import { isAuthenticated, currentUser } from '$lib/auth/store';
   import { onMount } from 'svelte';
 
+  onMount(() => {
+	if ($isAuthenticated) {
+	  console.log('Welcome back!', $currentUser.name);
+	  goto('/profile');
+	}
+  });
+
   let twofaRequired = false;
   let userId = null;
   let code = '';
@@ -22,6 +29,9 @@
     }
   }
 
+//  alert(`Login successful! Welcome ${$currentUser.name}`);
+//         goto('/profile');
+
   async function handle2FAVerify() {
     error = '';
     try {
@@ -30,13 +40,6 @@
       error = e;
     }
   }
-
-  onMount(() => {
-    if ($isAuthenticated) {
-      console.log('Welcome back!', $currentUser);
-      goto('/game_lobby');
-    }
-  });
 
   function handleGoogleLogin() {
     window.location.href = 'http://localhost:3000/api/auth/google';

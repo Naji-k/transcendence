@@ -15,6 +15,8 @@ const initialState: AuthState = {
   loading: true,
 };
 
+export const authLoaded = writable(false);
+
 export const userAuthStore = writable<AuthState>(initialState);
 
 export const isAuthenticated = derived(
@@ -95,5 +97,7 @@ export async function initAuthStore(): Promise<void> {
   } catch (error) {
     console.error(error);
     authStoreMethods.clearUser();
+  } finally {
+    authLoaded.set(true);
   }
 }

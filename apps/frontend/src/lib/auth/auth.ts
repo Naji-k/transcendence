@@ -17,7 +17,7 @@ export async function signUp(name: string, email: string, password: string, twof
       throw messages;
     }
     const res = await trpc.auth.signUp.mutate(validInput.data);
-    console.log('logged in :', res.user);
+    console.log('logged in :', res.user.name);
     authStoreMethods.login(res.token, res.user);
     await goto('/profile');
   } catch (e) {
@@ -46,7 +46,7 @@ export async function login(email: string, password: string) {
 
     // Normal login
     // Should go to main page.
-    console.log('logged in :', res.user);
+    console.log('logged in :', res.user.name);
     authStoreMethods.login(res.token, res.user);
     await goto('/profile');
     return { success: true };

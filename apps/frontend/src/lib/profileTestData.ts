@@ -1,4 +1,4 @@
-export interface User {
+interface User {
   id: number;
   alias: string;
   name?: string;
@@ -6,27 +6,27 @@ export interface User {
   avatarPath?: string;
 }
 
-export interface Match {
+interface Match {
   id: number;
   tournamentId?: number;
   victor?: number;
   date: Date;
 }
 
-export interface MatchParticipation {
+interface MatchParticipation {
   id: number;
   matchId: number;
   playerId: number;
   placement: number;
 }
 
-export interface Friendship {
+interface Friendship {
   id: number;
   userId: number;
   friendId: number;
 }
 
-export interface MatchHistoryEntry {
+interface MatchHistoryEntry {
   id: number;
   date: Date;
   placement: number;
@@ -34,21 +34,21 @@ export interface MatchHistoryEntry {
   isWin: boolean;
 }
 
-export interface Lobby {
+interface Lobby {
   id: number;
   creator: number;
   players: number[];
   mode: number;
 }
 
-export enum TournamentStatus {
+enum TournamentStatus {
   WAITING = 'waiting',
   READY = 'ready',
   ONGOING = 'ongoing',
   COMPLETED = 'completed'
 }
 
-export interface Tournament {
+interface Tournament {
   id: number;
   creator: number;
   name: string;
@@ -59,7 +59,7 @@ export interface Tournament {
   date: Date;
 }
 
-export interface TournamentHistoryEntry {
+interface TournamentHistoryEntry {
   id: number;
   date: Date;
   tournamentName: string;

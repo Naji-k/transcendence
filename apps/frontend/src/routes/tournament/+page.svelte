@@ -74,8 +74,8 @@
     }
   }
 
-  async function goToLobby(tournamentName: string) {
-    goto(`/tournament_brackets?tournamentName=${tournamentName}`);
+  async function goToLobby(id: Number) {
+    goto(`/tournament_brackets?id=${id}`);
   }
   async function startTournament(tournament: Tournament) {
     if (
@@ -291,7 +291,7 @@
                       {/if}
                       {#if t.status === 'ongoing'}
                         <button
-                          on:click={() => goToLobby(t.name)}
+                          on:click={() => goToLobby(t.id)}
                           class="inline-flex items-center px-4 py-2 text-[10px] font-bold rounded-xl text-black bg-cyan-500 hover:bg-cyan-600 active:scale-95 transition-all shadow-lg"
                         >
                           LOBBY

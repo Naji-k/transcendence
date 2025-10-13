@@ -4,19 +4,19 @@
   import { goto } from '$app/navigation';
   import { trpc } from '$lib/trpc';
   import { currentUser } from '$lib/auth/store';
-import type {
+  import type {
     TournamentBrackets,
     TournamentMatches,
     TournamentRound,
   } from '@repo/trpc/src/types';
 
+  $: tournamentId = Number($page.url.searchParams.get('id')) || 0;
   let bracket: TournamentBrackets | null = null;
   let myActiveMatch: TournamentMatches | null = null;
   let loading = true;
   let error: string | null = null;
   let subs: { unsubscribe(): void } | null = null;
 
-  $: tournamentId = 15;
   $: console.log('🏆 Tournament ID:', tournamentId);
 
   function findMyActiveMatch(
@@ -66,7 +66,6 @@ import type {
         ? findMyActiveMatch(bracket.rounds, $currentUser.id)
         : null;
     loading = false;
-
   }
 
   function getCurrentRoundName(): string {
@@ -75,13 +74,9 @@ import type {
     return currentRound?.name || '';
   }
 
-
-
-
   onMount(async () => {
     console.log(`🔌 Subscribing to tournament ${tournamentId}`);
     bracket = trpc.tournament.getBracket.query({ id: tournamentId });
-
 
     subs = trpc.tournament.subscribeBracket.subscribe(
       { id: tournamentId },

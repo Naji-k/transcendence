@@ -348,9 +348,6 @@ export class TournamentService extends EventEmitter {
     tournamentId: number
   ): Promise<TournamentBrackets> {
     let bracket = this.bracketState.get(tournamentId);
-    if (bracket) {
-      return bracket;
-    }
     const tournament = await tournamentById(tournamentId);
     const matches = await getTournamentMatches(tournament.id);
     if (tournament === null) {
@@ -472,7 +469,8 @@ export class TournamentService extends EventEmitter {
     try {
       await this.updateBracketState(tournamentId, matchId, winnerId);
       await this.checkAndProgressTournament(tournamentId);
-      if (this.isAllRoundsCompleted(tournamentId, winnerId)) return;
+      this.isAllRoundsCompleted(tournamentId, winnerId);
+      await this.getTournamentBracket(tournamentId);
 
       await this.emitBracketUpdate(tournamentId);
     } catch (error) {
@@ -483,8 +481,11 @@ export class TournamentService extends EventEmitter {
   isAllRoundsCompleted(tournamentId: number, winnerId: number): boolean {
     const bracket = this.bracketState.get(tournamentId);
     if (!bracket) return false;
-    if (bracket.rounds.every((r) => r.status === 'completed')) {
+    const finalRound = bracket.rounds[bracket.rounds.length - 1];
+
+    if (finalRound && finalRound.status === 'completed') {
       this.endTournament(bracket.tournament.name, winnerId);
+      console.log('Tournament completed:', bracket.tournament.name);
       return true;
     }
     return false;
@@ -502,23 +503,32 @@ export class TournamentService extends EventEmitter {
       return;
     }
 
-    const currentRound = bracket.rounds.find((r) => r.status === 'in_progress');
-    if (!currentRound) {
-      return;
+    for (let i = 0; i < bracket.rounds.length - 1; i++) {
+      const currentRound = bracket.rounds[i];
+      const nextRound = bracket.rounds[i + 1];
+      if (
+        currentRound.status === 'completed' &&
+        nextRound.status === 'pending'
+      ) {
+        console.log('Current round completed, progressing to next round');
+        const winners = currentRound.matches
+          .filter((m) => m.victor !== null)
+          .map((m) => m.victor!.id);
+        console.log('Winners advancing to next round:', winners);
+        if (winners.length === 1) {
+          console.log(
+            'This is the final match, tournament should be completed'
+          );
+          // Final match completed, tournament should be completed
+          await this.endTournament(bracket.tournament.name, winners[0]);
+        } else if (winners.length > 1) {
+          //create next round
+          console.log('Creating next round of matches');
+          await this.createNextRound(tournamentId, winners);
+        }
+      }
     }
-
-    const winners = currentRound.matches
-      .filter((m) => m.victor !== null)
-      .map((m) => m.victor!.id);
-
-    if (winners.length === 1) {
-      console.log('This is the final match, tournament should be completed');
-      // Final match completed, tournament should be completed
-      await this.endTournament(bracket.tournament.name, winners[0]);
-    } else if (winners.length > 1) {
-      //create next round
-      await this.createNextRound(tournamentId, winners);
-    }
+    return;
   }
 
   /**

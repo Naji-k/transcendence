@@ -133,7 +133,6 @@ export class TournamentService extends EventEmitter {
     const stateName = `bracket:${tournamentId}`;
     this.on(stateName, callback);
     return () => {
-      console.log('Unsubscribing .', JSON.stringify(callback));
       this.off(stateName, callback);
     };
   }

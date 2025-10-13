@@ -4,98 +4,35 @@
   import { goto } from '$app/navigation';
   import { trpc } from '$lib/trpc';
   import { currentUser } from '$lib/auth/store';
-  import type {
-    TournamentMatches,
+import type {
     TournamentBrackets,
-    TournamentPlayer,
+    TournamentMatches,
+    TournamentRound,
   } from '@repo/trpc/src/types';
 
-  let error: string | null = null;
-  let bracket: TournamentBrackets;
-  let myActiveMatch: TournamentMatches = null;
-  let rounds: any[] = [];
+  let bracket: TournamentBrackets | null = null;
+  let myActiveMatch: TournamentMatches | null = null;
   let loading = true;
-  let polling = true;
+  let error: string | null = null;
+  let subs: { unsubscribe(): void } | null = null;
 
-  // Get tournamentName from URL params
-  $: tournamentName = String(
-    $page.url.searchParams.get('tournamentName') ?? ''
-  );
-
-  async function fetchBracket(name: string) {
-    try {
-      loading = true;
-      error = null;
-      bracket = await trpc.tournament.getBracket.query({ name });
-      if (!bracket) {
-        error = 'Tournament not found.';
-        return;
-      }
-      rounds = calculateRounds(bracket.tournament.playerLimit, bracket.matches);
-      myActiveMatch = findMyActiveMatch(bracket.matches, $currentUser.id || 0);
-    } catch (err) {
-      console.error(`Error fetching bracket: ${err.message}`);
-      error = `Failed to load bracket: ${err.message}`;
-    } finally {
-      loading = false;
-    }
-  }
-
-  function calculateRounds(playerCount: number, matches: TournamentMatches[]) {
-    const totalRounds = Math.log2(playerCount);
-    const rounds = [];
-    let matchIndex = 0;
-
-    for (let round = 1; round <= totalRounds; round++) {
-      const matchesInRound = playerCount / Math.pow(2, round);
-      const roundMatches: TournamentMatches[] = [];
-
-      for (let i = 0; i < matchesInRound; i++) {
-        if (matches[matchIndex]) {
-          roundMatches.push(matches[matchIndex]);
-          matchIndex++;
-        } else {
-          // Future match - placeholder
-          roundMatches.push({
-            id: -1,
-            players: [
-              { id: 0, userAlias: 'TBD', placement: 0 },
-              { id: 0, userAlias: 'TBD', placement: 0 },
-            ],
-            victor: null,
-            status: 'waiting',
-          });
-        }
-      }
-
-      rounds.push({
-        round,
-        name: getRoundName(round, totalRounds),
-        matches: roundMatches,
-      });
-    }
-
-    return rounds;
-  }
-
-  function getRoundName(round: number, totalRounds: number): string {
-    if (round === totalRounds) return 'FINALS';
-    if (round === totalRounds - 1) return 'SEMI-FINALS';
-    if (round === totalRounds - 2) return 'QUARTER-FINALS';
-    return `ROUND ${round}`;
-  }
+  $: tournamentId = 15;
+  $: console.log('🏆 Tournament ID:', tournamentId);
 
   function findMyActiveMatch(
-    matches: TournamentMatches[],
+    rounds: TournamentRound[],
     userId: number
   ): TournamentMatches | null {
-    return (
-      matches.find(
-        (match: TournamentMatches) =>
-          match.players.some((p) => p.id === userId) &&
-          (match.status === 'waiting' || match.status === 'ready')
-      ) || null
-    );
+    for (const round of rounds) {
+      const myMatch = round.matches.find(
+        (m) =>
+          m.id !== null &&
+          m.players.some((p) => p.id === userId) &&
+          m.victor === null
+      );
+      if (myMatch) return myMatch;
+    }
+    return null;
   }
 
   function isMyMatch(match: TournamentMatches): boolean {
@@ -103,11 +40,10 @@
     return myActiveMatch.id === match.id;
   }
 
-  function getOpponent(match: TournamentMatches): TournamentPlayer | null {
+  function getOpponent(match: TournamentMatches) {
     if (!$currentUser?.id) return null;
     return match.players.find((p) => p.id !== $currentUser.id) || null;
   }
-
   async function startGame(gameId: number) {
     try {
       error = null;
@@ -119,26 +55,56 @@
       error = `Failed to start game: ${err.message}`;
     }
   }
-  async function submitTournamentWinner(victor: TournamentPlayer) {
-    // Placeholder for any side effects when a tournament winner is determined
-    await trpc.tournament.endTournament.mutate({ name: bracket.tournament.name, playerId: victor.id });
-    console.log(`Tournament Winner: ${victor.userAlias}`);
-    
+
+  function handleBracketUpdate(updatedBracket: TournamentBrackets) {
+    console.log('📥 Bracket update received ', bracket);
+
+    // Update state
+    bracket = updatedBracket;
+    myActiveMatch =
+      bracket && $currentUser
+        ? findMyActiveMatch(bracket.rounds, $currentUser.id)
+        : null;
+    loading = false;
+
   }
 
-  onMount(async () => {
-    if (tournamentName) {
-      await fetchBracket(tournamentName);
+  function getCurrentRoundName(): string {
+    if (!bracket) return '';
+    const currentRound = bracket.rounds.find((r) => r.status === 'in_progress');
+    return currentRound?.name || '';
+  }
 
-      while (polling && bracket && bracket.tournament.status === 'waiting') {
-        await new Promise((res) => setTimeout(res, 3000));
-        await fetchBracket(tournamentName);
+
+
+
+  onMount(async () => {
+    console.log(`🔌 Subscribing to tournament ${tournamentId}`);
+    bracket = trpc.tournament.getBracket.query({ id: tournamentId });
+
+
+    subs = trpc.tournament.subscribeBracket.subscribe(
+      { id: tournamentId },
+      {
+        onData: (updatedBracket) => {
+          handleBracketUpdate(updatedBracket as TournamentBrackets);
+          console.log('✅ Subscription data received', updatedBracket);
+        },
+        onError: (err) => {
+          console.error('❌ Subscription error:', err);
+          error = err.message;
+          loading = false;
+        },
       }
-    }
+    );
   });
 
   onDestroy(() => {
-    polling = false;
+    if (subs) {
+      console.log('🔌 Unsubscribing from tournament');
+      subs.unsubscribe();
+      subs = null;
+    }
   });
 </script>
 
@@ -147,35 +113,19 @@
 >
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     {#if error}
-      <!-- Error State -->
       <div
         class="bg-gradient-to-r from-red-900 to-red-700 border-2 border-red-500 rounded-2xl p-4 mb-6 shadow-lg"
       >
-        <div class="flex items-start">
-          <div class="flex-shrink-0">
-            <svg
-              class="h-6 w-6 text-red-300"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clip-rule="evenodd"
-              />
-            </svg>
-          </div>
-        </div>
+        <p class="text-xs text-red-200">{error}</p>
       </div>
     {/if}
 
     {#if loading}
-      <!-- Loading State -->
       <div class="text-center py-20">
         <div
           class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-cyan-400 border-t-transparent"
         ></div>
-        <p class="mt-4 text-xs text-cyan-300">LOADING TOURNAMENT...</p>
+        <p class="mt-4 text-xs text-cyan-300">CONNECTING...</p>
       </div>
     {:else if bracket}
       <!-- Tournament Header -->
@@ -235,7 +185,7 @@
         </div>
       {/if}
 
-      <!-- Tournament Bracket -->
+      <!-- Tournament Bracket - Now using rounds from backend! -->
       <div
         class="bg-gradient-to-br from-purple-700 to-indigo-900 rounded-3xl shadow-2xl overflow-hidden mb-8"
       >
@@ -246,15 +196,31 @@
         </div>
 
         <div class="p-6 space-y-8">
-          {#each rounds as round}
+          <!-- ✨ Simply render rounds from backend - no calculation! -->
+          {#each bracket.rounds as round}
             <div class="space-y-4">
-              <!-- Round Header -->
-              <div class="bg-black/30 rounded-xl p-3 border border-cyan-400/30">
-                <h3
-                  class="text-center text-sm text-cyan-400 font-bold tracking-wider"
-                >
+              <!-- Round Header with Status -->
+              <div
+                class="bg-black/30 rounded-xl p-3 border border-cyan-400/30 flex justify-between items-center"
+              >
+                <h3 class="text-sm text-cyan-400 font-bold tracking-wider">
                   {round.name}
                 </h3>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] text-cyan-300">
+                    {round.matchesCompleted}/{round.totalMatches}
+                  </span>
+                  <span
+                    class="px-2 py-1 rounded text-[10px] font-bold
+                      {round.status === 'completed'
+                      ? 'bg-green-500 text-black'
+                      : round.status === 'in_progress'
+                        ? 'bg-cyan-500 text-black'
+                        : 'bg-gray-600 text-white'}"
+                  >
+                    {round.status.toUpperCase()}
+                  </span>
+                </div>
               </div>
 
               <!-- Round Matches -->
@@ -264,7 +230,7 @@
                     class="bg-black/40 rounded-xl p-4 border-2 transition-all
                       {isMyMatch(match)
                       ? 'border-green-400 bg-green-900/20'
-                      : match.status === 'pending'
+                      : match.status === 'waiting'
                         ? 'border-cyan-400/20 opacity-60'
                         : 'border-cyan-400/40'}"
                   >
@@ -323,7 +289,7 @@
                       </div>
                     </div>
 
-                    <!-- Match Status -->
+                    <!-- Match Status/Actions -->
                     <div class="mt-3 flex items-center justify-between">
                       <span
                         class="inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold uppercase
@@ -332,7 +298,7 @@
                           : match.status === 'waiting' ||
                               match.status === 'ready'
                             ? 'bg-cyan-500 text-black'
-                            : 'bg-gray-500 text-white'}"
+                            : 'bg-yellow-500 text-black'}"
                       >
                         {match.status}
                       </span>
@@ -343,7 +309,6 @@
                           class="mt-2 text-center text-[10px] text-yellow-400"
                         >
                           CHAMPION: {match.victor.userAlias}
-                          {submitTournamentWinner(match.victor)}
                         </div>
                       {/if}
 
@@ -357,17 +322,6 @@
             </div>
           {/each}
         </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="text-center">
-        <button
-          on:click={() => fetchBracket(tournamentName)}
-          disabled={loading}
-          class="px-8 py-4 bg-purple-500 hover:bg-purple-600 active:scale-95 shadow-lg transition-transform rounded-xl font-bold text-white disabled:opacity-50 text-sm"
-        >
-          {loading ? 'REFRESHING...' : '🔄 REFRESH BRACKET'}
-        </button>
       </div>
     {/if}
   </div>

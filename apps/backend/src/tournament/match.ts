@@ -1,8 +1,9 @@
-import { count, eq, isNull, and } from 'drizzle-orm';
+import { count, eq, isNull } from 'drizzle-orm';
 import { db } from '../db/src/dbClientInit';
 import { matchTable, singleMatchPlayersTable } from '@repo/db/dbSchema';
 import { TRPCError } from '@trpc/server';
 import { AvailableMatch } from '@repo/db/dbTypes';
+import { TournamentService } from './tournament';
 
 export class MatchService {
   async createMultiplayerGame(playerId: number, maxPlayers: number) {
@@ -31,7 +32,7 @@ export class MatchService {
    * @returns The match with player count
    * @throws TRPCError if match not found
    */
-  async findMatchById(matchId: number): Promise<AvailableMatch> {
+  static async findMatchById(matchId: number): Promise<AvailableMatch> {
     const [match] = await db
       .select({
         id: matchTable.id,
@@ -58,7 +59,7 @@ export class MatchService {
   }
 
   async joinMultiplayerGame(matchId: number, playerId: number) {
-    const match = await this.findMatchById(matchId);
+    const match = await MatchService.findMatchById(matchId);
 
     if (match.playerCount >= match.maxPlayers) {
       throw new TRPCError({
@@ -76,17 +77,6 @@ export class MatchService {
       match.status = 'ready';
     }
     return match;
-  }
-
-  static async updateMatchStatus(
-    matchId: number,
-    status: 'waiting' | 'playing' | 'finished',
-    winnerId?: number
-  ) {
-    await db
-      .update(matchTable)
-      .set({ status: status, victor: winnerId ?? null })
-      .where(eq(matchTable.id, matchId));
   }
 
   /**
@@ -133,4 +123,37 @@ export class MatchService {
       });
     }
   }
+}
+
+let tournamentService: TournamentService | null = null;
+
+export function setTournamentService(service: TournamentService) {
+  tournamentService = service;
+}
+
+export async function updateMatchStatus(
+  matchId: number,
+  status: 'waiting' | 'playing' | 'finished',
+  winnerId?: number
+) {
+  await db
+    .update(matchTable)
+    .set({ status: status, victor: winnerId ?? null })
+    .where(eq(matchTable.id, matchId));
+
+  const match = await MatchService.findMatchById(matchId);
+
+  if (
+    status === 'finished' &&
+    match.tournamentId &&
+    winnerId &&
+    tournamentService
+  ) {
+    await tournamentService.handleTournamentMatchCompletion(
+      match.tournamentId,
+      matchId,
+      winnerId
+    );
+  }
+  return match;
 }

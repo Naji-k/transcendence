@@ -3,7 +3,6 @@
 import { GameState, PlayerAction } from './types/gameState';
 import { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry, Tournament } from '@repo/db/dbTypes';
 
-
 export interface Services {
   jwtUtils: {
     sign: (id: number, email: string) => string;
@@ -44,12 +43,21 @@ export interface Services {
       userId: number,
       playerLimit: number
     ) => Promise<any>;
-    joinTournament: (tournamentName: string, playerId: number) => Promise<Tournament | null>;
+    joinTournament: (
+      tournamentName: string,
+      playerId: number
+    ) => Promise<Tournament | null>;
     listAllTournaments: () => Promise<Tournament[]>;
     getTournamentPlayers: (tournamentName: string) => Promise<any>;
     startTournament: (tournamentName: string) => Promise<any>;
-    getTournamentBracket: (tournamentName: string) => Promise<TournamentBrackets>;
-    endTournament: (tournamentName: string, playerId: number) => Promise<any>;
+    getTournamentBracket: (
+      tournamentId: number
+    ) => Promise<TournamentBrackets>;
+    // endTournament: (tournamentName: string, playerId: number) => Promise<any>;
+    subscribeToBracketUpdates: (
+      tournamentName: number,
+      callback: (bracket: TournamentBrackets) => void
+    ) => () => void;
   };
   match: {
     createMultiplayerGame: (
@@ -98,11 +106,21 @@ export interface TournamentPlayer {
 
 export interface TournamentMatches {
   id: number;
-  players: TournamentPlayer [];
-  victor: TournamentPlayer | null ;
+  players: TournamentPlayer[];
+  victor: TournamentPlayer | null;
   status: 'waiting' | 'ready' | 'playing' | 'finished';
+}
+
+export interface TournamentRound {
+  round: number;
+  name: string;
+  matches: TournamentMatches[];
+  matchesCompleted: number;
+  totalMatches: number;
+  status: 'pending' | 'in_progress' | 'completed';
 }
 export interface TournamentBrackets {
   tournament: Tournament;
-  matches: TournamentMatches [];
-}   
+  matches: TournamentMatches[];
+  rounds: TournamentRound[];
+}

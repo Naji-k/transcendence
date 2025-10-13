@@ -5,7 +5,7 @@ import { Engine, Scene, Vector3, HavokPlugin, NullEngine } from '@babylonjs/core
 import { EventEmitter } from 'stream';
 import { GameStateManager } from '../game-state-manager';
 import { performance } from 'perf_hooks';
-import { MatchService } from '../../tournament/match';
+import { updateMatchStatus } from '../../tournament/match';
 import path  from 'path';
 import fs from 'fs/promises';
 
@@ -123,7 +123,7 @@ export class ServerGame extends EventEmitter
 		this.gameState.status = 'finished';
 		const winner = this.gameState.players.find(p => p.isAlive);
 		if (winner)
-			MatchService.updateMatchStatus(this.gameState.matchId, 'finished', winner.id);
+			updateMatchStatus(this.gameState.matchId, 'finished', winner.id);
 		this.gameState.lastUpdate = performance.now();
 		this.updateGameState();
 		this.gameIsRunning = false;
@@ -174,7 +174,7 @@ export class ServerGame extends EventEmitter
 				{
 					console.log('All players ready. Starting game...');
 					this.gameState.status = 'in_progress'
-					MatchService.updateMatchStatus(this.gameState.matchId, 'playing');
+					updateMatchStatus(this.gameState.matchId, 'playing');
 					// Give clients time to show countdown
 					setTimeout(() =>
 					{

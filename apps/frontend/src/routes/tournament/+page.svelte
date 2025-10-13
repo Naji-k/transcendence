@@ -74,19 +74,22 @@
     }
   }
 
-  async function startTournament(tournamentName: string) {
+  async function goToLobby(tournamentName: string) {
+    goto(`/tournament_brackets?tournamentName=${tournamentName}`);
+  }
+  async function startTournament(tournament: Tournament) {
     if (
-      tournaments.find((t) => t.name === tournamentName)?.creator !==
+      tournaments.find((t) => t.name === tournament.name)?.creator !==
       $currentUser.id
     ) {
       setTimeout(() => {
-        goto(`/tournament_brackets?tournamentName=${tournamentName}`);
+        goto(`/tournament_brackets?tournamentName=${tournament.id}`);
       }, 1000);
       return;
     }
     try {
-      await trpc.tournament.start.mutate({ name: tournamentName });
-      goto(`/tournament_brackets?tournamentName=${tournamentName}`);
+      await trpc.tournament.start.mutate({ name: tournament.name });
+      goto(`/tournament_brackets?tournamentName=${tournament.name}`);
     } catch (err) {
       error = err.message || 'Failed to start tournament.';
       console.error('Start tournament error: ', err);
@@ -280,18 +283,19 @@
                       {/if}
                       {#if t.status === 'ready'}
                         <button
-                          on:click={() => startTournament(t.name)}
+                          on:click={() => startTournament(t)}
                           class="inline-flex items-center px-4 py-2 text-[10px] font-bold rounded-xl text-black bg-cyan-500 hover:bg-cyan-600 active:scale-95 transition-all shadow-lg"
                         >
                           START
                         </button>
                       {/if}
                       {#if t.status === 'ongoing'}
-                        <span
-                          class="inline-flex items-center px-4 py-2 text-[10px] font-bold text-cyan-400/50"
+                        <button
+                          on:click={() => goToLobby(t.name)}
+                          class="inline-flex items-center px-4 py-2 text-[10px] font-bold rounded-xl text-black bg-cyan-500 hover:bg-cyan-600 active:scale-95 transition-all shadow-lg"
                         >
-                          IN PROGRESS
-                        </span>
+                          LOBBY
+                        </button>
                       {/if}
                       {#if t.status === 'completed'}
                         <span

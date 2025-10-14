@@ -67,8 +67,6 @@
       const res = await trpc.tournament.join.mutate({ name: tournamentName });
       await fetchTournaments();
       console.log(`Joined tournament: ${JSON.stringify(res, null, 2)}`);
-      // goto tournament_brackets page with tournamentName as param
-      // goto(`/tournament_brackets?tournamentName=${(tournamentName)}`);
     } catch (err) {
       error = 'Failed to join tournament.';
     }

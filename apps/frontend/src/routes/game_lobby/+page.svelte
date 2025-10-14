@@ -8,12 +8,15 @@
   let loading = false;
   let error = null;
   let limit = 2;
+  let interval: number | null = null;
 
 
+
+  $:waitingGames = games.filter((game) => game.status === 'waiting');
   // TODO: this must be called every few seconds or so to keep the game list updated
   async function fetchGames() {
     try {
-      loading = true;
+      // loading = true;
       error = null;
       const result = await trpc.match.list.query();
       console.log(`Fetched games: ${JSON.stringify(result)}`);
@@ -66,7 +69,22 @@
 
   onMount(() => {
     fetchGames();
+    return () => {
+      if (interval !== null) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
   });
+
+  $: {
+    if (waitingGames.length > 0 && interval === null) {
+      interval = setInterval(fetchGames, 2000);
+    } else if (waitingGames.length === 0 && interval !== null) {
+      clearInterval(interval);
+      interval = null;
+    }
+  }
 </script>
 
 <div

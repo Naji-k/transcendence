@@ -52,4 +52,20 @@ export const userRouter = createRouter({
       })
     }
   }),
+
+  getUserFriends: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const friends = await ctx.services.dbServices.getUserFriends(ctx.userToken.id);
+      return {
+        status: 200,
+        message: 'User friends list fetched successfully',
+        data: friends,
+      }
+    } catch (error) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Error in fetching user friends list'
+      })
+    }
+  })
 });

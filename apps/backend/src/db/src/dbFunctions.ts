@@ -1,4 +1,5 @@
 import {
+  friendshipsTable,
   matchTable,
   singleMatchPlayersTable,
   tournamentPlayersTable,
@@ -360,5 +361,31 @@ export async function disableUser2FA(userId: number) {
   } catch (error) {
     console.error('disableUser2FA error:', error);
     throw error;
+  }}
+
+export async function getUserFriends(userId: number): Promise<{alias: string}[]> {
+  if (!userId) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'getUserFriends error: user ID must be provided',
+      cause: 'user ID is not valid',
+    });
+  }
+  try {
+    const friends = await db
+    .select({
+      alias: usersTable.alias,
+    })
+    .from(friendshipsTable)
+    .innerJoin(usersTable, eq(friendshipsTable.friendId, usersTable.id))
+    .where(eq(friendshipsTable.userId, userId));
+
+    return friends;
+  } catch (error) {
+throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'getUserFriends error',
+      cause: error,
+    });
   }
 }

@@ -20,7 +20,7 @@
 	let userStat = $state({ wins: 0, losses: 0 });
 	let userMatchHistory = $state([]);
 	let userTournamentHistory = $state([]);
-	let userFriends: User[] = $state([]);
+	let userFriends = $state([]);
 	let loading = $state(true);
 
 	async function loadUserData() {
@@ -33,9 +33,10 @@
 			// 	return;
 			// }
 
-			const [matchHistoryRes, tournamentHistoryRes] = await Promise.all([
+			const [matchHistoryRes, tournamentHistoryRes, friendsRes] = await Promise.all([
 				trpc.user.getUserMatchHistory.query(),
-				trpc.user.getUserTournamentHistory.query()
+				trpc.user.getUserTournamentHistory.query(),
+				trpc.user.getUserFriends.query()
 			]);
 
 			if (matchHistoryRes.status === 200) {
@@ -44,6 +45,10 @@
 			if (tournamentHistoryRes.status === 200) {
 				userTournamentHistory = tournamentHistoryRes.data;
 			}
+			if (friendsRes.status === 200) {
+				userFriends = friendsRes.data;
+			}
+			console.log(userFriends);
 		} catch (error) {
 			console.error('Failed to load user data: ', error);
 		} finally {
@@ -64,7 +69,7 @@
 	
 	
 	$effect(() => {
-		if ($authLoaded && $isAuthenticated && $currentUser?.name) {
+		if ($authLoaded && $isAuthenticated && $currentUser.name) {
 			loadUserData();
 		}
 	});
@@ -125,19 +130,15 @@
 </script>
 
 <div id="page_top" class="flex sm:p-8 md:p-12 lg:p-24 2xl:flex-row space-y-4 md:space-y-0 xl:space-x-0 2xl:space-x-16 justify-center items-center min-h-screen bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
-	{#if !$isAuthenticated}
-		<div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
-			<p class="text-white font-['Press_Start_2P']">Please sign in to view your profile</p>
-		</div>
-	{:else if loading}
-		<div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
-			<div class="text-center">
-				<div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-cyan-400 border-t-transparent mb-4"></div>
-				<p class="text-white font-['Press_Start_2P']">Loading profile...</p>
+	<main class="max-w-5xl min-w-3xs flex-1 py-2 sm:py-4 md:py-6 lg:py-10 px-4 font-['Press_Start_2P'] bg-gradient-to-br from-purple-700 to-indigo-900 rounded-3xl shadow-2xl relative">
+		{#if loading}
+			<div class="flex items-center justify-center min-h-screen">
+				<div class="text-center">
+					<div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-cyan-400 border-t-transparent mb-4"></div>
+					<p class="text-white font-['Press_Start_2P']">Loading profile...</p>
+				</div>
 			</div>
-    	</div>
-	{:else}
-		<main class="max-w-5xl min-w-3xs flex-1 py-2 sm:py-4 md:py-6 lg:py-10 px-4 font-['Press_Start_2P'] bg-gradient-to-br from-purple-700 to-indigo-900 rounded-3xl shadow-2xl relative">
+		{:else}
 			<!-- <select bind:value={currentUserIndex} class="absolute top-4 left-4 bg-gray-700 text-white px-3 py-2 rounded">
 				{#each testUsers as testUser, index}
 					<option value={index}>{testUser.alias}</option>
@@ -233,7 +234,7 @@
 					{#each userFriends as friend}
 					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
 							<div class="ml-2">
-								<p class="text-gray-300 text-xs font-semibold truncate">{friend.name}</p>
+								<p class="text-gray-300 text-xs font-semibold truncate">{friend.alias}</p>
 							</div>
 						</article>
 					{/each}
@@ -247,6 +248,6 @@
 					back to top
 				</button>
 			</div>
+			{/if}
 		</main>
-	{/if}
 </div>

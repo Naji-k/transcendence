@@ -17,7 +17,7 @@ export const userRouter = createRouter({
     return {
       status: 200,
       message: 'User fetched successfully',
-      data: { id: user.id, email: user.email, name: user.name, twofa_enabled: user.twofa_enabled},
+      data: { id: user.id, email: user.email, name: user.alias, twofa_enabled: user.twofa_enabled},
     };
   }),
 

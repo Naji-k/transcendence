@@ -21,9 +21,8 @@
 	  
 	  console.log(data)
       if (data.token) {
-
         // setAuthToken(data.token);
-		authStoreMethods.login(data.token, null);
+		authStoreMethods.login(data.token, data);
 		goto('/profile');
       }
     } catch (err) {

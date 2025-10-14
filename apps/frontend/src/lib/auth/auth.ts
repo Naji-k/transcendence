@@ -3,7 +3,7 @@ import { trpc } from '../trpc';
 import { authStoreMethods } from '$lib/auth/store';
 import { goto } from '$app/navigation';
 
-export async function signUp(name: string, email: string, password: string, twofa_enabled: boolean = false) {
+export async function signUp(name: string, email: string, password: string, twofa_enabled: number = 0) {
   try {
     const validInput = signUpInput.safeParse({
       name,

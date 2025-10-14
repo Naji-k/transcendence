@@ -3,10 +3,11 @@
   let email = '';
   let password = '';
   import { login, verify2FAToLogin } from '$lib/auth/auth';
-  import { isAuthenticated, currentUser } from '$lib/auth/store';
+  import { isAuthenticated, currentUser, authStoreMethods } from '$lib/auth/store';
   import { onMount } from 'svelte';
 
   onMount(() => {
+	console.log('isAuthenticated-signin: ', $isAuthenticated);
 	if ($isAuthenticated) {
 	  console.log('Welcome back!', $currentUser.name);
 	  goto('/profile');

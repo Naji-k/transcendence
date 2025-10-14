@@ -10,11 +10,12 @@
 	 * 
 	*/
 	import { goto } from "$app/navigation";
-	import { authLoaded, isAuthenticated, currentUser, authStoreMethods } from "$lib/auth/store";
+	import { authLoaded, isAuthenticated, currentUser, authStoreMethods, initAuthStore } from "$lib/auth/store";
 	import { trpc } from "$lib/trpc";
 	import { onMount } from "svelte";
 	import type { User } from '@repo/trpc/src/types';
 	import type { MatchHistoryEntry, TournamentHistoryEntry } from "@repo/db/dbTypes";
+	import { logout } from "$lib/auth/auth"
 		
 	let userStat = $state({ wins: 0, losses: 0 });
 	let matchHistoryTotal = $state(0);
@@ -46,7 +47,6 @@
 			matchHistoryTotal = userMatchHistory.length;
 			userStat.wins = userMatchHistory.filter(m => m.isWin === true).length;
 			userStat.losses = matchHistoryTotal - userStat.wins;
-			console.log(matchHistoryTotal);
 		} catch (error) {
 			console.error('Failed to load user data: ', error);
 		} finally {
@@ -61,13 +61,13 @@
 	});
 	
 	$effect(() => {
-		if ($authLoaded && $isAuthenticated && $currentUser.name) {
+		if ($authLoaded && $isAuthenticated && $currentUser?.name) {
 			loadUserData();
 		}
 	});
 
 	let user = $derived({
-		...$currentUser,
+		...($currentUser || {}),
 		wins: userStat.wins,
 		losses: userStat.losses ,
 		avatarPath: "avatar_default.jpeg"
@@ -106,11 +106,6 @@
 		return `Match #${match.id}`;
 	}
 
-	function userLogout() {
-		authStoreMethods.logout();
-		goto('/signin');
-	}
-
 </script>
 
 <div id="page_top" class="flex sm:p-8 md:p-12 lg:p-24 2xl:flex-row space-y-4 md:space-y-0 xl:space-x-0 2xl:space-x-16 justify-center items-center min-h-screen bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
@@ -123,7 +118,7 @@
 				</div>
 			</div>
 		{:else}
-			<button onclick={() => userLogout()} class="absolute top-4 left-4 bg-gray-700 text-white px-3 py-2 rounded">
+			<button onclick={() => logout()} class="absolute top-4 left-4 bg-gray-700 text-white px-3 py-2 rounded">
 				Logout
 			</button>
 			<!-- Section of info with alias and avatar on the left and wins/losses on the right of the page -->

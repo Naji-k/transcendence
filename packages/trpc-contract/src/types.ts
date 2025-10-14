@@ -85,5 +85,5 @@ export interface User {
   id: number;
   email: string;
   name: string;
-  twofa_enabled: boolean;
+  twofa_enabled: number;
 }

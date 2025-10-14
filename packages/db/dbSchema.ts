@@ -20,6 +20,8 @@ export const usersTable = sqliteTable('users_table', {
   avatarPath: text().default('avatar_default'),
   backgroundPath: text().default('background_default'),
   googleId: text(),
+  twofa_secret: text(),
+  twofa_enabled: int().default(0)
   // lastLoginTime: int({ mode: 'timestamp' }),
   // lastActivityTime: int({ mode: 'timestamp' }), // we can use this to display last seen status, I understand that online status will come from memory
 });

@@ -59,9 +59,9 @@ export async function signIn(email: string, password: string) {
     });
   }
   if (user.googleId) {
-    throw new TRPCError({ 
-      code: 'UNAUTHORIZED', 
-      message: 'Please log in with Google' 
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'Please log in with Google',
     });
   }
   const isPasswordValid = await verifyPassword(user.password, password);
@@ -71,12 +71,19 @@ export async function signIn(email: string, password: string) {
       message: 'Invalid password',
     });
   }
+  if (user.twofa_enabled) {
+    return {
+      twofaRequired: true,
+      userId: user.id
+    };
+  }
   const token = jwtUtils.sign(user.id, user.email);
   return {
     user: {
       id: user.id,
       email: user.email,
       name: user.alias,
+      twofa_enabled: user.twofa_enabled,
     },
     token,
   };

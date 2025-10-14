@@ -45,6 +45,7 @@ export async function login(email: string, password: string) {
     }
 
     // Normal login
+    // Should go to main page.
     console.log('logged in :', res.user);
     authStoreMethods.login(res.token, res.user);
     await goto('/profile');

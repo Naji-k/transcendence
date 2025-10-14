@@ -10,7 +10,7 @@
 	 * 
 	*/
 	import { goto } from "$app/navigation";
-	import { authLoaded, isAuthenticated, currentUser } from "$lib/auth/store";
+	import { authLoaded, isAuthenticated, currentUser, authStoreMethods } from "$lib/auth/store";
 	import { trpc } from "$lib/trpc";
 	import { onMount } from "svelte";
 	import type { User } from '@repo/trpc/src/types';
@@ -18,6 +18,7 @@
 	import { testUsers, testLobbies, testTournaments, getUserStats, getUserFriends, getUserMatchHistory, getCreator, getUserTournamentHistory } from "$lib/profileTestData";
 		
 	let userStat = $state({ wins: 0, losses: 0 });
+	let matchHistoryTotal = $state(0);
 	let userMatchHistory = $state([]);
 	let userTournamentHistory = $state([]);
 	let userFriends = $state([]);
@@ -48,7 +49,11 @@
 			if (friendsRes.status === 200) {
 				userFriends = friendsRes.data;
 			}
-			console.log(userFriends);
+
+			matchHistoryTotal = userMatchHistory.length;
+			userStat.wins = userMatchHistory.filter(m => m.isWin === true).length;
+			userStat.losses = matchHistoryTotal - userStat.wins;
+			console.log(matchHistoryTotal);
 		} catch (error) {
 			console.error('Failed to load user data: ', error);
 		} finally {
@@ -127,6 +132,11 @@
 		return `Match #${match.id}`;
 	}
 
+	function userLogout() {
+		authStoreMethods.logout();
+		goto('/signin');
+	}
+
 </script>
 
 <div id="page_top" class="flex sm:p-8 md:p-12 lg:p-24 2xl:flex-row space-y-4 md:space-y-0 xl:space-x-0 2xl:space-x-16 justify-center items-center min-h-screen bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
@@ -139,25 +149,23 @@
 				</div>
 			</div>
 		{:else}
-			<!-- <select bind:value={currentUserIndex} class="absolute top-4 left-4 bg-gray-700 text-white px-3 py-2 rounded">
-				{#each testUsers as testUser, index}
-					<option value={index}>{testUser.alias}</option>
-				{/each}
-			</select> -->
+			<button onclick={() => userLogout()} class="absolute top-4 left-4 bg-gray-700 text-white px-3 py-2 rounded">
+				Logout
+			</button>
 			<!-- Section of info with alias and avatar on the left and wins/losses on the right of the page -->
 			<header class="flex flex-col md:flex-row justify-between items-center text-gray-300">
 				<section class="flex items-center">
 					<img class="w-20 h-20 rounded-full mr-4" src={user.avatarPath} alt="{user.name} avatar"/>
 					<h2 class="sm:text-base md:text-xl lg:text-3xl truncate">{user.name}</h2>
 				</section>
-				<section>
+				<section class="text-center md:text-left">
 					<h2 class="sm:text-base md:text-xl lg:text-3xl pb-2 text-cyan-400">Stats</h2>
-					<dl class="sm:text-sm md:text-base lg:text-xl grid grid-cols-2 gap-x-4 gap-y-2">
+					<dl class="sm:text-sm md:text-md lg:text-xl grid grid-cols-2 gap-x-4 gap-y-2">
 						<dt class="text-green-400">Wins</dt>
 						<dd>{user.wins}</dd>
 						<dt class="text-red-400">Losses</dt>
 						<dd>{user.losses}</dd>
-						<dt class="text-cyan-400">Win rate</dt>
+						<dt class="text-cyan-400 whitespace-nowrap">Winrate</dt>
 						<dd>{user.wins && user.losses ? Math.round((user.wins / (user.wins + user.losses)) * 100) : 0}%</dd>
 					</dl>
 				</section>

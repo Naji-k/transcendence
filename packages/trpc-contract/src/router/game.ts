@@ -89,37 +89,11 @@ export const gameRouter = createRouter({
   sendPlayerAction: protectedProcedure
     .input(z.custom<PlayerAction>())
     .mutation(async ({ ctx, input }) => {
-      //here should check if the game is exist
 
       const action: PlayerAction = {
         ...input,
         playerId: ctx.userToken.id,
       };
-      // const playerExists = await ctx.services.dbServices.playerExistsInMatch(
-      // action,
-      //   action.id!
-      // );
-      // if (!playerExists) {
-      //   throw new TRPCError({
-      //     code: 'NOT_FOUND',
-      //     message: 'Player does not exist in this match',
-      //   });
-      // }
-      // const matchExists = await ctx.services.dbServices.matchExists(
-      //   input.matchId
-      // );
-      // if (!matchExists) {
-      //   throw new TRPCError({
-      //     code: 'NOT_FOUND',
-      //     message: 'Match does not exist',
-      //   });
-      // }
-      // const gameState = ctx.services.gameStateManager.getGameState(
-      //   input.matchId
-      // );
-      // if (!gameState) {
-      //   throw new TRPCError({ code: 'NOT_FOUND', message: 'Match not found' });
-      // }
       ctx.services.gameStateManager.handlePlayerAction(action);
       return { success: true };
     }),

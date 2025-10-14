@@ -158,31 +158,3 @@ let tournamentService: TournamentService | null = null;
 export function setTournamentService(service: TournamentService) {
   tournamentService = service;
 }
-
-// export async function updateMatchStatus(
-//   matchId: number,
-//   status: 'waiting' | 'playing' | 'finished',
-//   winnerId?: number
-// ) {
-//   await db
-//     .update(matchTable)
-//     .set({ status: status, victor: winnerId ?? null })
-//     .where(eq(matchTable.id, matchId))
-//     .execute();
-
-//   const match = await MatchService.findMatchById(matchId);
-
-//   if (
-//     status === 'finished' &&
-//     match.tournamentId &&
-//     winnerId &&
-//     tournamentService
-//   ) {
-//     await tournamentService.handleTournamentMatchCompletion(
-//       match.tournamentId,
-//       matchId,
-//       winnerId
-//     );
-//   }
-//   return match;
-// }

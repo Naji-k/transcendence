@@ -62,11 +62,15 @@ async function tournamentPlayers(tournamentId: number): Promise<User[]> {
       id: usersTable.id,
       email: usersTable.email,
       name: usersTable.alias,
+      twofa_enabled: usersTable.twofa_enabled,
     })
     .from(tournamentPlayersTable)
     .innerJoin(usersTable, eq(tournamentPlayersTable.playerId, usersTable.id))
     .where(eq(tournamentPlayersTable.tournamentId, tournamentId));
-  return result;
+  return result.map(user => ({
+    ...user,
+    twofa_enabled: !!user.twofa_enabled,
+  }));
 }
 
 async function addPlayerToTournament(tournamentId: number, playerId: number) {

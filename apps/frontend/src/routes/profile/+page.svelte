@@ -11,22 +11,15 @@
 	*/
 	import { goto } from "$app/navigation";
 	import { authLoaded, isAuthenticated, currentUser } from "$lib/auth/store";
-	import { trpc } from "$lib/trpc"
+	import { trpc } from "$lib/trpc";
 	import { onMount } from "svelte";
 	import type { User } from '@repo/trpc/src/types';
-	import type { MatchHistoryEntry, TournamentHistoryEntry } from "@repo/db/dbTypes"
+	import type { MatchHistoryEntry, TournamentHistoryEntry } from "@repo/db/dbTypes";
 	import { testUsers, testLobbies, testTournaments, getUserStats, getUserFriends, getUserMatchHistory, getCreator, getUserTournamentHistory } from "$lib/profileTestData";
-
-
-	onMount(() => {
-		if ($isAuthenticated == false) {
-			goto('/signin');
-		}
-	});
-
+		
 	let userStat = $state({ wins: 0, losses: 0 });
-	let userMatchHistory: MatchHistoryEntry[] = $state([]);
-	let userTournamentHistory: TournamentHistoryEntry[] = $state([]);
+	let userMatchHistory = $state([]);
+	let userTournamentHistory = $state([]);
 	let userFriends: User[] = $state([]);
 	let loading = $state(true);
 
@@ -34,6 +27,12 @@
 		try {
 			loading = true;
 			
+			// Check if the endpoints exist first
+			// if (!trpc.user?.getUserMatchHistory || !trpc.user?.getUserTournamentHistory) {
+			// 	console.warn('tRPC user endpoints not available yet');
+			// 	return;
+			// }
+
 			const [matchHistoryRes, tournamentHistoryRes] = await Promise.all([
 				trpc.user.getUserMatchHistory.query(),
 				trpc.user.getUserTournamentHistory.query()
@@ -51,9 +50,21 @@
 			loading = false;
 		}
 	}
-
+	
+	onMount(async () => {
+		if (!$authLoaded || !$isAuthenticated) {
+			goto('/signin');
+		}
+		
+		// if ($authLoaded && $isAuthenticated && $currentUser) {
+		//     await loadUserData();
+		// }
+	});
+	
+	
+	
 	$effect(() => {
-		if ($authLoaded && $isAuthenticated && $currentUser.name) {
+		if ($authLoaded && $isAuthenticated && $currentUser?.name) {
 			loadUserData();
 		}
 	});
@@ -126,7 +137,7 @@
 			</div>
     	</div>
 	{:else}
-		<main class="max-w-5xl flex-1 py-2 sm:py-4 md:py-6 lg:py-10 px-4 font-['Press_Start_2P'] bg-gradient-to-br from-purple-700 to-indigo-900 rounded-3xl shadow-2xl relative">
+		<main class="max-w-5xl min-w-3xs flex-1 py-2 sm:py-4 md:py-6 lg:py-10 px-4 font-['Press_Start_2P'] bg-gradient-to-br from-purple-700 to-indigo-900 rounded-3xl shadow-2xl relative">
 			<!-- <select bind:value={currentUserIndex} class="absolute top-4 left-4 bg-gray-700 text-white px-3 py-2 rounded">
 				{#each testUsers as testUser, index}
 					<option value={index}>{testUser.alias}</option>
@@ -136,7 +147,7 @@
 			<header class="flex flex-col md:flex-row justify-between items-center text-gray-300">
 				<section class="flex items-center">
 					<img class="w-20 h-20 rounded-full mr-4" src={user.avatarPath} alt="{user.name} avatar"/>
-					<h2 class="sm:text-base md:text-xl lg:text-3xl">{user.name}</h2>
+					<h2 class="sm:text-base md:text-xl lg:text-3xl truncate">{user.name}</h2>
 				</section>
 				<section>
 					<h2 class="sm:text-base md:text-xl lg:text-3xl pb-2 text-cyan-400">Stats</h2>
@@ -164,23 +175,23 @@
 
 			<!-- Match history section - scrollable -->
 			<section class="mt-8">
-				<div class="px-6 py-4 border-b-2 border-cyan-400/30 flex justify-between items-center mb-4 rounded-t-2xl">
+				<div class="px-6 py-4 border-b-2 border-cyan-400/30 flex justify-between items-center mb-4 rounded-t-2xl truncate">
 					<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-4 text-cyan-400">Match history ({userMatchHistory.length})</h3>
 				</div>
 				<!-- <div class="max-h-128 overflow-y-auto divide-y divide-cyan-400/10"> -->
 				<div class="max-h-128 overflow-y-auto space-y-2 divide-cyan-400/10">
 					{#each userMatchHistory as match}
 					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
-					<div class="min-w-0">
-						<p class="text-gray-300 text-xs font-semibold truncate">{playersString(match)}</p>
-						<time class="text-cyan-200 text-xs block mt-1">{formatDate(match.date)}</time>
-					</div>
-					<div class="text-right ml-4 w-28 flex-shrink-0">
-						<span class="{match.isWin ? 'text-green-400' : 'text-red-400'} font-semibold mr-2 block ">
-							{match.isWin ? 'WIN' : 'LOSS'}
-						</span>
-						<small class="text-cyan-200 text-xs block mt-1 mr-2">#{match.placement}</small>
-					</div>
+						<div class="min-w-0">
+							<p class="text-gray-300 text-xs font-semibold truncate">{playersString(match)}</p>
+							<time class="text-cyan-200 text-xs block mt-1">{formatDate(match.date)}</time>
+						</div>
+						<div class="text-right w-28 flex-shrink-0">
+							<span class="{match.isWin ? 'text-green-400' : 'text-red-400'} font-semibold mr-2 block ">
+								{match.isWin ? 'WIN' : 'LOSS'}
+							</span>
+							<small class="text-cyan-200 text-xs block mt-1 mr-2">#{match.placement}</small>
+						</div>
 					</article>
 					{/each}
 					{#if userMatchHistory.length === 0}
@@ -197,16 +208,16 @@
 				<div class="max-h-128 overflow-y-auto space-y-2 divide-cyan-400/10">
 					{#each userTournamentHistory as tournamentMatch}
 					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
-					<div class="min-w-0">
-						<p class="text-gray-300 text-xs font-semibold truncate">{tournamentMatch.tournamentName}</p>
-						<time class="text-cyan-200 text-xs block mt-1">{formatDate(tournamentMatch.date)}</time>
-					</div>
-					<div class="text-right ml-4 w-32 flex-shrink-0">
-						<span class="{tournamentMatch.isWin ? 'text-green-400' : 'text-red-400'} font-semibold mr-2 block ">
-							{tournamentMatch.isWin ? 'WIN' : 'LOSS'}
-						</span>
-						<small class="text-cyan-200 text-xs inline-block mt-1 mr-2">{tournamentMatch.playerLimit} players</small>
-					</div>
+						<div class="min-w-0">
+							<p class="text-gray-300 text-xs font-semibold truncate">{tournamentMatch.tournamentName}</p>
+							<time class="text-cyan-200 text-xs block mt-1">{formatDate(tournamentMatch.date)}</time>
+						</div>
+						<div class="text-right ml-4 w-32 flex-shrink-0">
+							<span class="{tournamentMatch.isWin ? 'text-green-400' : 'text-red-400'} font-semibold mr-2 block ">
+								{tournamentMatch.isWin ? 'WIN' : 'LOSS'}
+							</span>
+							<small class="text-cyan-200 text-xs inline-block mt-1 mr-2">{tournamentMatch.playerLimit} players</small>
+						</div>
 					</article>
 					{/each}
 					{#if userTournamentHistory.length === 0}

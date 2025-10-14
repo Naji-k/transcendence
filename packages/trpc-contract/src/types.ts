@@ -1,7 +1,7 @@
 // It defines the context type used in tRPC routers
 
 import { GameState, PlayerAction } from './types/gameState';
-import { MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db/dbTypes';
+import { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db/dbTypes';
 
 export interface Services {
   jwtUtils: {
@@ -12,7 +12,7 @@ export interface Services {
     signIn: (email: string, password: string) => Promise<any>;
   };
   dbServices: {
-    findUserById: (id: number) => Promise<any>;
+    findUserById: (id: number) => Promise<ExistingUser | null>;
     getMatchPlayers: (
       matchId: number
     ) => Promise<{ id: number; alias: string }[]>;

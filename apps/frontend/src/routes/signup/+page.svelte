@@ -3,11 +3,22 @@
   let email = '';
   let password = '';
   import { signUp } from '$lib/auth/auth';
+  import { isAuthenticated, currentUser } from '$lib/auth/store';
+  import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
+
+
+  onMount(() => {
+	if ($isAuthenticated) {
+	  console.log('Welcome back!', $currentUser.name);
+	  goto('/profile');
+	}
+  });
 
   function handleSignUp() {
     signUp(username, email, password)
       .then((res) => {
-        alert(`Login successful! Welcome ${res?.name || ''}`);
+        alert(`Login successful! Welcome ${$currentUser.name}`);
       })
       .catch((error) => {
         alert(`Signup failed:\n ${error}`);

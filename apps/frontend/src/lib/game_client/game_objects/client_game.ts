@@ -163,7 +163,6 @@ export class ClientGame
 			advancedTexture.removeControl(victoryText);
 			advancedTexture.dispose();
 		}, 100);
-		// TODO: Logic to exit game, return to main lobby, etc.
 	}
 
 	private async waitForStart()

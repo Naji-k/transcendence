@@ -119,7 +119,6 @@ export class ServerGame extends EventEmitter
 
 	private gameFinished()
 	{
-		//TODO: need to set game state to finished
 		this.gameState.status = 'finished';
 		const winner = this.gameState.players.find(p => p.isAlive);
 		if (winner)

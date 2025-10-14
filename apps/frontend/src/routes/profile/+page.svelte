@@ -1,14 +1,5 @@
 <script lang="ts">
-	/**
-	 * TODO: Discuss with team, what should we present in this profile page?
-	 * Ideas:
-	 * - Match history
-	 * - Friends list
-	 * - Tournaments history?
-	 * - Lobbies created/joined?
-	 * - Create new lobby/tournament button? 
-	 * 
-	*/
+
 	import { goto } from "$app/navigation";
 	import { authLoaded, isAuthenticated, currentUser, authStoreMethods, initAuthStore } from "$lib/auth/store";
 	import { trpc } from "$lib/trpc";

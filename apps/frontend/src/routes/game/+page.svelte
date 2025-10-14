@@ -56,6 +56,7 @@
     if ($isAuthenticated) {
       console.log('Welcome back!', $currentUser.id);
     }
+    const userId = Number(localStorage.getItem('id'))
     initialState = await trpc.game.getGameState.query({ matchId: matchId });
     const map = `maps/standard${initialState.players.length}player.map`;
     resizeCanvas();
@@ -74,7 +75,7 @@
         game = await startGame(
           map,
           initialState,
-          $currentUser.id
+          userId,
         );
       } catch (err) {
         console.warn(`Game ${matchId}) failed to start:`, err);

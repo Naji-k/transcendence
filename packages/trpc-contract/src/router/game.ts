@@ -34,6 +34,15 @@ export const gameRouter = createRouter({
         });
       }
     }),
+
+  getGameState: protectedProcedure
+    .input(z.object({ matchId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const gameState = ctx.services.gameStateManager.getGameState(
+        input.matchId
+      );
+      return gameState;
+    }),
   /**
    * Subscription to game state updates.
    * Clients can subscribe to this to receive real-time updates.

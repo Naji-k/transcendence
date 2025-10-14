@@ -30,6 +30,7 @@ export const authStoreMethods = {
   login: (token: string, user: User) => {
     if (browser) {
       localStorage.setItem('authToken', token);
+      localStorage.setItem('id', user.id.toString());
     }
     userAuthStore.set({
       token,

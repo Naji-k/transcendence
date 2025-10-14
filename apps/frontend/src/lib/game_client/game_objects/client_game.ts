@@ -55,7 +55,6 @@ export class ClientGame
 		this.scene = new Scene(this.engine);
 		this.userId = userId;
 		console.log('Game_client started');
-		console.log('players: ', gameState.players);
 	}
 
 	private async loadSounds()
@@ -136,21 +135,6 @@ export class ClientGame
 		this.camera = camera;
 
 		this.updateFromServer(this.gameState);
-		if (this.userId)
-		{
-			const localPlayerIndex = this.players.findIndex(p => p.ID == this.userId);
-			if (localPlayerIndex != -1)
-			{
-				this.localPlayerIndex = localPlayerIndex;
-			}
-		}
-		for (let i = 0; i < this.gameState.players.length; i++)
-		{
-			if (this.gameState.players[i].alias)
-			{
-				this.players[i].setName(this.gameState.players[i].alias);
-			}
-		}
 	}
 
 	private victory()
@@ -195,12 +179,22 @@ export class ClientGame
 		waitingText.horizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
 		waitingText.verticalAlignment = TextBlock.VERTICAL_ALIGNMENT_CENTER;
 		advancedTexture.addControl(waitingText);
-		
 		while (true) 
 		{	
 			await new Promise(resolve => setTimeout(resolve, 100));
 			if (this.gameState.status == 'in_progress')
 			{
+				if (this.userId)
+				{
+					for (let i = 0; i < this.gameState.players.length; i++)
+					{
+						if (this.gameState.players[i].alias)
+						{
+							this.players[i].updatePlayer(this.gameState.players[i].id, this.gameState.players[i].alias, this.gameState.players[i].lives);
+						}
+					}
+
+				}
 				this.engine.runRenderLoop(() =>
 				{
 					this.updateCameraTransition(performance.now());
@@ -242,7 +236,7 @@ export class ClientGame
 
 		const sequence = ['3', '2', '1', 'START'];
 		let step = 0;
-		this.startCameraTransitionForPlayer(this.localPlayerIndex, 1500);
+		this.startCameraTransitionForPlayer(1500);
 		function next()
 		{
 			scene.render();
@@ -377,9 +371,29 @@ export class ClientGame
 		this.gameLoop();
 	}
 
-	private startCameraTransitionForPlayer(playerIndex: number, durationMs: number)
+	private startCameraTransitionForPlayer(durationMs: number)
 	{
-		if (!this.camera || !this.paddles || !this.paddles[playerIndex]) { return; }
+		const playerIndex = this.players.findIndex(p => p.ID === this.userId);
+		console.log('players: ', this.players, );
+		if (playerIndex != -1)
+		{
+			this.localPlayerIndex = playerIndex;
+			console.log('Local player index set to:', this.localPlayerIndex);
+		}
+
+		if (!this.camera )
+		{
+			console.warn('Camera not initialized yet userId:', this.userId);
+			return;
+		}
+		if (!this.paddles){
+			console.warn('Paddles not initialized yet userId:', this.userId);
+				return;
+			 }
+		if(!this.paddles[playerIndex]) { 
+			console.warn('playerIndex not initialized yet userId:', this.userId, ' playerIndex:', playerIndex);
+			return; 
+		}
 
 		const paddle = this.paddles[playerIndex];
 		const paddleMesh = paddle.getMesh();
@@ -392,6 +406,11 @@ export class ClientGame
 		this.cameraTransitionDuration = durationMs;
 		this.cameraTransitionStartTime = performance.now();
 		this.cameraTransitionActive = true;
+
+		this.engine.runRenderLoop(() =>
+		{
+			this.updateCameraTransition(performance.now());
+		});
 	}
 
 	dispose()

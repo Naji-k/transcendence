@@ -44,7 +44,7 @@
     }
   }
 
-  const initialState: GameState = {
+  let initialState: GameState = {
     matchId: 1,
     status: 'waiting' as const,
     lastUpdate: 0,
@@ -56,6 +56,8 @@
     if ($isAuthenticated) {
       console.log('Welcome back!', $currentUser.id);
     }
+    initialState = await trpc.game.getGameState.query({ matchId: matchId });
+    const map = `maps/standard${initialState.players.length}player.map`;
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('orientationchange', resizeCanvas);
@@ -70,7 +72,7 @@
       try {
         initialState.matchId = matchId;
         game = await startGame(
-          'maps/standard2player.map',
+          map,
           initialState,
           $currentUser.id
         );

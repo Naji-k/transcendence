@@ -89,17 +89,11 @@ async function getPhysics(): Promise<any>
  * @param map Optional path to the map file
  * @returns 
  */
-export async function startGame(gameState: GameState, gameStateManager: GameStateManager, map?: string): Promise<ServerGame>
+export async function startGame(gameState: GameState, gameStateManager: GameStateManager, maxPlayers: number): Promise<ServerGame>
 {
-	//TODO: make map selection dynamic
-	if (map)
-	{
-		map = path.resolve(__dirname, '../../maps/', map);
-	}
-	else
-	{
-		map = '../../maps/standard2player.map';
-	}
+
+	const map = `../../maps/standard${maxPlayers}player.map`;	
+	
 	const havokInstance = await getPhysics();
 
 	if (!havokInstance) {

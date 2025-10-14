@@ -60,7 +60,7 @@ export class GameStateManager extends EventEmitter {
       balls: [{ x: 0, z: 0 }],
     };
 
-    const serverGame = await startGame(initialState, this);
+    const serverGame = await startGame(initialState, this,players.length);
     this.serverGames.set(matchId, serverGame);
     this.notifySubs(matchId, initialState);
     return initialState;
@@ -81,7 +81,6 @@ export class GameStateManager extends EventEmitter {
       });
     }
     serverGame.enqueueAction(action);
-    //TODO: Update gameState in db
     if (action.action === 'ready') {
       if (serverGame.gameState.players.every((p) => p.isReady)) {
         //here update DB that match is starting

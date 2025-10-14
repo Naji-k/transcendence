@@ -15,7 +15,6 @@
 	import { onMount } from "svelte";
 	import type { User } from '@repo/trpc/src/types';
 	import type { MatchHistoryEntry, TournamentHistoryEntry } from "@repo/db/dbTypes";
-	import { testUsers, testLobbies, testTournaments, getUserStats, getUserFriends, getUserMatchHistory, getCreator, getUserTournamentHistory } from "$lib/profileTestData";
 		
 	let userStat = $state({ wins: 0, losses: 0 });
 	let matchHistoryTotal = $state(0);
@@ -27,12 +26,6 @@
 	async function loadUserData() {
 		try {
 			loading = true;
-			
-			// Check if the endpoints exist first
-			// if (!trpc.user?.getUserMatchHistory || !trpc.user?.getUserTournamentHistory) {
-			// 	console.warn('tRPC user endpoints not available yet');
-			// 	return;
-			// }
 
 			const [matchHistoryRes, tournamentHistoryRes, friendsRes] = await Promise.all([
 				trpc.user.getUserMatchHistory.query(),
@@ -61,36 +54,17 @@
 		}
 	}
 	
-	onMount(async () => {
-		if (!$authLoaded || !$isAuthenticated) {
+	onMount(() => {
+		if (!$isAuthenticated) {
 			goto('/signin');
 		}
-		
-		// if ($authLoaded && $isAuthenticated && $currentUser) {
-		//     await loadUserData();
-		// }
 	});
-	
-	
 	
 	$effect(() => {
 		if ($authLoaded && $isAuthenticated && $currentUser.name) {
 			loadUserData();
 		}
 	});
-
-	// Test data
-	// let currentUserIndex = $state(0);
-	// let currentUser =$derived(testUsers[currentUserIndex]);
-	// let userStat = $derived(getUserStats(currentUser.id));
-	// let userFriends = $derived(getUserFriends(currentUser.id));
-	// let userMatchHistory = $derived(getUserMatchHistory(currentUser.id));
-	// let userTournamentHistory = $derived(getUserTournamentHistory(currentUser.id));
-	// console.log("wins: ", userStat.wins, "losses: ", userStat.losses)
-	// console.log("friends: ", userFriends);
-	// console.log("match history: ", userMatchHistory);
-	// console.log("test lobbies: ", testLobbies);
-
 
 	let user = $derived({
 		...$currentUser,

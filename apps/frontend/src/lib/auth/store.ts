@@ -21,7 +21,7 @@ export const userAuthStore = writable<AuthState>(initialState);
 
 export const isAuthenticated = derived(
   userAuthStore,
-  ($auth) => $auth.user !== null && $auth.token !== null
+  ($auth) => $auth.token !== null
 );
 
 export const currentUser = derived(userAuthStore, ($auth) => $auth.user);

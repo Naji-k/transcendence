@@ -78,5 +78,5 @@ export async function verify2FAToLogin(userId: number, code: string) {
 
 export function logout() {
   authStoreMethods.logout();
-  goto('/login');
+  goto('/signin');
 }

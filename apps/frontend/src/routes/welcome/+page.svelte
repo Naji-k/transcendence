@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { authStoreMethods } from '$lib/auth/store';
+  import { goto } from '$app/navigation';
 
   let name = '';
 
@@ -23,6 +24,7 @@
 
         // setAuthToken(data.token);
 		authStoreMethods.login(data.token, null);
+		goto('/profile');
       }
     } catch (err) {
       console.error('Error fetching user:', err);
@@ -30,8 +32,3 @@
   });
 </script>
 
-<div class="flex items-center justify-center min-h-screen font-['Press_Start_2P'] bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364]">
-  <div class="bg-gradient-to-br from-purple-700 to-indigo-900 text-white p-8 rounded-3xl shadow-2xl max-w-sm w-full space-y-8 text-center">
-    <h1 class="text-4xl text-cyan-400 drop-shadow-lg">Welcome, {name}!</h1>
-  </div>
-</div>

@@ -1,26 +1,20 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { trpc } from '$lib/trpc';
   import { onMount } from 'svelte';
+  import type { AvailableMatch } from '@repo/db/dbTypes';
 
-  // State management
-  let games = [];
+  let games: AvailableMatch[] = [];
   let loading = false;
   let error = null;
   let limit = 2;
+  let interval: number | null = null;
 
-  //TODO: use this later to filter games
-  $: availableGames = games.filter(
-    (game) => game.status === 'waiting' && game.playerCount < game.maxPlayers
-  );
-  $: readyGames = games.filter(
-    (game) => game.status === 'ready' && game.playerCount === game.maxPlayers
-  );
 
-  // TODO: this must be called every few seconds or so to keep the game list updated
+
+  $:waitingGames = games.filter((game) => game.status === 'waiting');
   async function fetchGames() {
     try {
-      loading = true;
       error = null;
       const result = await trpc.match.list.query();
       console.log(`Fetched games: ${JSON.stringify(result)}`);
@@ -40,23 +34,23 @@
         max_players: limit,
       });
       console.log(`Game created: ${JSON.stringify(result)}`);
-      await fetchGames();
     } catch (err) {
       console.error(`Error creating game: ${err.message}`);
       error = `Failed to create game: ${err.message}`;
     }
+    await fetchGames();
   }
 
-  async function joinGame(gameId) {
+  async function joinGame(gameId: number) {
     try {
       error = null;
       const result = await trpc.match.joinGame.mutate({ matchId: gameId });
       console.log(`Joined game: ${JSON.stringify(result)}`);
-      await fetchGames();
     } catch (err) {
       console.error(`Error joining game: ${err.message}`);
       error = `Failed to join game: ${err.message}`;
     }
+    await fetchGames();
   }
 
   async function startGame(gameId) {
@@ -73,7 +67,22 @@
 
   onMount(() => {
     fetchGames();
+    return () => {
+      if (interval !== null) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
   });
+
+  $: {
+    if (waitingGames.length > 0 && interval === null) {
+      interval = setInterval(fetchGames, 2000);
+    } else if (waitingGames.length === 0 && interval !== null) {
+      clearInterval(interval);
+      interval = null;
+    }
+  }
 </script>
 
 <div

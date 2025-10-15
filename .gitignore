@@ -10,8 +10,11 @@ pids
 
 *dist/
 *.env
-*.db
+*.db*
 .idea
+
+*-shm
+*-wal
 
 # node-waf configuration
 .lock-wscript

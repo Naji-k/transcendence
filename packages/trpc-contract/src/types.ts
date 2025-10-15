@@ -1,7 +1,7 @@
 // It defines the context type used in tRPC routers
 
 import { GameState, PlayerAction } from './types/gameState';
-import { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db/dbTypes';
+import { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry, Tournament } from '@repo/db/dbTypes';
 
 export interface Services {
   jwtUtils: {
@@ -43,10 +43,21 @@ export interface Services {
       userId: number,
       playerLimit: number
     ) => Promise<any>;
-    joinTournament: (tournamentName: string, playerId: number) => Promise<any>;
-    listAllTournaments: () => Promise<any>;
+    joinTournament: (
+      tournamentName: string,
+      playerId: number
+    ) => Promise<Tournament | null>;
+    listAllTournaments: () => Promise<Tournament[]>;
     getTournamentPlayers: (tournamentName: string) => Promise<any>;
     startTournament: (tournamentName: string) => Promise<any>;
+    getTournamentBracket: (
+      tournamentId: number
+    ) => Promise<TournamentBrackets>;
+    // endTournament: (tournamentName: string, playerId: number) => Promise<any>;
+    subscribeToBracketUpdates: (
+      tournamentName: number,
+      callback: (bracket: TournamentBrackets) => void
+    ) => () => void;
   };
   match: {
     createMultiplayerGame: (
@@ -85,5 +96,31 @@ export interface User {
   id: number;
   email: string;
   name: string;
-  twofa_enabled: number;
+  twofa_enabled: number | null;
+}
+export interface TournamentPlayer {
+  id: number;
+  userAlias: string;
+  placement: number;
+}
+
+export interface TournamentMatches {
+  id: number;
+  players: TournamentPlayer[];
+  victor: TournamentPlayer | null;
+  status: 'waiting' | 'ready' | 'playing' | 'finished';
+}
+
+export interface TournamentRound {
+  round: number;
+  name: string;
+  matches: TournamentMatches[];
+  matchesCompleted: number;
+  totalMatches: number;
+  status: 'pending' | 'in_progress' | 'completed';
+}
+export interface TournamentBrackets {
+  tournament: Tournament;
+  matches: TournamentMatches[];
+  rounds: TournamentRound[];
 }

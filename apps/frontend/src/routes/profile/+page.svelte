@@ -1,14 +1,5 @@
 <script lang="ts">
-	/**
-	 * TODO: Discuss with team, what should we present in this profile page?
-	 * Ideas:
-	 * - Match history
-	 * - Friends list
-	 * - Tournaments history?
-	 * - Lobbies created/joined?
-	 * - Create new lobby/tournament button? 
-	 * 
-	*/
+
 	import { goto } from "$app/navigation";
 	import { authLoaded, isAuthenticated, currentUser, authStoreMethods, initAuthStore } from "$lib/auth/store";
 	import { trpc } from "$lib/trpc";
@@ -145,7 +136,7 @@
 				<button onclick={() => goto('/game_lobby')} class="text-xs sm:text-sm md:text-md lg:text-lg bg-cyan-500 hover:bg-cyan-600 px-4 py-2 rounded mr-1 mb-2 text-black font-bold shadow-lg">
 						Match lobbies
 				</button>
-				<button onclick={() => goto('/tournament_lobby')} class="text-xs sm:text-sm md:text-md lg:text-lg bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded mr-1 mb-2 text-white font-bold shadow-lg">
+				<button onclick={() => goto('/tournament')} class="text-xs sm:text-sm md:text-md lg:text-lg bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded mr-1 mb-2 text-white font-bold shadow-lg">
 						Tournaments
 				</button>
 

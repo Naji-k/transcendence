@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { createRouter, protectedProcedure, publicProcedure } from '../trpc';
 import { tournamentNameSchema, tournamentInput } from '../schemas';
+import { observable } from '@trpc/server/observable';
+import { TournamentBrackets } from '../types';
 
 export const tournamentRouter = createRouter({
   create: protectedProcedure
@@ -16,7 +18,10 @@ export const tournamentRouter = createRouter({
   join: protectedProcedure
     .input(z.object({ name: tournamentNameSchema }))
     .mutation(async ({ input, ctx }) => {
-      return await ctx.services.tournament.joinTournament(input.name, ctx.userToken.id);
+      return await ctx.services.tournament.joinTournament(
+        input.name,
+        ctx.userToken.id
+      );
     }),
 
   list: publicProcedure.query(async ({ ctx }) => {
@@ -55,5 +60,53 @@ export const tournamentRouter = createRouter({
     .input(z.object({ name: tournamentNameSchema }))
     .mutation(async ({ input, ctx }) => {
       return await ctx.services.tournament.startTournament(input.name);
+    }),
+
+  getBracket: protectedProcedure
+    .input(z.object({ id: z.number().positive() }))
+    .query(async ({ input, ctx }) => {
+      const bracket = await ctx.services.tournament.getTournamentBracket(input.id);
+      if (!bracket) {
+        throw new Error('No bracket found for this tournament');
+      }
+      return bracket || null;
+    }),
+
+  // endTournament: protectedProcedure
+  //   .input(
+  //     z.object({ name: tournamentNameSchema, playerId: z.number().positive() })
+  //   )
+  //   .mutation(async ({ input, ctx }) => {
+  //     return await ctx.services.tournament.endTournament(
+  //       input.name,
+  //       input.playerId
+  //     );
+  //   }),
+  subscribeBracket: publicProcedure
+    .input(z.object({ id: z.number().positive() }))
+    .subscription(({ input, ctx }) => {
+      return observable<TournamentBrackets>((emit) => {
+        try {
+          ctx.services.tournament
+            .getTournamentBracket(input.id)
+            .then((t) => {
+              if (t) {
+                emit.next(t);
+              }
+            })
+            .catch((err) => {
+              emit.error(err);
+            });
+        } catch (err) {
+          emit.error(err);
+        }
+        const unsubscribe = ctx.services.tournament.subscribeToBracketUpdates(
+          input.id,
+          (updatedBracket) => {
+            emit.next(updatedBracket);
+          }
+        );
+        return unsubscribe;
+      });
     }),
 });

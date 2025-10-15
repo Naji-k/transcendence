@@ -51,4 +51,11 @@ export class Player
 		this.paddle.eliminate();
 		this.goal.eliminate();
 	}
+
+	updatePlayer(id: number, name: string,lives: number)
+	{
+		this.ID = id;
+		this.name = name;
+		this.lives = lives;
+	}
 }

@@ -105,7 +105,7 @@
 
     if (game != null) {
       const { destroyGame } = await import('$lib');
-      await destroyGame(game);
+      destroyGame(game);
       game = null;
     }
   });

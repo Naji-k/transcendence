@@ -1,8 +1,6 @@
-import { Ball, Wall, meshesIntersect, rotateVector, type GamePos } from '../index';
+import { Wall, meshesIntersect, rotateVector, type GamePos } from '../index';
 import { Vector3, MeshBuilder, Mesh, PhysicsShapeType,
 		 PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
-
-const offset = 0.3;
 
 export class Paddle
 {

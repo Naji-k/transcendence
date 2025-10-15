@@ -96,7 +96,7 @@ export interface User {
   id: number;
   email: string;
   name: string;
-  twofa_enabled: number;
+  twofa_enabled: number | null;
 }
 export interface TournamentPlayer {
   id: number;

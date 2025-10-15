@@ -15,11 +15,13 @@ const initialState: AuthState = {
   loading: true,
 };
 
+export const authLoaded = writable(false);
+
 export const userAuthStore = writable<AuthState>(initialState);
 
 export const isAuthenticated = derived(
   userAuthStore,
-  ($auth) => $auth.user !== null && $auth.token !== null
+  ($auth) => $auth.token !== null && $auth.user !== null
 );
 
 export const currentUser = derived(userAuthStore, ($auth) => $auth.user);
@@ -45,6 +47,7 @@ export const authStoreMethods = {
       token: null,
       loading: false,
     });
+    // authLoaded.set(true);
   },
   // this used if the token is already set and we just need to fetch the user
   setUser: (user: User) => {
@@ -71,8 +74,10 @@ export const authStoreMethods = {
 };
 
 export async function initAuthStore(): Promise<void> {
+  authLoaded.set(false);
   if (!browser) {
     authStoreMethods.setLoading(false);
+    authLoaded.set(true);
     return;
   }
 
@@ -95,5 +100,7 @@ export async function initAuthStore(): Promise<void> {
   } catch (error) {
     console.error(error);
     authStoreMethods.clearUser();
+  } finally {
+    authLoaded.set(true);
   }
 }

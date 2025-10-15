@@ -17,7 +17,55 @@ export const userRouter = createRouter({
     return {
       status: 200,
       message: 'User fetched successfully',
-      data: { id: user.id, email: user.email, name: user.name, twofa_enabled: user.twofa_enabled},
+      data: { id: user.id, email: user.email, name: user.alias, twofa_enabled: user.twofa_enabled},
     };
   }),
+
+  getUserMatchHistory: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const history = await ctx.services.dbServices.getUserMatchHistory(ctx.userToken.id);
+      return {
+        status: 200,
+        message: 'User match history fetched successfully',
+        data: history,
+      };
+    } catch (error) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Error in fetching user match history'
+      })
+    }
+  }),
+
+  getUserTournamentHistory: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const history = await ctx.services.dbServices.getUserTournamentHistory(ctx.userToken.id);
+      return {
+        status: 200,
+        message: 'User tournament history fetched successfully',
+        data: history,
+      }
+    } catch (error) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Error in fetching user tournament history'
+      })
+    }
+  }),
+
+  getUserFriends: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const friends = await ctx.services.dbServices.getUserFriends(ctx.userToken.id);
+      return {
+        status: 200,
+        message: 'User friends list fetched successfully',
+        data: friends,
+      }
+    } catch (error) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Error in fetching user friends list'
+      })
+    }
+  })
 });

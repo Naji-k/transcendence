@@ -111,12 +111,11 @@ async function testUserEntries() {
 async function testDbFunctions() {
   console.log('-------------Testing db functions------------');
   const testUserAlias = `testUser${Date.now()}`;
-  const testUserEmail = `exampleEmail${Date.now()}`;
-  const testUserPassword = `pass${Date.now()}`;
+  const testUserEmail = `example${Date.now()}@example.com`;
   const createdUser = await createUser(
     testUserAlias,
     testUserEmail,
-    testUserPassword
+     await hashPassword(`Pass42$@`)
   );
   console.log('createdUser: ', createdUser.id);
   /* Test findUser */

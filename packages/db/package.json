@@ -2,6 +2,10 @@
   "name": "@repo/db",
   "version": "1.0.0",
   "description": "Schemas and types",
+  "exports": {
+    "./dbSchema": "./dbSchema.ts",
+    "./dbTypes": "./dbTypes.ts"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

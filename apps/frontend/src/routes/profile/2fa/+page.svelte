@@ -9,12 +9,12 @@
   let token = '';
   let verified = false;
   let error = '';
-  let twofaEnabled = false;
+  let twofaEnabled = 0;
 
   onMount(() => {
     const unsubscribe = currentUser.subscribe(user => {
       userId = user?.id ?? -1;
-      twofaEnabled = user?.twofa_enabled ?? false;
+      twofaEnabled = user?.twofa_enabled ?? 0;
     });
     return unsubscribe;
   });
@@ -48,8 +48,8 @@
       const data = await res.json();
       verified = data.ok;
       if (verified) {
-        twofaEnabled = true;
-        authStoreMethods.setUser({ ...$currentUser, twofa_enabled: true });
+        twofaEnabled = 1;
+        authStoreMethods.setUser({ ...$currentUser, twofa_enabled: 1 });
       }
       error = verified ? '' : 'Invalid code. Try again.';
     } catch (e) {
@@ -70,9 +70,9 @@
       qrDataUrl = '';
       token = '';
       verified = false;
-      twofaEnabled = false;
+      twofaEnabled = 0;
       error = '';
-      authStoreMethods.setUser({ ...$currentUser, twofa_enabled: false });
+      authStoreMethods.setUser({ ...$currentUser, twofa_enabled: 0 });
     } catch (e) {
       error = e.message || 'Error disabling 2FA';
     }

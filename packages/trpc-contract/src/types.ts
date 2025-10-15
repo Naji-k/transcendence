@@ -1,6 +1,7 @@
 // It defines the context type used in tRPC routers
 
 import { GameState, PlayerAction } from './types/gameState';
+import { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db/dbTypes';
 
 export interface Services {
   jwtUtils: {
@@ -11,7 +12,7 @@ export interface Services {
     signIn: (email: string, password: string) => Promise<any>;
   };
   dbServices: {
-    findUserById: (id: number) => Promise<any>;
+    findUserById: (id: number) => Promise<ExistingUser | null>;
     getMatchPlayers: (
       matchId: number
     ) => Promise<{ id: number; alias: string }[]>;
@@ -20,6 +21,9 @@ export interface Services {
       playerId: number
     ) => Promise<boolean>;
     matchExists: (matchId: number) => Promise<boolean>;
+    getUserMatchHistory: (userId: number) => Promise<MatchHistoryEntry[]>;
+    getUserTournamentHistory: (userId: number) => Promise<TournamentHistoryEntry[]>;
+    getUserFriends: (userId: number) => Promise<{ alias: string }[]>;
   };
   gameStateManager: {
     subscribe: (
@@ -81,5 +85,5 @@ export interface User {
   id: number;
   email: string;
   name: string;
-  twofa_enabled: boolean;
+  twofa_enabled: number;
 }

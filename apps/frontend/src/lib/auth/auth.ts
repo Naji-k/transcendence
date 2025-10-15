@@ -3,7 +3,7 @@ import { trpc } from '../trpc';
 import { authStoreMethods } from '$lib/auth/store';
 import { goto } from '$app/navigation';
 
-export async function signUp(name: string, email: string, password: string, twofa_enabled: boolean = false) {
+export async function signUp(name: string, email: string, password: string, twofa_enabled: number = 0) {
   try {
     const validInput = signUpInput.safeParse({
       name,
@@ -17,7 +17,7 @@ export async function signUp(name: string, email: string, password: string, twof
       throw messages;
     }
     const res = await trpc.auth.signUp.mutate(validInput.data);
-    console.log('logged in :', res.user);
+    console.log('logged in :', res.user.name);
     authStoreMethods.login(res.token, res.user);
     await goto('/profile');
   } catch (e) {
@@ -46,7 +46,7 @@ export async function login(email: string, password: string) {
 
     // Normal login
     // Should go to main page.
-    console.log('logged in :', res.user);
+    console.log('logged in :', res.user.name);
     authStoreMethods.login(res.token, res.user);
     await goto('/profile');
     return { success: true };
@@ -78,5 +78,5 @@ export async function verify2FAToLogin(userId: number, code: string) {
 
 export function logout() {
   authStoreMethods.logout();
-  goto('/login');
+  goto('/signin');
 }

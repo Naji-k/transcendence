@@ -3,8 +3,16 @@
   let email = '';
   let password = '';
   import { login, verify2FAToLogin } from '$lib/auth/auth';
-  import { isAuthenticated, currentUser } from '$lib/auth/store';
+  import { isAuthenticated, currentUser, authStoreMethods } from '$lib/auth/store';
   import { onMount } from 'svelte';
+
+  onMount(() => {
+	console.log('isAuthenticated-signin: ', $isAuthenticated);
+	if ($isAuthenticated) {
+	  console.log('Welcome back!', $currentUser.name);
+	  goto('/profile');
+	}
+  });
 
   let twofaRequired = false;
   let userId = null;
@@ -22,6 +30,9 @@
     }
   }
 
+//  alert(`Login successful! Welcome ${$currentUser.name}`);
+//         goto('/profile');
+
   async function handle2FAVerify() {
     error = '';
     try {
@@ -30,13 +41,6 @@
       error = e;
     }
   }
-
-  onMount(() => {
-    if ($isAuthenticated) {
-      console.log('Welcome back!', $currentUser);
-      goto('/game_lobby');
-    }
-  });
 
   function handleGoogleLogin() {
     window.location.href = 'http://localhost:3000/api/auth/google';

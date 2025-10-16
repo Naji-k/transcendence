@@ -58,9 +58,19 @@ export const authStoreMethods = {
   },
 
   //logout called only when user clicks logout or token is invalid
-  logout: () => {
+  logout: async () => {
     if (browser) {
+      try {
+        await fetch('http://localhost:3000/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+      } catch (error) {
+        console.error('Logout fetch failed: ', error);
+      }
+
       localStorage.removeItem('authToken');
+      localStorage.removeItem('id');
     }
     userAuthStore.set({
       user: null,

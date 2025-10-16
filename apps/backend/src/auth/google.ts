@@ -153,4 +153,23 @@ export function setupGoogleAuthRoutes(app: FastifyInstance) {
       return reply.status(401).send({ error: 'Invalid or expired token' });
     }
   });
+
+  app.post('/api/auth/logout', async (req, reply) => {
+    try {
+       reply.clearCookie('auth_token', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        path: '/',
+      });
+      
+      return reply.status(200).send({
+        success: true,
+        message: 'Logged out'
+      });
+    } catch (error) {
+      console.error('Logout failed:', error);
+      reply.status(500).send({ error: 'Logout failed' });
+    }
+  });
 }

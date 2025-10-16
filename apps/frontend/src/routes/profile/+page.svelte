@@ -140,11 +140,11 @@
 
 			<!-- Match history section - scrollable -->
 			<section class="mt-8">
-				<div class="px-6 py-4 border-b-2 border-cyan-400/30 flex justify-between items-center mb-4 rounded-t-2xl truncate">
+				<div class="px-6 pt-5 border-t-3 border-cyan-400/30 flex justify-between items-center mb-4 rounded-t-2xl truncate">
 					<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-4 text-cyan-400">Match history ({userMatchHistory.length})</h3>
 				</div>
 				<!-- <div class="max-h-128 overflow-y-auto divide-y divide-cyan-400/10"> -->
-				<div class="max-h-128 overflow-y-auto space-y-2 divide-cyan-400/10">
+				<div class="max-h-128 overflow-y-auto space-y-2">
 					{#each userMatchHistory as match}
 					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
 						<div class="min-w-0">
@@ -166,11 +166,11 @@
 			</section>
 
 			<section class="mt-8">
-				<div class="px-6 py-4 border-b-2 border-cyan-400/30 flex justify-between items-center mb-4 rounded-t-2xl">
+				<div class="px-6 pt-5 border-t-3 border-cyan-400/30 flex justify-between items-center mb-4 rounded-t-2xl truncate">
 					<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-4 text-cyan-400">Tournament history ({userTournamentHistory.length})</h3>
 				</div>
 				<!-- <div class="max-h-128 overflow-y-auto divide-y divide-cyan-400/10"> -->
-				<div class="max-h-128 overflow-y-auto space-y-2 divide-cyan-400/10">
+				<div class="max-h-128 overflow-y-auto space-y-2">
 					{#each userTournamentHistory as tournamentMatch}
 					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
 						<div class="min-w-0">

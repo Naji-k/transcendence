@@ -103,11 +103,11 @@
 				</div>
 			</div>
 		{:else}
-			<button onclick={() => logout()} class="absolute top-4 left-4 bg-gray-700 text-white px-3 py-2 rounded">
+			<button onclick={() => logout()} class="top-4 left-4 bg-gray-700 text-white px-3 py-2 rounded">
 				Logout
 			</button>
 			<!-- Section of info with alias and avatar on the left and wins/losses on the right of the page -->
-			<header class="flex flex-col md:flex-row justify-between items-center text-gray-300">
+			<header class="flex flex-col pt-2 md:flex-row justify-between items-center text-gray-300">
 				<section class="flex items-center">
 					<img class="w-20 h-20 rounded-full mr-4" src={user.avatarPath} alt="{user.name} avatar"/>
 					<h2 class="sm:text-base md:text-xl lg:text-3xl truncate">{user.name}</h2>
@@ -140,7 +140,7 @@
 
 			<!-- Match history section - scrollable -->
 			<section class="mt-8">
-				<div class="px-6 pt-5 border-t-3 border-cyan-400/30 flex justify-between items-center mb-4 rounded-t-2xl truncate">
+				<div class="px-6 pt-5 border-t-3 border-cyan-400/30 flex justify-between items-center mb-4 rounded-t-2xl">
 					<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-4 text-cyan-400">Match history ({userMatchHistory.length})</h3>
 				</div>
 				<!-- <div class="max-h-128 overflow-y-auto divide-y divide-cyan-400/10"> -->
@@ -166,7 +166,7 @@
 			</section>
 
 			<section class="mt-8">
-				<div class="px-6 pt-5 border-t-3 border-cyan-400/30 flex justify-between items-center mb-4 rounded-t-2xl truncate">
+				<div class="px-6 pt-5 border-t-3 border-cyan-400/30 flex justify-between items-center mb-4 rounded-t-2xl">
 					<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-4 text-cyan-400">Tournament history ({userTournamentHistory.length})</h3>
 				</div>
 				<!-- <div class="max-h-128 overflow-y-auto divide-y divide-cyan-400/10"> -->
@@ -192,8 +192,10 @@
 			</section>
 
 			<!-- Friends list section - scrollable -->
-			<section class="mt-6">
-				<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-4 text-cyan-400">Friends ({userFriends.length})</h3>
+			<section class="mt-8">
+				<div class="px-6 pt-5 border-t-3 border-cyan-400/30 flex justify-between items-center mb-4 rounded-t-2xl">
+					<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-4 text-cyan-400">Friends ({userFriends.length})</h3>
+				</div>
 				<div class="max-h-128 overflow-y-auto space-y-2 divide-cyan-400/10">
 					{#each userFriends as friend}
 					<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
@@ -212,6 +214,6 @@
 					back to top
 				</button>
 			</div>
-			{/if}
-		</main>
+		{/if}
+	</main>
 </div>

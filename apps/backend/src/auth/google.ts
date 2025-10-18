@@ -93,7 +93,7 @@ export function setupGoogleAuthRoutes(app: FastifyInstance) {
 
       if (!user) {
         const dummyPassword = `google_${googleId}_${Date.now()}`;
-        await createUser(name, email, dummyPassword);
+        await createUser(name, email, dummyPassword, googleId);
         user = await findUserByEmail(email);
       }
 

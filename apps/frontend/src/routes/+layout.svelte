@@ -19,6 +19,13 @@
   const protectedRoutes = ['/profile', '/game', '/game_lobby', '/tournament', '/tournament_brackets', '/welcome'];
 //   let isPublicRoute = $derived(publicRoutes.some(route => page.url.pathname.startsWith(route)));
   let isProtectedRoute = $derived(protectedRoutes.some(route => page.url.pathname.startsWith(route)));
+
+  $effect(() => {
+	if ($authLoaded && isProtectedRoute && !$isAuthenticated) {
+		goto('/signin');
+	}
+  })
+
 </script>
 
 <svelte:head>
@@ -26,9 +33,6 @@
 </svelte:head>
 
 {#if $authLoaded}
-	{#if isProtectedRoute && !$isAuthenticated}
-		<SignInPage />
-	{/if}
 	{@render children?.()}
 {:else}
 	<div class="flex items-center justify-center min-h-screen">

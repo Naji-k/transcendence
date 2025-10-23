@@ -139,7 +139,9 @@
 				<button onclick={() => goto('/tournament')} class="text-xs sm:text-sm md:text-md lg:text-lg bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded mr-1 mb-2 text-white font-bold shadow-lg">
 						Tournaments
 				</button>
-
+					<button onclick={() => goto('/profile/2fa')} class="text-xs sm:text-sm md:text-md lg:text-lg bg-amber-400 hover:bg-amber-500 px-4 py-2 rounded mr-1 mb-2 text-black font-bold shadow-lg">
+					Set 2FA
+				</button>
 			</nav>
 
 			<!-- Match history section - scrollable -->

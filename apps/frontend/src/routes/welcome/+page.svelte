@@ -25,9 +25,9 @@
 	    console.log(data)
       if (data.token) {
         // setAuthToken(data.token);
-		    authStoreMethods.login(data.token, data);
-        twofaRequired = data.twofaEnabled;
-        userId = data.userId;
+		    authStoreMethods.login(data.token, data.user);
+        twofaRequired = data.user.twofaEnabled;
+        userId = data.user.userId;
         if (!twofaRequired) goto('/profile');
       }
     } catch (err) {

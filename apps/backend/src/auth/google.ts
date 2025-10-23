@@ -140,7 +140,12 @@ export function setupGoogleAuthRoutes(app: FastifyInstance) {
       }
       
       return {
-        name: user.alias ?? user.name,
+        user: {
+          id: user.id,
+          name: user.alias,
+          email: user.email,
+          twofaEnabled: user.twofa_enabled
+        },
         token: auth_token, // to mirror into localStorage
       };
     } catch (err) {

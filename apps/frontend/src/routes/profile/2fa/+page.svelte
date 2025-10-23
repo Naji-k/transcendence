@@ -2,6 +2,7 @@
   import QRCode from 'qrcode';
   import { currentUser, authStoreMethods } from '$lib/auth/store';
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
 
   let userId = -1;
   let otpauth = '';
@@ -80,18 +81,85 @@
 </script>
 
 {#if twofaEnabled}
-  <p class="text-green-500">2FA is enabled on your account.</p>
-  <button on:click={disable2FA} class="bg-red-500 px-4 py-2 rounded mt-2">Disable 2FA</button>
+  <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg p-6 max-w-sm w-full space-y-4 text-center shadow-lg">
+      <h2 class="text-lg font-semibold">Two-Factor Authentication</h2>
+      <p class="text-green-600 font-medium">2FA is enabled on your account.</p>
+
+      <button
+        on:click={disable2FA}
+        class="bg-red-500 hover:bg-red-600 active:scale-95 shadow-md active:shadow-inner transition-transform text-white rounded-xl px-6 py-3 font-bold w-full"
+      >
+        Disable 2FA
+      </button>
+
+      <button
+        on:click={() => goto('/profile')}
+        class="bg-cyan-500 hover:bg-cyan-600 active:scale-95 shadow-md active:shadow-inner transition-transform text-black rounded-xl px-6 py-3 font-bold w-full"
+      >
+        Back to Profile
+      </button>
+    </div>
+  </div>
+
 {:else if !otpauth}
-  <button on:click={setup2FA} class="bg-cyan-500 px-4 py-2 rounded">Enable 2FA</button>
+  <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg p-6 max-w-sm w-full space-y-4 text-center shadow-lg">
+      <h2 class="text-lg font-semibold">Enable Two-Factor Authentication</h2>
+      <p class="text-sm text-gray-600">Add an extra layer of security to your account.</p>
+
+      <button
+        on:click={setup2FA}
+        class="bg-cyan-500 hover:bg-cyan-600 active:scale-95 shadow-md active:shadow-inner transition-transform text-black rounded-xl px-6 py-3 font-bold w-full"
+      >
+        Enable 2FA
+      </button>
+
+      <button
+        on:click={() => goto('/profile')}
+        class="bg-gray-200 hover:bg-gray-300 active:scale-95 shadow-md transition-transform rounded-xl px-6 py-3 font-bold text-gray-700 w-full"
+      >
+        Back to Profile
+      </button>
+    </div>
+  </div>
+
 {:else}
-  <div>
-    <p>Scan this QR code with your authenticator app:</p>
-    {#if qrDataUrl}
-      <img src={qrDataUrl} alt="2FA QR Code" />
-    {/if}
-    <input type="text" bind:value={token} placeholder="Enter 6-digit code" class="mt-2 p-2 rounded" />
-    <button on:click={verify2FA} class="bg-green-500 px-4 py-2 rounded ml-2">Verify</button>
-    {#if error}<p class="text-red-500">{error}</p>{/if}
+  <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg p-6 max-w-sm w-full space-y-4 text-center shadow-lg">
+      <h2 class="text-lg font-semibold">Set Up Two-Factor Authentication</h2>
+      <p class="text-sm text-gray-600">
+        Scan this QR code with your authenticator app:
+      </p>
+
+      {#if qrDataUrl}
+        <img src={qrDataUrl} alt="2FA QR Code" class="mx-auto rounded-lg shadow-sm" />
+      {/if}
+
+      <input
+        type="text"
+        bind:value={token}
+        placeholder="Enter 6-digit code"
+        class="w-full rounded-xl px-4 py-3 text-black font-bold focus:outline-none focus:ring-2 focus:ring-cyan-400"
+      />
+
+      <button
+        on:click={verify2FA}
+        class="bg-green-500 hover:bg-green-600 active:scale-95 shadow-md active:shadow-inner transition-transform text-white rounded-xl px-6 py-3 font-bold w-full"
+      >
+        Verify
+      </button>
+
+      {#if error}
+        <p class="text-red-500 text-xs">{error}</p>
+      {/if}
+
+      <button
+        on:click={() => goto('/profile')}
+        class="bg-gray-200 hover:bg-gray-300 active:scale-95 shadow-md transition-transform rounded-xl px-6 py-3 font-bold text-gray-700 w-full"
+      >
+        Back to Profile
+      </button>
+    </div>
   </div>
 {/if}

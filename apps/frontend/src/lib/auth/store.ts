@@ -115,7 +115,8 @@ export async function initAuthStore(): Promise<void> {
   try {
     const savedToken = localStorage.getItem('authToken');
     if (!savedToken) {
-      authStoreMethods.logout();
+      authStoreMethods.clearUser();
+      localStorage.removeItem('id');
       return;
     }
 

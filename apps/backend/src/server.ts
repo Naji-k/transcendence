@@ -8,6 +8,7 @@ import pino from 'pino';
 import cookie from '@fastify/cookie';
 import fastifyCors from '@fastify/cors';
 import { setup2FARoutes } from './auth/2fa';
+import { logoutRoute } from './auth/index';
 
 // Create a Fastify instance
 const fastifyInstance = Fastify({
@@ -45,6 +46,7 @@ fastifyInstance.register(fastifyCors, {
 
 setupGoogleAuthRoutes(fastifyInstance);
 setup2FARoutes(fastifyInstance);
+logoutRoute(fastifyInstance);
 
 export function buildServer() {
   return fastifyInstance;

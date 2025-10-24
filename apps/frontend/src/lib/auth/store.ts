@@ -6,13 +6,17 @@ import { trpc } from '../trpc';
 interface AuthState {
   token: string | null;
   user: User | null;
-  loading: boolean; // not sure if needed
+  loading: boolean;
+  twofaPending: boolean;
+  pendingUserId: number | null;
 }
 
 const initialState: AuthState = {
   token: null,
   user: null,
   loading: true,
+  twofaPending: false,
+  pendingUserId: null,
 };
 
 export const authLoaded = writable(false);
@@ -21,10 +25,12 @@ export const userAuthStore = writable<AuthState>(initialState);
 
 export const isAuthenticated = derived(
   userAuthStore,
-  ($auth) => $auth.token !== null && $auth.user !== null
+  ($auth) => $auth.token !== null && $auth.user !== null && !$auth.twofaPending
 );
 
 export const currentUser = derived(userAuthStore, ($auth) => $auth.user);
+export const twofaPending = derived(userAuthStore, ($auth) => $auth.twofaPending);
+export const pendingUserId = derived(userAuthStore, ($auth) => $auth.pendingUserId)
 
 export const authStoreMethods = {
   login: (token: string, user: User) => {
@@ -36,8 +42,21 @@ export const authStoreMethods = {
       token,
       user,
       loading: false,
+      twofaPending: false,
+      pendingUserId: null,
     });
   },
+
+  setTwofaPending: (userId: number) => {
+    userAuthStore.update((state) => ({
+      ...state,
+      token: null, // not fully authenticated yet
+      twofaPending: true,
+      pendingUserId: userId,
+      loading: false,
+  }));
+  },
+
   //logout called only when user clicks logout or token is invalid
   logout: () => {
     if (browser) {
@@ -47,8 +66,9 @@ export const authStoreMethods = {
       user: null,
       token: null,
       loading: false,
+      twofaPending: false,
+      pendingUserId: null,
     });
-    // authLoaded.set(true);
   },
   // this used if the token is already set and we just need to fetch the user
   setUser: (user: User) => {
@@ -89,7 +109,11 @@ export async function initAuthStore(): Promise<void> {
       return;
     }
 
-    userAuthStore.set({ token: savedToken, user: null, loading: true });
+    userAuthStore.update((state) => ({
+      ...state,
+      token: savedToken,
+      loading: true,
+    }));
 
     const response = await trpc.user.getUser.query();
     if (response.status !== 200 || !response.data) {

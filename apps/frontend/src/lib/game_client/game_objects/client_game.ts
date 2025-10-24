@@ -51,7 +51,7 @@ export class ClientGame
 			console.error('Game canvas not found');
 		}
 		this.dimensions = [0, 0];
-		this.engine = new Engine(this.gameCanvas, true, {antialias: true});
+		this.engine = new Engine(this.gameCanvas);
 		this.scene = new Scene(this.engine);
 		this.userId = userId;
 		console.log('Game_client started');

@@ -16,8 +16,9 @@
 
       const data = await res.json();
 	  
-	    if (data.user.twofaEnabled) {
-        authStoreMethods.setTwofaPending(data.user.userId);
+	  if (data.user.twofaEnabled) {
+        authStoreMethods.setTwofaPending(data.user.id);
+
         goto('/verify-2fa');
       }
       else if (data.token)

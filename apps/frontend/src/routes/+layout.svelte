@@ -1,7 +1,10 @@
 <script lang="ts">
   import '../app.css';
   import { onMount } from 'svelte';
-  import { authLoaded, initAuthStore } from '$lib/auth/store';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
+  import { authLoaded, isAuthenticated, initAuthStore } from '$lib/auth/store';
+  import SignInPage from './signin/+page.svelte'
 
   // import favicon from '$lib/assets/favicon.svg';
   const favicon = '/favicon.svg'; // Place favicon.svg in static/ folder
@@ -9,7 +12,20 @@
   onMount(async () => {
 	await initAuthStore();
   });
+
   let { children } = $props();
+
+//   const publicRoutes = ['/', '/signin', '/signup'];
+  const protectedRoutes = ['/profile', '/game', '/game_lobby', '/tournament', '/tournament_brackets', '/welcome'];
+//   let isPublicRoute = $derived(publicRoutes.some(route => page.url.pathname.startsWith(route)));
+  let isProtectedRoute = $derived(protectedRoutes.some(route => page.url.pathname.startsWith(route)));
+
+  $effect(() => {
+	if ($authLoaded && isProtectedRoute && !$isAuthenticated) {
+		goto('/signin');
+	}
+  })
+
 </script>
 
 <svelte:head>

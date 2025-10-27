@@ -45,12 +45,6 @@
 		}
 	}
 	
-	onMount(() => {
-		if (!$isAuthenticated) {
-			goto('/signin');
-		}
-	});
-	
 	$effect(() => {
 		if ($authLoaded && $isAuthenticated && $currentUser?.name) {
 			loadUserData();

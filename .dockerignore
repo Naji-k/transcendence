@@ -1,0 +1,41 @@
+node_modules
+npm-debug.log
+pnpm-debug.log
+.pnpm-store
+dist
+build
+.next
+.svelte-kit
+.turbo
+
+# Git
+.git
+.gitignore
+
+# Environment files (we'll pass these explicitly)
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Database (we'll handle this separately)
+*.sqlite
+*.sqlite-journal
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore

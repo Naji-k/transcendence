@@ -1,7 +1,7 @@
 import { Wall, Ball, Paddle, Goal, Player, Colors,
 		 ColorMap, jsonToVector3 } from '../index';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder } from '@babylonjs/core';
-import { AdvancedDynamicTexture, Rectangle, TextBlock, Control} from '@babylonjs/gui';
+import { AdvancedDynamicTexture, Rectangle, TextBlock, Control } from '@babylonjs/gui';
 
 const ballDiameter = 0.5;
 
@@ -16,7 +16,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 
 	/* | on right */
 	walls.push(
-		new Wall(new Vector3(height, wallHeight, wallThickness),
+		new Wall(new Vector3(width, wallHeight, wallThickness),
 		new Vector3(-width / 2 - wallThickness / 2, wallHeight / 2, 0),
 		new Vector3(1, 0, 0),
 		whiteColor,
@@ -26,7 +26,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 
 	/* | on left */
 	walls.push(
-		new Wall(new Vector3(height, wallHeight, wallThickness),
+		new Wall(new Vector3(width, wallHeight, wallThickness),
 		new Vector3(width / 2 + wallThickness / 2, wallHeight / 2, 0),
 		new Vector3(-1, 0, 0),
 		whiteColor,

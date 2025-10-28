@@ -1,3 +1,4 @@
+# Would be production compose file
 services:
   pong:
     container_name: pong
@@ -15,3 +16,4 @@ services:
 networks:
   mynet:
     driver: bridge
+    

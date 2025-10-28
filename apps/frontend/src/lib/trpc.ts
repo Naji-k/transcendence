@@ -8,15 +8,17 @@ import {
 } from '@trpc/client';
 import superjson from 'superjson';
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/trpc';
-const WS_URL = import.meta.env.VITE_WS_URL ?? 'ws://localhost:3000/trpc';
+function getBackendUrl() {
+  const host = import.meta.env.VITE_BACKEND_HOST ?? 'localhost';
+  return `${host}:3000/trpc`;
+}
 
 export function getAuthToken(): string | null {
   return localStorage.getItem('authToken');
 }
 
 const wsClient = createWSClient({
-  url: WS_URL,
+  url: 'ws://' + getBackendUrl(),
   connectionParams: async () => {
     const currentToken = getAuthToken();
     return currentToken ? { authorization: `Bearer ${currentToken}` } : {};
@@ -36,7 +38,7 @@ export const trpc = createTRPCProxyClient<AppRouter>({
         transformer: superjson,
       }),
       false: httpBatchLink({
-        url: API_URL,
+        url: 'http://' + getBackendUrl(),
         transformer: superjson,
         async headers() {
           const currentToken = getAuthToken();

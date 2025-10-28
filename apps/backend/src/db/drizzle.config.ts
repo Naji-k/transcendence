@@ -9,6 +9,6 @@ export default defineConfig({
   schema: path.resolve(process.cwd(), '../../packages/db/src/dbSchema.ts'),
   dialect: 'sqlite',
   dbCredentials: {
-    url: path.resolve(process.cwd(), process.env.DB_FILE_NAME || 'database.sqlite'), // This will create the database file in the apps/backend/src/db folder, easily modifiable
+    url: path.resolve('database.sqlite'), // This will create the database file in the apps/backend folder, easily modifiable
   },
 });

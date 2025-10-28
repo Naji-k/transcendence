@@ -6,8 +6,7 @@
   import { authLoaded, isAuthenticated, initAuthStore } from '$lib/auth/store';
   import SignInPage from './signin/+page.svelte'
 
-  // import favicon from '$lib/assets/favicon.svg';
-  const favicon = '/favicon.svg'; // Place favicon.svg in static/ folder
+  const favicon = 'favicon.svg';
 
   onMount(async () => {
 	await initAuthStore();

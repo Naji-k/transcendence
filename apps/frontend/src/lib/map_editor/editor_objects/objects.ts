@@ -1,6 +1,7 @@
 import { Vector3, Color3, Mesh, MeshBuilder, Scene, StandardMaterial, 
 		 PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
-import { type BallExport, type WallExport, type GoalExport, vector3ToJson } from "$lib/index";
+import type { BallExport, WallExport, GoalExport } from '../index';
+import { vector3ToJson } from "../../game_client/utils";
 
 const goalPostDiameter = 0.5;
 const middle = new Vector3(0.5, 0.25, 0.5);
@@ -76,8 +77,8 @@ export class EditorObject
 		this.mesh.material = this.material;
 		if (this.type == 'goal')
 		{
-			const directionP1 = this.orientationUp.scale(dimensions.z / 2).add(this.surfaceNormal.scale(0.5));
-			const directionP2 = this.orientationDown.scale(dimensions.z / 2).add(this.surfaceNormal.scale(0.5));
+			const directionP1 = this.orientationUp.scale(dimensions!.z / 2).add(this.surfaceNormal.scale(0.5));
+			const directionP2 = this.orientationDown.scale(dimensions!.z / 2).add(this.surfaceNormal.scale(0.5));
 			this.post1 = this.createPost(this.position.add(directionP1), scene);
 			this.post2 = this.createPost(this.position.add(directionP2), scene);
 		}

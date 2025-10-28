@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { trpc } from '$lib/trpc';
-  import { tournamentInput } from '@repo/trpc/src/schemas';
+  import { tournamentInput } from '@repo/trpc/schemas';
   import { goto } from '$app/navigation';
   import { currentUser } from '$lib/auth/store';
   import { type Tournament } from '@repo/db/dbTypes';

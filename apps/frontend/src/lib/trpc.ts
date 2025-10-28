@@ -1,4 +1,4 @@
-import type { AppRouter } from '@repo/trpc';
+import type { AppRouter } from '@repo/trpc/client';
 import {
   createTRPCProxyClient,
   createWSClient,

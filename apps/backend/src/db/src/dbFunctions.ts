@@ -5,10 +5,10 @@ import {
   tournamentPlayersTable,
   tournamentTable,
   usersTable,
-} from '@repo/db/dbSchema';
+} from '@repo/db';
 import { db } from './dbClientInit';
 import { eq, and, inArray } from 'drizzle-orm';
-import { ExistingUser, Match, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db/dbTypes';
+import { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db';
 import { TRPCError } from '@trpc/server';
 
 

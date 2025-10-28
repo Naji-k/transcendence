@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import { derived, writable } from 'svelte/store';
-import type { User } from '@repo/trpc/src/types';
+import type { User } from '@repo/trpc/types';
 import { trpc } from '../trpc';
 
 interface AuthState {

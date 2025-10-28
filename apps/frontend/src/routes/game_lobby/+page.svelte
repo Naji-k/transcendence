@@ -8,11 +8,9 @@
   let loading = false;
   let error = null;
   let limit = 2;
-  let interval: number | null = null;
+  let interval: NodeJS.Timeout| null = null;
 
-
-
-  $:waitingGames = games.filter((game) => game.status === 'waiting');
+  $: waitingGames = games.filter((game) => game.status === 'waiting');
   async function fetchGames() {
     try {
       error = null;
@@ -53,16 +51,18 @@
     await fetchGames();
   }
 
-  async function startGame(gameId) {
-    try {
-      error = null;
-      console.log(`Starting game ${gameId}...`);
-      await trpc.game.initializeMatch.mutate({ matchId: gameId });
-      await goto(`/game?matchId=${gameId}`);
-    } catch (err) {
-      console.error(`Error starting game: ${err.message}`);
-      error = `Failed to start game: ${err.message}`;
-    }
+  async function startGame(gameId: number) {
+    error = null;
+    console.log(`Starting game ${gameId}...`);
+    if (typeof window !== 'undefined') {
+      try {
+          await trpc.game.initializeMatch.mutate({ matchId: gameId });
+          await goto(`/game?matchId=${gameId}`);
+        } catch (err) {
+          console.error('Navigation error:', err);
+          error = `Failed to start game: ${err.message}`;
+        }
+      };
   }
 
   onMount(() => {

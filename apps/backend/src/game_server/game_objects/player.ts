@@ -1,4 +1,5 @@
-import { Paddle, Goal } from '../index';
+import { Goal } from './goal';
+import { Paddle } from './paddle';
 
 export class Player
 {

@@ -1,4 +1,4 @@
-import { EditorObject } from '$lib/index';
+import { EditorObject } from './editor_objects';
 
 export interface BallExport
 {

@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm';
-import { db } from '../db/src/dbClientInit';
+import { db } from '../db/src';
 import {
   tournamentPlayersTable,
   tournamentTable,
@@ -14,8 +14,8 @@ import {
   TournamentBrackets,
   TournamentMatches,
   TournamentRound,
-} from '@repo/trpc/src/types';
-import { EventEmitter } from 'stream';
+} from '@repo/trpc';
+import { EventEmitter } from 'events';
 import { setTournamentService } from './match';
 
 async function insertTournament(

@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { createRouter, protectedProcedure, publicProcedure } from '../trpc';
+import { createRouter, protectedProcedure, publicProcedure } from '../utils';
 import { tournamentNameSchema, tournamentInput } from '../schemas';
 import { observable } from '@trpc/server/observable';
-import { TournamentBrackets } from '../types';
+import { type TournamentBrackets } from '../types';
 
 export const tournamentRouter = createRouter({
   create: protectedProcedure

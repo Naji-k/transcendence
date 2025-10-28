@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { request } from 'https';
-import { findUserByEmail, createUser } from '../db/src/dbFunctions';
+import { findUserByEmail, createUser } from '../db/src';
 import { jwtUtils } from './jwt';
 import { TRPCError } from '@trpc/server';
 
@@ -86,7 +86,7 @@ export function setupGoogleAuthRoutes(app: FastifyInstance) {
         },
       });
 
-      const { email, name, sub: googleId, picture } = userInfoResponse;
+      const { email, name, sub: googleId } = userInfoResponse;
 
       // Check if user exists
       let user = await findUserByEmail(email);

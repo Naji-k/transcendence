@@ -1,19 +1,16 @@
-import { UserToken, type Context } from '@repo/trpc/src/types';
+import { UserToken, type Context } from '@repo/trpc';
 import { jwtUtils, createNewUser, signIn } from '../auth'; // Adjust the import path as necessary
 import { type CreateFastifyContextOptions } from '@trpc/server/adapters/fastify';
-import { db } from '../db/src/dbClientInit';
+import { db } from '../db/src';
 import {
   findUserById,
   getMatchPlayers,
   playerExistsInMatch,
   matchExists,
-  getUserMatchHistory,
-  getUserTournamentHistory,
-  getUserFriends,
-} from '../db/src/dbFunctions';
+} from '../db/src';
 import { GameStateManager } from '../game_server/game-state-manager';
-import { TournamentService } from '../tournament/tournament';
-import { MatchService } from '../tournament/match';
+import { TournamentService, MatchService } from '../tournament';
+
 
 // const disableJWT = false; //for development,
 const gameStateManager = new GameStateManager();
@@ -42,7 +39,6 @@ function parseToken(authHeader: string | undefined): string | null {
  */
 export async function createTRPCContext({
   req,
-  res,
 }: CreateFastifyContextOptions): Promise<Context> {
   let userToken: UserToken | undefined;
   // 1. HTTP requests (headers)

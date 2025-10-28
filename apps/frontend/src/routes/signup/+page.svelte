@@ -26,7 +26,7 @@
         alert(`Signup failed:\n ${error}`);
       });
   }
-
+  //Change the URL to your backend server address?
   function handleGoogleSignUp() {
     window.location.href = 'http://localhost:3000/api/auth/google';
   }

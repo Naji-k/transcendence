@@ -1,4 +1,4 @@
-import { loginInput, signUpInput } from '@repo/trpc/src/schemas';
+import { loginInput, signUpInput } from '@repo/trpc/schemas';
 import { trpc } from '../trpc';
 import { authStoreMethods } from '$lib/auth/store';
 import { goto } from '$app/navigation';

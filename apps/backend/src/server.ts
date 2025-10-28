@@ -1,14 +1,14 @@
 import Fastify from 'fastify';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
-import { appRouter } from '@repo/trpc';
-import { createTRPCContext } from './trpc/context';
+import { appRouter } from '@repo/trpc/router';
+import { createTRPCContext } from './trpc';
 import websocket from '@fastify/websocket';
-import { setupGoogleAuthRoutes } from './auth/google';
+import { setupGoogleAuthRoutes, setup2FARoutes } from './auth';
 import pino from 'pino';
 import cookie from '@fastify/cookie';
 import fastifyCors from '@fastify/cors';
 import { setup2FARoutes } from './auth/2fa';
-import { logoutRoute } from './auth/index';
+import { logoutRoute } from './auth';
 
 // Create a Fastify instance
 const fastifyInstance = Fastify({

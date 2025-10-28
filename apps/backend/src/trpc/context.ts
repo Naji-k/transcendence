@@ -7,6 +7,9 @@ import {
   getMatchPlayers,
   playerExistsInMatch,
   matchExists,
+  getUserMatchHistory,
+  getUserTournamentHistory,
+  getUserFriends
 } from '../db/src';
 import { GameStateManager } from '../game_server/game-state-manager';
 import { TournamentService, MatchService } from '../tournament';

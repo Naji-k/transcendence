@@ -1,4 +1,4 @@
-import { type GameState, type PlayerAction } from '@repo/trpc';
+import type { GameState, PlayerAction } from '@repo/trpc/types';
 import { TRPCError } from '@trpc/server';
 import { EventEmitter } from 'events';
 import { startGame } from './main';

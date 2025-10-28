@@ -1,4 +1,3 @@
-
 import { Color3, Vector3 } from "@babylonjs/core";
 
 export const Colors: { name: string, color: Color3 }[] =

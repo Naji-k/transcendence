@@ -13,7 +13,7 @@ import { performance } from 'perf_hooks';
 import { updateMatchStatus } from '../../tournament/match';
 import path  from 'path';
 import fs from 'fs/promises';
-import { type GameState, type PlayerAction } from '@repo/trpc';
+import type { GameState, PlayerAction } from '@repo/trpc/types';
 
 const FIXED_DT_MS = 1000 / 60;
 const FIXED_DT_SEC = FIXED_DT_MS / 1000;

@@ -71,7 +71,7 @@ export async function findUserById(id: number): Promise<ExistingUser | null> {
   } catch (error) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'findUserById error',
+      message: 'findUserById: User Not Found',
       cause: error,
     });
   }
@@ -120,7 +120,7 @@ export async function findUserByEmail(
   if (!email) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'findUserByEmail error: email address must be provided',
+      message: 'email address must be provided',
       cause: 'email address is not valid',
     });
   }

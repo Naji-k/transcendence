@@ -21,6 +21,9 @@ export interface Services {
       playerId: number
     ) => Promise<boolean>;
     matchExists: (matchId: number) => Promise<boolean>;
+    getUserMatchHistory: (userId: number) => Promise<any>;
+    getUserTournamentHistory: (userId: number) => Promise<any>;
+    getUserFriends: (userId: number) => Promise<{ alias: string }[]>;
   };
   gameStateManager: {
     subscribe: (

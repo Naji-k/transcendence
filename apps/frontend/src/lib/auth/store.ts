@@ -134,7 +134,7 @@ export async function initAuthStore(): Promise<void> {
     }
     authStoreMethods.setUser(response.data);
   } catch (error) {
-    console.error(error);
+    console.error('Error initializing auth store:', error);
     authStoreMethods.clearUser();
   } finally {
     authLoaded.set(true);

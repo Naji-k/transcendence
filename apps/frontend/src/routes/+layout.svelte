@@ -14,6 +14,7 @@
 
   let { children } = $props();
 
+  //I think we only need to protect certain routes
 //   const publicRoutes = ['/', '/signin', '/signup'];
   const protectedRoutes = ['/profile', '/game', '/game_lobby', '/tournament', '/tournament_brackets', '/welcome'];
 //   let isPublicRoute = $derived(publicRoutes.some(route => page.url.pathname.startsWith(route)));

@@ -159,12 +159,6 @@ export function setTournamentService(service: TournamentService) {
   tournamentService = service;
 }
 
-let tournamentService: TournamentService | null = null;
-
-export function setTournamentService(service: TournamentService) {
-  tournamentService = service;
-}
-
 export async function updateMatchStatus(
   matchId: number,
   status: 'waiting' | 'playing' | 'finished',

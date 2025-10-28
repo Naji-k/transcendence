@@ -19,12 +19,12 @@ export class ClientGame
 	private scene: Scene;
 	private dimensions: [number, number];
 	private	gameCanvas: HTMLCanvasElement | null;
-	private localPlayerIndex: number = -1;
+	private localPlayerIndex = -1;
 
 	private camera: FreeCamera;
-	private cameraTransitionActive: boolean = false;
-	private cameraTransitionStartTime: number = 0;
-	private cameraTransitionDuration: number = 1500;
+	private cameraTransitionActive = false;
+	private cameraTransitionStartTime = 0;
+	private cameraTransitionDuration = 1500;
 	private cameraStartPos: Vector3 = Vector3.Zero();
 	private cameraEndPos: Vector3 = Vector3.Zero();
 

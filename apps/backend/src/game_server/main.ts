@@ -3,7 +3,7 @@ import { GameStateManager } from './game-state-manager';
 import HavokPhysics from '@babylonjs/havok';
 import path from 'path';
 import fs from 'fs';
-import { type GameState } from '@repo/trpc';
+import { type GameState } from '@repo/trpc/types';
 
 /**
 * @returns a Promise that resolves to the HavokPhysics instance 

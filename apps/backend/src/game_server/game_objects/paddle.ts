@@ -1,6 +1,6 @@
 import { Wall } from './wall';
 import { rotateVector, meshesIntersect } from '../utils';
-import { type GamePos } from '@repo/trpc';
+import { type GamePos } from '@repo/trpc/types';
 import { Vector3, MeshBuilder, Mesh, PhysicsShapeType,
 		 PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
 

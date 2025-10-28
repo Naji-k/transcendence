@@ -6,7 +6,7 @@
     "dev:backend": "pnpm --filter backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
     "dev": "pnpm --parallel --filter \"./apps/*\" dev",
-    "build": "pnpm build -r",
+    "build": "pnpm -r build",
     "build:backend": "pnpm --filter backend build",
     "build:frontend": "pnpm --filter frontend build",
     "format:backend": "prettier --write ./apps/backend/",

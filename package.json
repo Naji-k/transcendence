@@ -5,8 +5,8 @@
   "scripts": {
     "dev:backend": "pnpm --filter backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
-    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
-    "start": "pnpm --parallel --filter \"./apps/*\" start",
+    "dev": "pnpm --parallel -r dev",
+    "start": "pnpm --parallel -r start",
     "build": "pnpm -r build",
     "build:backend": "pnpm --filter backend build",
     "build:frontend": "pnpm --filter frontend build",
@@ -18,7 +18,7 @@
     "lint:frontend": "eslint --ext .ts,.tsx ./apps/frontend",
     "lint": "eslint --ext .ts,.tsx .",
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
-    "clear": "rm -rf dist node_modules && pnpm -r clear"
+    "clean": "rm -rf node_modules && pnpm --parallel -r clean"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",

@@ -11,5 +11,5 @@
     "strict": false,
     "moduleResolution": "bundler"
     },
-    "exclude": ["node_modules", "build", "src/lib/Xgame"]
+    "exclude": ["node_modules", "build"]
 }

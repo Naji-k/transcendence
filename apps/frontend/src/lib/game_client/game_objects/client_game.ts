@@ -34,7 +34,7 @@ export class ClientGame
 	private balls: Ball[] = [];
 	private walls: Wall[] = [];
 	private goals: Goal[] = [];
-	private gameState: GameState | null = null;
+	private gameState: GameState;
 
 	private keysPressed = new Set<string>();
     private upKeys: string[] = ['ArrowUp', 'ArrowRight', 'w', 'd'];
@@ -185,15 +185,15 @@ export class ClientGame
 		while (true) 
 		{	
 			await new Promise(resolve => setTimeout(resolve, 100));
-			if (this.gameState!.status == 'in_progress')
+			if (this.gameState.status == 'in_progress')
 			{
 				if (this.userId)
 				{
-					for (let i = 0; i < this.gameState!.players.length; i++)
+					for (let i = 0; i < this.gameState.players.length; i++)
 					{
-						if (this.gameState!.players[i].alias)
+						if (this.gameState.players[i].alias)
 						{
-							this.players[i].updatePlayer(this.gameState!.players[i].id, this.gameState!.players[i].alias, this.gameState!.players[i].lives);
+							this.players[i].updatePlayer(this.gameState.players[i].id, this.gameState.players[i].alias, this.gameState.players[i].lives);
 						}
 					}
 
@@ -209,7 +209,7 @@ export class ClientGame
 					console.log('Starting render loop NOW');
 					this.engine.stopRenderLoop();
 					this.engine.runRenderLoop(this.gameLoop.bind(this));
-					console.log('players: ', this.gameState!.players);
+					console.log('players: ', this.gameState.players);
 				});
 				break; 
 			}
@@ -221,7 +221,7 @@ export class ClientGame
 	{
 		this.setupInputListeners();
 		this.scene.render();
-		trpc.game.sendPlayerAction.mutate({matchId: this.gameState!.matchId, action: 'ready'});
+		trpc.game.sendPlayerAction.mutate({matchId: this.gameState.matchId, action: 'ready'});
 		console.log('Player is ready, waiting for other players...');
 
 		this.waitForStart();
@@ -266,7 +266,7 @@ export class ClientGame
 
 	private updateBalls()
 	{
-		const ballUpdates = this.gameState!.balls;
+		const ballUpdates = this.gameState.balls;
 
 		for (let i = 0; i < ballUpdates.length; i++)
 		{
@@ -276,7 +276,7 @@ export class ClientGame
 
 	private updatePaddles()
 	{
-		const playerUpdates = this.gameState!.players;
+		const playerUpdates = this.gameState.players;
 
 		for (let i = 0; i < playerUpdates.length; i++)
 		{
@@ -286,7 +286,7 @@ export class ClientGame
 
 	private updateScoreboard()
 	{
-		const serverPlayers = this.gameState!.players;
+		const serverPlayers = this.gameState.players;
 
 		for (let i = 0; i < this.players.length; i++)
 		{
@@ -301,7 +301,7 @@ export class ClientGame
 
 	private gameLoop()
 	{
-		if (this.gameState!.status == 'finished')
+		if (this.gameState.status == 'finished')
 		{
 			this.victory();
 		}
@@ -348,7 +348,7 @@ export class ClientGame
 		const action = this.keyToActionFromSet(this.keysPressed);
 
 		trpc.game.sendPlayerAction.mutate({
-			matchId: this.gameState!.matchId,
+			matchId: this.gameState.matchId,
 			action: action.toString() as '1' | '0' | '-1',
 		});
 	}

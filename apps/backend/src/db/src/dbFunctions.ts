@@ -7,9 +7,11 @@ import {
   usersTable,
 } from '@repo/db';
 import { db } from './dbClientInit';
-import { eq, and, inArray } from 'drizzle-orm';
-import { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db';
+import { eq, and, or, inArray, isNull } from 'drizzle-orm';
+import { ExistingUser, Match, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db';
 import { TRPCError } from '@trpc/server';
+import { hashPassword } from '../../auth/password';
+import { networkInterfaces } from 'os';
 
 
 /**
@@ -71,7 +73,7 @@ export async function findUserById(id: number): Promise<ExistingUser | null> {
   } catch (error) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'findUserById: User Not Found',
+      message: 'findUserById error',
       cause: error,
     });
   }
@@ -120,7 +122,7 @@ export async function findUserByEmail(
   if (!email) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'email address must be provided',
+      message: 'findUserByEmail error: email address must be provided',
       cause: 'email address is not valid',
     });
   }
@@ -337,19 +339,231 @@ export async function getUserFriends(userId: number): Promise<{alias: string}[]>
   }
   try {
     const friends = await db
-    .select({
-      alias: usersTable.alias,
-    })
-    .from(friendshipsTable)
-    .innerJoin(usersTable, eq(friendshipsTable.friendId, usersTable.id))
-    .where(eq(friendshipsTable.userId, userId));
+      .select({
+        alias: usersTable.alias,
+      })
+      .from(friendshipsTable)
+      .innerJoin(usersTable, eq(friendshipsTable.friendId, usersTable.id))
+      .where(eq(friendshipsTable.userId, userId));
 
     return friends;
   } catch (error) {
-throw new TRPCError({
+    throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'getUserFriends error',
+          cause: error,
+    });
+  }
+}
+
+export async function getUserAvatar(userId: number): Promise<string> {
+  if (!userId) {
+    throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'getUserFriends error',
-      cause: error,
+      message: 'getUserAvatar error: user ID must be provided',
+      cause: 'user ID is not valid',
+    });
+  }
+  try {
+    const [imgPath] = await db
+      .select({
+        avatarPath: usersTable.avatarPath
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, userId));
+    
+    return imgPath.avatarPath;
+  } catch (error) {
+    throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'getAvatarPath error',
+          cause: error,
+    });
+  }
+}
+
+export async function updateUserAvatar(userId: number, newPath: string): Promise<string> {
+  if (!userId || !newPath) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'updateUserAvatar error: user ID and new path must be provided',
+      cause: 'user ID or avatar path is not valid',
+    });
+  }
+  try {
+    const [updatedAvatarPath] = await db
+      .update(usersTable)
+      .set({ avatarPath: newPath })
+      .where(eq(usersTable.id, userId))
+      .returning({ avatarPath: usersTable.avatarPath });
+    
+    return updatedAvatarPath.avatarPath;
+  } catch (error) {
+    throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'updateUserAvatar error',
+          cause: error,
+    });
+  }
+}
+
+export async function updateUserAlias(userId: number, newAlias: string): Promise<string> {
+  if (!userId || !newAlias) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'updateUserAlias error: user ID and new alias must be provided',
+      cause: 'user ID or alias is not valid',
+    });
+  }
+  try {
+    const [updatedAlias] = await db
+      .update(usersTable)
+      .set({ alias: newAlias })
+      .where(eq(usersTable.id, userId))
+      .returning({ alias: usersTable.alias });
+    
+    return updatedAlias.alias;
+  } catch (error) {
+    throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'updateUserAlias error',
+          cause: error,
+    });
+  }
+}
+
+export async function updateUserEmail(userId: number, newEmail: string): Promise<string> {
+  if (!userId || !newEmail) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'updateUserEmail error: user ID and new email must be provided',
+      cause: 'user ID or email is not valid',
+    });
+  }
+  try {
+    const [updatedEmail] = await db
+      .update(usersTable)
+      .set({ email: newEmail })
+      .where(and(
+        eq(usersTable.id, userId),
+        isNull(usersTable.googleId)
+      ))
+      .returning({ email: usersTable.email });
+  
+    return updatedEmail.email;
+  } catch (error) {
+    throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'updateUserEmail error',
+          cause: error,
+    });
+  }
+}
+
+export async function updateUserPassword(userId: number, newPassword: string): Promise<boolean> {
+  if (!userId || !newPassword) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'updateUserPassword error: user ID and new password must be provided',
+      cause: 'user ID or password is not valid',
+    });
+  }
+  try {
+    const newHashedPassword = await hashPassword(newPassword);
+    const [newPass] = await db
+      .update(usersTable)
+      .set({ password: newHashedPassword })
+      .where(and(
+        eq(usersTable.id, userId),
+        isNull(usersTable.googleId)
+      ))
+      .returning();
+    
+    //  Bad design I'll think about it
+    if (!newPass) {
+     throw "error";
+    }
+    return true;
+  } catch (error) {
+    throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'updateUserPassword error',
+          cause: error,
+    });
+  }
+}
+
+export async function createFriendship(user: number, friend: string): Promise<boolean> {
+  try {
+    const newFriend = await findUserByAlias(friend);
+    if (!newFriend) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'No user with this alias',
+      });
+    }
+
+    // Perhaps check for existing friendship and throw confict error here
+    
+    const newFriendship = await db
+      .insert(friendshipsTable)
+      .values([
+        {
+          userId: user,
+          friendId: newFriend.id
+        },
+        {
+          userId: newFriend.id,
+          friendId: user
+        }
+      ])
+      .returning({ id: friendshipsTable.id });
+    
+    if (!newFriendship || newFriendship.length === 0) {
+      throw "Friendship wasn't created";
+    }
+    return true;
+  } catch (error) {
+    throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'createFriendship error',
+          cause: error,
+    });
+  }
+}
+
+export async function removeFriendship(user: number, friend: string): Promise<boolean> {
+  try {
+    const removeFriend = await findUserByAlias(friend);
+    if (!removeFriend) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'No user with this alias',
+      });
+    }
+    const removedFriendship = await db
+      .delete(friendshipsTable)
+      .where(or(
+        and(
+          eq(friendshipsTable.userId, user),
+          eq(friendshipsTable.friendId, removeFriend.id)
+        ),
+        and(
+          eq(friendshipsTable.userId, removeFriend.id),
+          eq(friendshipsTable.friendId, user)
+        )
+      ))
+      .returning({ id: friendshipsTable.id });
+
+    if (!removedFriendship || removedFriendship.length === 0) {
+      throw "Friendship not found";
+    }
+    return true;
+  } catch (error) {
+    throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'removeFriendship error',
+          cause: error,
     });
   }
 }
@@ -387,4 +601,5 @@ export async function disableUser2FA(userId: number) {
   } catch (error) {
     console.error('disableUser2FA error:', error);
     throw error;
-  }}
+  }
+}

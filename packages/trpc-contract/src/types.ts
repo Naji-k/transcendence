@@ -1,3 +1,7 @@
+// Do we need this file? I saw it exists now in types/types.ts
+
+// It defines the context type used in tRPC routers
+
 import { GameState, PlayerAction } from './types/gameState';
 import { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry, Tournament } from '@repo/db/dbTypes';
 
@@ -22,6 +26,13 @@ export interface Services {
     getUserMatchHistory: (userId: number) => Promise<MatchHistoryEntry[]>;
     getUserTournamentHistory: (userId: number) => Promise<TournamentHistoryEntry[]>;
     getUserFriends: (userId: number) => Promise<{ alias: string }[]>;
+    getUserAvatar: (userId: number) => Promise<string>;
+    updateUserAvatar: (userId: number, newPath: string) => Promise<string>;
+    updateUserAlias: (userId: number, newAlias: string) => Promise<string>;
+    updateUserEmail: (userId: number, newEmail: string) => Promise<string>;
+    updateUserPassword: (userId: number, newPassword: string) => Promise<boolean>;
+    createFriendship: (user: number, friend: string) => Promise<boolean>;
+    removeFriendship: (user: number, friend: string) => Promise<boolean>;
   };
   gameStateManager: {
     subscribe: (

@@ -5,8 +5,22 @@
   import { page } from '$app/state';
   import { authLoaded, isAuthenticated, initAuthStore } from '$lib/auth/store';
   import SignInPage from './signin/+page.svelte'
+  import { trpc } from '$lib';
 
   const favicon = 'favicon.svg';
+  
+  async function updateUserActivityTime() {
+	  try {
+		  let res = await trpc.user.updateActiveStatus.mutate();
+
+		  if (res.status !== 200) {
+			  alert('Failed to update user activity date');
+			  console.error('Failed to update user activity date');
+		  }
+	  } catch (error) {
+		  console.error(`Failed to update user activity date: `, error);
+	  }
+  }
 
   onMount(async () => {
 	await initAuthStore();
@@ -23,6 +37,14 @@
   $effect(() => {
 	if ($authLoaded && isProtectedRoute && !$isAuthenticated) {
 		goto('/signin');
+	}
+  })
+
+  $effect(() => {
+	page.url.pathname;
+
+	if ($authLoaded && $isAuthenticated) {
+		updateUserActivityTime();
 	}
   })
 

@@ -24,7 +24,7 @@ export interface Services {
     matchExists: (matchId: number) => Promise<boolean>;
     getUserMatchHistory: (userId: number) => Promise<MatchHistoryEntry[]>;
     getUserTournamentHistory: (userId: number) => Promise<TournamentHistoryEntry[]>;
-    getUserFriends: (userId: number) => Promise<{ alias: string }[]>;
+    getUserFriends: (userId: number) => Promise<{ alias: string, lastActivityTime: Date }[]>;
     getUserAvatar: (userId: number) => Promise<string>;
     updateUserAvatar: (userId: number, newPath: string) => Promise<string>;
     updateUserAlias: (userId: number, newAlias: string) => Promise<string>;
@@ -32,6 +32,8 @@ export interface Services {
     updateUserPassword: (userId: number, newPassword: string) => Promise<boolean>;
     createFriendship: (user: number, friend: string) => Promise<boolean>;
     removeFriendship: (user: number, friend: string) => Promise<boolean>;
+    updateActiveStatus: (userId: number) => Promise<Date>;
+    // checkActiveStatus: (userId: number) => Promise<boolean>;
   };
   gameStateManager: {
     subscribe: (

@@ -328,6 +328,12 @@
 						<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
 							<div class="ml-2">
 								<p class="text-gray-300 text-xs font-semibold truncate">{friend.alias}</p>
+								{#if friend.lastActivityTime - (Date.now() - 5 * 60 * 1000) > 0}
+									<p class="text-green-300">Active</p>
+								{:else}
+									<p class="text-gray-300">Inactive</p>
+								{/if}
+
 							</div>
 							<button
 								onclick={() => removeFriend(friend.alias)}

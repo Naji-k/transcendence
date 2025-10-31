@@ -7,7 +7,7 @@ import {
   usersTable,
 } from '@repo/db';
 import { db } from './dbClientInit';
-import { eq, and, or, inArray, isNull } from 'drizzle-orm';
+import { eq, and, or, gt, inArray, isNull } from 'drizzle-orm';
 import { ExistingUser, Match, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db';
 import { TRPCError } from '@trpc/server';
 import { hashPassword } from '../../auth/password';
@@ -329,7 +329,7 @@ export async function getUserTournamentHistory(userId: number): Promise<Tourname
   }
 }
 
-export async function getUserFriends(userId: number): Promise<{alias: string}[]> {
+export async function getUserFriends(userId: number): Promise<{alias: string, lastActivityTime: Date}[]> {
   if (!userId) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
@@ -341,6 +341,7 @@ export async function getUserFriends(userId: number): Promise<{alias: string}[]>
     const friends = await db
       .select({
         alias: usersTable.alias,
+        lastActivityTime: usersTable.lastActivityTime,
       })
       .from(friendshipsTable)
       .innerJoin(usersTable, eq(friendshipsTable.friendId, usersTable.id))
@@ -603,3 +604,58 @@ export async function disableUser2FA(userId: number) {
     throw error;
   }
 }
+
+export async function updateActiveStatus(userId: number): Promise<Date> {
+  if (!userId) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'updateActiveStatus error: user ID must be provided',
+      cause: 'user ID is not valid',
+    });
+  }
+  try {
+    const [activeStatus] = await db
+      .update(usersTable)
+      .set({ lastActivityTime: new Date() })
+      .where(eq(usersTable.id, userId))
+      .returning({ lastActivityTime: usersTable.lastActivityTime });
+  
+    return activeStatus.lastActivityTime;
+  } catch (error) {
+    throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'updateUserEmail error',
+          cause: error,
+    });
+  }
+}
+
+// export async function checkActiveStatus(userId: number): Promise<boolean> {
+//   if (!userId) {
+//     throw new TRPCError({
+//       code: 'INTERNAL_SERVER_ERROR',
+//       message: 'checkActiveStatus error: user ID must be provided',
+//       cause: 'user ID is not valid',
+//     });
+//   }
+//   let fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+//   try {
+//     const [activeStatus] = await db
+//       .select({ lastActivityTime: usersTable.lastActivityTime })
+//       .from(usersTable)
+//       .where(
+//         and(
+//           eq(usersTable.id, userId),
+//           gt(usersTable.lastActivityTime, fiveMinutesAgo)
+//       ));
+
+//       return activeStatus !== undefined;
+//   } catch (error) {
+//      throw new TRPCError({
+//           code: 'INTERNAL_SERVER_ERROR',
+//           message: 'checkActiveStatus error',
+//           cause: error,
+//     });
+//   }
+// }

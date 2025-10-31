@@ -210,5 +210,40 @@ export const userRouter = createRouter({
           message: 'Error in removing user friend'
         });
       }
-    })
+    }),
+
+    updateActiveStatus: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        try {
+          const lastActivity = await ctx.services.dbServices.updateActiveStatus(ctx.userToken.id);
+          return {
+            status: 200,
+            message: 'Last activity date updated successfully',
+            data: lastActivity,
+          };
+        } catch (error) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Error in updating active status'
+          });
+        }
+      }),
+
+      // checkActivityStatus: protectedProcedure
+      //   .input(z.object({ userId: z.number() }))  
+      //   .query(async ({ ctx, input }) => {
+      //     try {
+      //       const userActive = await ctx.services.dbServices.checkActiveStatus(input.userId);
+      //       return {
+      //         status: 200,
+      //         message: 'Active status received successfully',
+      //         data: userActive,
+      //       };
+      //     } catch (error) {
+      //       throw new TRPCError({
+      //         code: 'INTERNAL_SERVER_ERROR',
+      //         message: 'Error in receiving active status'
+      //       });
+      //     }
+      //   }),
 });

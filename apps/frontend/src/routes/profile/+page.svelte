@@ -20,6 +20,7 @@
 	let updatedPassword = $state("");
 	let updatedAvatar = $state("");
 	let friendAlias = $state("");
+	let visitedUserAlias = $state("");
 
 	async function loadUserData() {
 		try {
@@ -83,7 +84,6 @@
 					validInput = signUpInput.shape.name.safeParse(updatedAlias);
 					if (!validInput.success) {
 						const messages = validInput.error.issues.map((err) => err.message);
-						// alert('Alias update failed:\n' + messages.join('\n'));
 						throw messages;
 					}
 					res = await trpc.user.updateUserAlias.mutate({ alias: updatedAlias });
@@ -92,7 +92,6 @@
 					validInput = signUpInput.shape.email.safeParse(updatedEmail);
 					if (!validInput.success) {
 						const messages = validInput.error.issues.map((err) => err.message);
-						// alert('Email update failed:\n' + messages.join('\n'));
 						throw messages;
 					}
                     res = await trpc.user.updateUserEmail.mutate({ email: updatedEmail });
@@ -101,7 +100,6 @@
 					validInput = signUpInput.shape.password.safeParse(updatedPassword);
 					if (!validInput.success) {
 						const messages = validInput.error.issues.map((err) => err.message);
-						// alert('Password update failed:\n' + messages.join('\n'));
 						throw messages;
 					}
                     res = await trpc.user.updateUserPassword.mutate({ password: updatedPassword });
@@ -142,7 +140,7 @@
 
 	}
 
-		async function removeFriend(friend: string) {
+	async function removeFriend(friend: string) {
 		try {
 			let res = await trpc.user.removeFriendship.mutate({ alias: friend });
 			if (res?.status === 200) {
@@ -206,16 +204,38 @@
 				</div>
 			</div>
 		{:else}
-			<button 
-				onclick={() => logout()}
-				class="top-4 left-4 bg-gray-700 text-white px-3 py-2 rounded">
-				Logout
-			</button>
-			<button 
-				onclick={() => openEditOverlay()}
-				class="top-4 bg-gray-700 text-white px-3 py-2 rounded">
-				Edit info
-			</button>
+			<section class="flex flex-col md:flex-row justify-between items-center">
+				<div class="mb-4">
+					<button
+						onclick={() => logout()}
+						class="text-xs sm:text-sm md:text-md bg-red-950 hover:bg-red-800 text-white px-4 py-2 rounded m-2">
+						Logout
+					</button>
+					<button 
+						onclick={() => openEditOverlay()}
+						class="text-xs sm:text-sm md:text-md bg-gray-400 hover:bg-gray-500 text-black px-4 py-2 rounded m-2">
+						Edit info
+					</button>
+					<button 
+						onclick={() => goto('/profile/2fa')}
+						class="text-xs sm:text-sm md:text-md bg-amber-400 hover:bg-amber-500 px-4 py-2 rounded m-2 text-black font-bold shadow-lg">
+						Set 2FA
+					</button>
+				</div>
+				<div class="gap-2 mb-4">
+					<input
+						id="edit-alias"
+						type="text"
+						bind:value={visitedUserAlias}
+						class="bg-gray-800 text-xs sm:text-sm md:text-md text-white px-4 py-2 rounded"
+						placeholder="User alias"/>
+					<button
+						onclick={() => goto(`/profile/${visitedUserAlias}`)}
+						class="bg-cyan-500 hover:bg-cyan-600 px-4 py-2 rounded text-xs sm:text-sm text-black font-bold">
+						Find
+					</button>
+				</div>
+			</section>
 			<!-- Section of info with alias and avatar on the left and wins/losses on the right of the page -->
 			<header class="flex flex-col pt-2 md:flex-row justify-between items-center text-gray-300">
 				<section class="flex items-center">
@@ -247,11 +267,11 @@
 					class="text-xs sm:text-sm md:text-md lg:text-lg bg-purple-500 hover:bg-purple-600 px-4 py-2 rounded mr-1 mb-2 text-white font-bold shadow-lg">
 					Tournaments
 				</button>
-				<button 
+				<!-- <button 
 					onclick={() => goto('/profile/2fa')}
 					class="text-xs sm:text-sm md:text-md lg:text-lg bg-amber-400 hover:bg-amber-500 px-4 py-2 rounded mr-1 mb-2 text-black font-bold shadow-lg">
 					Set 2FA
-				</button>
+				</button> -->
 			</nav>
 
 			<!-- Match history section - scrollable -->
@@ -327,11 +347,11 @@
 					{#each userFriends as friend}
 						<article class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
 							<div class="ml-2">
-								<p class="text-gray-300 text-xs font-semibold truncate">{friend.alias}</p>
+								<p class="text-gray-300 text-sm font-semibold truncate">{friend.alias}</p>
 								{#if friend.lastActivityTime - (Date.now() - 5 * 60 * 1000) > 0}
-									<p class="text-green-300">Active</p>
+									<p class="text-xs text-green-300">Active</p>
 								{:else}
-									<p class="text-gray-300">Inactive</p>
+									<p class="text-xs text-gray-500">Inactive</p>
 								{/if}
 
 							</div>

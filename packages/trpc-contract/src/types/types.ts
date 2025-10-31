@@ -14,6 +14,7 @@ export interface Services {
   };
   dbServices: {
     findUserById: (id: number) => Promise<ExistingUser | null>;
+    findUserByAlias: (alias: string) => Promise<ExistingUser | null>;
     getMatchPlayers: (
       matchId: number
     ) => Promise<{ id: number; alias: string }[]>;
@@ -33,7 +34,6 @@ export interface Services {
     createFriendship: (user: number, friend: string) => Promise<boolean>;
     removeFriendship: (user: number, friend: string) => Promise<boolean>;
     updateActiveStatus: (userId: number) => Promise<Date>;
-    // checkActiveStatus: (userId: number) => Promise<boolean>;
   };
   gameStateManager: {
     subscribe: (

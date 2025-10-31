@@ -1,6 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { createRouter, protectedProcedure } from '../utils';
 import z from 'zod';
+import { MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db';
 
 /**
  * User router for handling user-related operations.
@@ -22,9 +23,34 @@ export const userRouter = createRouter({
     };
   }),
 
-  getUserMatchHistory: protectedProcedure.query(async ({ ctx }) => {
+  getVisitedUser: protectedProcedure
+    .input(z.object({ alias: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const user = await ctx.services.dbServices.findUserByAlias(input.alias);
+        return {
+          status: 200,
+          message: 'Visited user fetched successfully',
+          data: { id: user.id },
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Error in fetching visited user'
+        });
+      }
+  }),
+
+  getUserMatchHistory: protectedProcedure
+    .input(z.object({ userId: z.number() }).optional())
+    .query(async ({ ctx, input }) => {
     try {
-      const history = await ctx.services.dbServices.getUserMatchHistory(ctx.userToken.id);
+      let history: MatchHistoryEntry[];
+      if (input?.userId) {
+        history = await ctx.services.dbServices.getUserMatchHistory(input.userId);
+      } else {
+        history = await ctx.services.dbServices.getUserMatchHistory(ctx.userToken.id);
+      }
       return {
         status: 200,
         message: 'User match history fetched successfully',
@@ -38,9 +64,16 @@ export const userRouter = createRouter({
     }
   }),
 
-  getUserTournamentHistory: protectedProcedure.query(async ({ ctx }) => {
+  getUserTournamentHistory: protectedProcedure
+    .input(z.object({ userId: z.number() }).optional())
+    .query(async ({ ctx, input }) => {
     try {
-      const history = await ctx.services.dbServices.getUserTournamentHistory(ctx.userToken.id);
+      let history: TournamentHistoryEntry[];
+      if (input?.userId) {
+        history = await ctx.services.dbServices.getUserTournamentHistory(input.userId);
+      } else {
+        history = await ctx.services.dbServices.getUserTournamentHistory(ctx.userToken.id);
+      }
       return {
         status: 200,
         message: 'User tournament history fetched successfully',
@@ -70,9 +103,16 @@ export const userRouter = createRouter({
     }
   }),
 
-    getUserAvatar: protectedProcedure.query(async ({ ctx }) => {
+    getUserAvatar: protectedProcedure
+      .input(z.object({ userId: z.number() }).optional())
+      .query(async ({ ctx, input }) => {
     try {
-      const avatarPath = await ctx.services.dbServices.getUserAvatar(ctx.userToken.id);
+      let avatarPath: string;
+      if (input?.userId) {
+        avatarPath = await ctx.services.dbServices.getUserAvatar(input.userId);
+      } else {
+        avatarPath = await ctx.services.dbServices.getUserAvatar(ctx.userToken.id);
+      }
       return {
         status: 200,
         message: 'User avatar path fetched successfully',

@@ -4,6 +4,7 @@ import { type CreateFastifyContextOptions } from '@trpc/server/adapters/fastify'
 import { db } from '../db/src';
 import {
   findUserById,
+  findUserByAlias,
   getMatchPlayers,
   playerExistsInMatch,
   matchExists,
@@ -18,7 +19,6 @@ import {
   createFriendship,
   removeFriendship,
   updateActiveStatus,
-  checkActiveStatus
 } from '../db/src';
 import { GameStateManager } from '../game_server/game-state-manager';
 import { TournamentService, MatchService } from '../tournament';
@@ -72,6 +72,7 @@ export async function createTRPCContext({
     },
     dbServices: {
       findUserById: findUserById,
+      findUserByAlias: findUserByAlias,
       getMatchPlayers: getMatchPlayers,
       playerExistsInMatch: playerExistsInMatch,
       matchExists: matchExists,
@@ -86,7 +87,6 @@ export async function createTRPCContext({
       createFriendship: createFriendship,
       removeFriendship: removeFriendship,
       updateActiveStatus: updateActiveStatus,
-      // checkActiveStatus: checkActiveStatus
     },
     gameStateManager: {
       subscribe: gameStateManager.subscribe.bind(gameStateManager),

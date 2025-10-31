@@ -31,6 +31,7 @@
 			if (avatarPathRes.status === 200) {
 				userAvatar = avatarPathRes.data;
 			}
+			// console.log(avatarPathRes.status);
 
 			const [matchHistoryRes, tournamentHistoryRes, friendsRes] = await Promise.all([
 				trpc.user.getUserMatchHistory.query(),
@@ -224,7 +225,6 @@
 				</div>
 				<div class="gap-2 mb-4">
 					<input
-						id="edit-alias"
 						type="text"
 						bind:value={visitedUserAlias}
 						class="bg-gray-800 text-xs sm:text-sm md:text-md text-white px-4 py-2 rounded"
@@ -331,7 +331,6 @@
 					<h3 class="sm:text-sm md:text-lg lg:text-2xl mb-4 text-cyan-400">Friends ({userFriends.length})</h3>
 					<div class="flex gap-2 mb-4">
 						<input
-							id="edit-alias"
 							type="text"
 							bind:value={friendAlias}
 							class="flex-1 bg-gray-800 text-white px-3 py-2 rounded text-sm"

@@ -5,16 +5,20 @@
   "scripts": {
     "dev:backend": "pnpm --filter backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
-    "dev": "pnpm -r dev",
+    "dev": "pnpm --parallel -r dev",
+    "start": "pnpm --parallel -r start",
+    "build": "pnpm -r build",
+    "build:backend": "pnpm --filter backend build",
+    "build:frontend": "pnpm --filter frontend build",
     "format:backend": "prettier --write ./apps/backend/",
     "format:frontend": "prettier --write ./apps/frontend/**/*.svelte",
     "format:packages": "prettier --write ./packages/",
     "format": "prettier --write .",
     "lint:backend": "eslint --ext .ts,.tsx ./apps/backend",
     "lint:frontend": "eslint --ext .ts,.tsx ./apps/frontend",
-    "lint": "eslint --ext .ts,.tsx",
+    "lint": "eslint --ext .ts,.tsx .",
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
-    "clear": "rm -rf dist node_modules && pnpm -r clear"
+    "clean": "rm -rf node_modules && pnpm --parallel -r clean"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",

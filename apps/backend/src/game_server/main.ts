@@ -1,8 +1,9 @@
-import { ServerGame, GameState } from './index';
+import { ServerGame } from './game_objects/server_game';
 import { GameStateManager } from './game-state-manager';
 import HavokPhysics from '@babylonjs/havok';
 import path from 'path';
 import fs from 'fs';
+import { type GameState } from '@repo/trpc/types';
 
 /**
 * @returns a Promise that resolves to the HavokPhysics instance 
@@ -10,10 +11,14 @@ import fs from 'fs';
 
 async function getPhysics(): Promise<any>
 {
+	const localPath = './src/maps/HavokPhysics.wasm';
+	// const libPath = 'node_modules/@babylonjs/havok/lib/esm/HavokPhysics.wasm';
+
 	const wasmPath = path.resolve(
-	__dirname,
-	"../../node_modules/@babylonjs/havok/lib/esm/HavokPhysics.wasm"
+    process.cwd(),
+	localPath
 	);
+	console.log('Loading Havok WASM from:', wasmPath);
 	const buf = fs.readFileSync(wasmPath);
 	const wasmBinary = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 
@@ -92,7 +97,7 @@ async function getPhysics(): Promise<any>
 export async function startGame(gameState: GameState, gameStateManager: GameStateManager, maxPlayers: number): Promise<ServerGame>
 {
 
-	const map = `../../maps/standard${maxPlayers}player.map`;	
+	const map = `./src/maps/standard${maxPlayers}player.map`;	
 	
 	const havokInstance = await getPhysics();
 
@@ -106,3 +111,5 @@ export async function startGame(gameState: GameState, gameStateManager: GameStat
 	game.run();
 	return game;
 }
+// /Users/NajiKanounji/42/transcendence/apps/backend/src/maps/standard2player.map
+// Loading Havok WASM from: /Users/NajiKanounji/42/transcendence/apps/backend/node_modules/@babylonjs/havok/lib/esm/HavokPhysics.wasm

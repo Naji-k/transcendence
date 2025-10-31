@@ -3,10 +3,10 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { page } from '$app/stores';
-  import { ClientGame } from '$lib/index';
-  import { type GameState, type Player } from '@repo/trpc/src/types/gameState';
+  import type { GameState, Player } from '@repo/trpc/types';
   import { trpc } from '$lib/trpc';
   import { isAuthenticated, currentUser } from '$lib/auth/store';
+  import { ClientGame } from '$lib/game_client/game_objects/client_game';
 
   let canvas: HTMLCanvasElement | null = null;
   let game: ClientGame | null = null;
@@ -53,11 +53,9 @@
   };
 
   onMount(async () => {
-    if ($isAuthenticated) {
-      console.log('Welcome back!', $currentUser.id);
-    }
-    const userId = Number(localStorage.getItem('id'))
-    initialState = await trpc.game.getGameState.query({ matchId: matchId });
+    const userId = Number(localStorage.getItem('id'));
+    const res = await trpc.game.getGameState.query({ matchId: matchId });
+    initialState = { ...initialState, ...res } as GameState;
     const map = `maps/standard${initialState.players.length}player.map`;
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
@@ -68,7 +66,7 @@
       resizeObserver.observe(document.documentElement);
     }
 
-    const { startGame } = await import('$lib');
+    const { startGame } = await import('$lib/game_client/main');
     if (game == null) {
       try {
         initialState.matchId = matchId;
@@ -87,12 +85,15 @@
             if (game) game.updateFromServer(data as GameState);
             if (data.status === 'finished') {
               handleGameFinished(data as GameState);
+              initialState = data as GameState;
             }
           },
-          onError: (err) => console.error('Subscription error', err),
+          onError: (err) => {
+            console.error('Subscription error:', err);
+          },
         }
       );
-      resizeCanvas();
+    resizeCanvas();
     }
   });
 
@@ -104,7 +105,7 @@
     subscription = null;
 
     if (game != null) {
-      const { destroyGame } = await import('$lib');
+      const { destroyGame } = await import('$lib/game_client/game_objects/client_game');
       await destroyGame(game);
       game = null;
     }

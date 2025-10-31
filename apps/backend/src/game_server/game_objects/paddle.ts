@@ -1,8 +1,8 @@
-import { Ball, Wall, meshesIntersect, rotateVector, type GamePos } from '../index';
+import { Wall } from './wall';
+import { rotateVector, meshesIntersect } from '../utils';
+import { type GamePos } from '@repo/trpc/types';
 import { Vector3, MeshBuilder, Mesh, PhysicsShapeType,
 		 PhysicsAggregate, PhysicsMotionType, Scene } from '@babylonjs/core';
-
-const offset = 0.3;
 
 export class Paddle
 {
@@ -13,13 +13,12 @@ export class Paddle
 	private frozen:			boolean;
 	private upDirection:	Vector3;
 
-	private static maxSpeed:			number = 0.6;
-	private static acceleration:		number = 0.03;
+	private static maxSpeed			 = 0.6;
+	private static acceleration		 = 0.03;
 
 	constructor(dimensions: Vector3, _position: Vector3, surfaceNorm: Vector3, scene: Scene)
 	{
-		this.mesh = MeshBuilder.CreateBox
-		(
+		this.mesh = MeshBuilder.CreateBox(
 			'box', 
 			{width: dimensions.x, height: dimensions.y, depth: dimensions.z},
 			scene

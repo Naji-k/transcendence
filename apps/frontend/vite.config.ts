@@ -7,9 +7,15 @@ export default defineConfig({
   server: {
     host: true,
     port: 8080,
+    cors: true,
     watch: { usePolling: true },
     fs: {
       allow: ['..', '../..', '../../..'],
     },
-  }
+  },
+  preview: {
+    host: true,
+    port: 8080,
+    cors: true,
+  },
 });

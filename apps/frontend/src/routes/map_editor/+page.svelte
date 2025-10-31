@@ -1,13 +1,13 @@
 <!-- src/routes/pong/+page.svelte -->
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { Editor } from '$lib/index';
+	import { Editor } from '$lib/map_editor';
 
 	let editor: Editor;
 
 	onMount(async () =>
 	{
-		const { startEditor, restartEditor } = await import('$lib');
+		const { startEditor, restartEditor } = await import('$lib/map_editor');
 		if (editor == null)
 		{
 			editor = await startEditor();
@@ -20,12 +20,12 @@
 
 	onDestroy(async () =>
 	{
-		const { destroyEditor } = await import('$lib');
+		const { destroyEditor } = await import('$lib/map_editor');
 		destroyEditor(editor);
 		editor = null;
 	});
 </script>
-<canvas id="editorCanvas" width="1920" height="1080"></canvas>
+<canvas id="editorCanvas"></canvas>
 <div id="map-list"></div>
 <style>
 	#map-list
@@ -49,27 +49,5 @@
 	}
 	
 	#map-list:empty { display: none; }
-
-	#map-list button
-	{
-		font-size: 1rem;
-		padding: 8px 0;
-		border-radius: 6px;
-		border: none;
-		background: #444;
-		color: #fff;
-		cursor: pointer;
-		transition: background 0.2s;
-	}
-
-	#map-list button:hover
-	{
-		background: #666;
-	}
-
-	#map-list button[selected]
-	{
-		color: #ffd700;
-		font-weight: bold;
-	}
+	#editorCanvas { width: 100%; height: auto; display: block; }
 </style>

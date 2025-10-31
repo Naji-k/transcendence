@@ -1,13 +1,19 @@
-import { Wall, Ball, Paddle, createSurroundingWalls, GameState, PlayerAction,
-		createWalls, createBalls, createPlayers, createGoals,
-		createGround, createPaddles, Player, Goal, jsonToVector2 } from '../index';
+import { Wall } from './wall';
+import { Ball } from './ball';
+import { Paddle } from './paddle';
+import { Player } from './player';
+import { Goal } from './goal';
+import { createSurroundingWalls, createWalls, createBalls, createPlayers,
+	 createGoals, createGround, createPaddles } from '../initialize';
+import { jsonToVector2 } from '../utils';
 import { Engine, Scene, Vector3, HavokPlugin, NullEngine } from '@babylonjs/core';
-import { EventEmitter } from 'stream';
+import { EventEmitter } from 'events';
 import { GameStateManager } from '../game-state-manager';
 import { performance } from 'perf_hooks';
-import { MatchService } from '../../tournament/match';
+import { updateMatchStatus } from '../../tournament/match';
 import path  from 'path';
 import fs from 'fs/promises';
+import type { GameState, PlayerAction } from '@repo/trpc/types';
 
 const FIXED_DT_MS = 1000 / 60;
 const FIXED_DT_SEC = FIXED_DT_MS / 1000;
@@ -122,7 +128,7 @@ export class ServerGame extends EventEmitter
 		this.gameState.status = 'finished';
 		const winner = this.gameState.players.find(p => p.isAlive);
 		if (winner)
-			MatchService.updateMatchStatus(this.gameState.matchId, 'finished', winner.id);
+			updateMatchStatus(this.gameState.matchId, 'finished', winner.id);
 		this.gameState.lastUpdate = performance.now();
 		this.updateGameState();
 		this.gameIsRunning = false;
@@ -172,7 +178,7 @@ export class ServerGame extends EventEmitter
 				if (this.gameState.players.every(p => p.isReady))
 				{
 					this.gameState.status = 'in_progress'
-					MatchService.updateMatchStatus(this.gameState.matchId, 'playing');
+					updateMatchStatus(this.gameState.matchId, 'playing');
 					// Give clients time to show countdown
 					setTimeout(() =>
 					{
@@ -273,7 +279,8 @@ export class ServerGame extends EventEmitter
 
 export async function loadFileText(filePath: string): Promise<string> {
 	try {
-		const absPath = path.resolve(__dirname, filePath);
+		const absPath = path.resolve(process.cwd(), filePath);
+		console.log('Loading map file from:', absPath);
 	return await fs.readFile(absPath, 'utf-8');
 	} catch (err: any) {
 		console.error(`Failed to load file: ${filePath}`, err);

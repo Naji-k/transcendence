@@ -1,8 +1,7 @@
 import { TRPCError } from '@trpc/server';
-import { createRouter, protectedProcedure, publicProcedure } from '../trpc';
-import { PlayerAction } from '../types/gameState';
+import { createRouter, protectedProcedure, publicProcedure } from '../utils';
+import type { GameState, PlayerAction } from '../types/gameState';
 import { z } from 'zod';
-import { GameState } from '../types/gameState';
 import { observable } from '@trpc/server/observable';
 
 export const gameRouter = createRouter({
@@ -27,7 +26,7 @@ export const gameRouter = createRouter({
         );
         return { success: true, gameState };
       } catch (error) {
-        console.error('Error initializing match:', error);
+        // console.error('Error initializing match:', error);
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to initialize match',
@@ -59,7 +58,7 @@ export const gameRouter = createRouter({
             input.matchId
           );
           if (gameState) {
-            console.log('emitting initial game state');
+            // console.log('emitting initial game state');
             emit.next(gameState);
           } else {
             throw new TRPCError({

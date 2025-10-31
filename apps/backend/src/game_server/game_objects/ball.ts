@@ -1,5 +1,6 @@
 import { Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
-import { Paddle, Wall } from '../index';
+import { Paddle } from './paddle';
+import { Wall } from './wall';
 
 export class Ball
 {
@@ -9,8 +10,8 @@ export class Ball
 	private aggregate:	PhysicsAggregate;
 	private speed: 		number;
 	
-	private static baseSpeed: number = 10;
-	private static speedIncrement: number = 0.3;
+	private static baseSpeed = 10;
+	private static speedIncrement = 0.3;
 
 	constructor(_center: Vector3, _diameter: number, scene: Scene)
 	{

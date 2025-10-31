@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import { derived, writable } from 'svelte/store';
-import type { User } from '@repo/trpc/src/types';
+import type { User } from '@repo/trpc/types';
 import { trpc } from '../trpc';
 
 interface AuthState {
@@ -134,7 +134,7 @@ export async function initAuthStore(): Promise<void> {
     }
     authStoreMethods.setUser(response.data);
   } catch (error) {
-    console.error(error);
+    console.error('Error initializing auth store:', error);
     authStoreMethods.clearUser();
   } finally {
     authLoaded.set(true);

@@ -1,4 +1,4 @@
-import { Editor } from '$lib/index';
+import { Editor } from './editor_objects';
 import HavokPhysics from '@babylonjs/havok';
 
 export async function getPhysics(): Promise<any>

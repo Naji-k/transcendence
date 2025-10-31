@@ -6,8 +6,7 @@
   import { authLoaded, isAuthenticated, initAuthStore } from '$lib/auth/store';
   import SignInPage from './signin/+page.svelte'
 
-  // import favicon from '$lib/assets/favicon.svg';
-  const favicon = '/favicon.svg'; // Place favicon.svg in static/ folder
+  const favicon = 'favicon.svg';
 
   onMount(async () => {
 	await initAuthStore();
@@ -15,6 +14,7 @@
 
   let { children } = $props();
 
+  //I think we only need to protect certain routes
 //   const publicRoutes = ['/', '/signin', '/signup'];
   const protectedRoutes = ['/profile', '/game', '/game_lobby', '/tournament', '/tournament_brackets', '/welcome'];
 //   let isPublicRoute = $derived(publicRoutes.some(route => page.url.pathname.startsWith(route)));

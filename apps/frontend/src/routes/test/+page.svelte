@@ -1,8 +1,8 @@
 <script lang="ts">
   import { trpc } from '$lib/trpc';
-  import type { GameState } from '@repo/trpc/src/types/gameState';
+  import type { GameState } from '@repo/trpc/types';
   import { onMount } from 'svelte';
-  import { tournamentInput } from '@repo/trpc/src/schemas';
+  import { tournamentInput } from '@repo/trpc/schemas';
 
   // State variables
   let matchId = 1; // Example match ID
@@ -69,7 +69,7 @@
         action: '-1',
       });
       console.log(
-        `Ready action sent for player ${id}: ${JSON.stringify(result)}`
+        `Ready action sent for player : ${JSON.stringify(result)}`
       );
     } catch (error) {
       console.log(`Error sending ready: ${error.message}`);

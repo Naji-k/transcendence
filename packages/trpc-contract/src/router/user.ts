@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import { createRouter, protectedProcedure } from '../trpc';
+import { createRouter, protectedProcedure } from '../utils';
 
 /**
  * User router for handling user-related operations.

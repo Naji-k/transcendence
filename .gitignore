@@ -9,6 +9,8 @@ pids
 *.pid.lock
 
 *dist/
+dist/
+build/
 *.env
 *.db*
 .idea

@@ -1,5 +1,3 @@
-// It defines the context type used in tRPC routers
-
 import { GameState, PlayerAction } from './types/gameState';
 import { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry, Tournament } from '@repo/db/dbTypes';
 

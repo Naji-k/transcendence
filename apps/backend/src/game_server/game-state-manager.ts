@@ -1,8 +1,8 @@
-import { GameState, PlayerAction } from '@repo/trpc/src/types/gameState';
+import type { GameState, PlayerAction } from '@repo/trpc/types';
 import { TRPCError } from '@trpc/server';
 import { EventEmitter } from 'events';
 import { startGame } from './main';
-import { ServerGame } from './index';
+import { ServerGame } from './game_objects/server_game';
 
 export class GameStateManager extends EventEmitter {
   private serverGames = new Map<number, ServerGame>();
@@ -60,7 +60,7 @@ export class GameStateManager extends EventEmitter {
       balls: [{ x: 0, z: 0 }],
     };
 
-    const serverGame = await startGame(initialState, this,players.length);
+    const serverGame = await startGame(initialState, this, players.length);
     this.serverGames.set(matchId, serverGame);
     this.notifySubs(matchId, initialState);
     return initialState;

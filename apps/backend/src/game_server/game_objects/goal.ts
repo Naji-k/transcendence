@@ -1,5 +1,6 @@
 import { Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
-import { Ball, meshesIntersect } from '../index';
+import { Ball } from './ball';
+import { meshesIntersect } from '../index';
 
 const goalPostDiameter = 0.5;
 

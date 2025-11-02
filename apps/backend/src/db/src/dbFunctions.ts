@@ -5,10 +5,10 @@ import {
   tournamentPlayersTable,
   tournamentTable,
   usersTable,
-} from '@repo/db/dbSchema';
+} from '@repo/db';
 import { db } from './dbClientInit';
 import { eq, and, inArray } from 'drizzle-orm';
-import { ExistingUser, Match, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db/dbTypes';
+import { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db';
 import { TRPCError } from '@trpc/server';
 
 
@@ -71,7 +71,7 @@ export async function findUserById(id: number): Promise<ExistingUser | null> {
   } catch (error) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'findUserById error',
+      message: 'findUserById: User Not Found',
       cause: error,
     });
   }
@@ -120,7 +120,7 @@ export async function findUserByEmail(
   if (!email) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'findUserByEmail error: email address must be provided',
+      message: 'email address must be provided',
       cause: 'email address is not valid',
     });
   }

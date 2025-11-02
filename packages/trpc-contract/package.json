@@ -1,14 +1,22 @@
 {
   "name": "@repo/trpc",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "description": "Shared tRPC contracts and types",
+  "main": "./src/index.ts",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./router": "./src/router/index.ts",
+    "./types": "./src/types/index.ts",
+    "./schemas": "./src/schemas/index.ts",
+    "./client": "./src/client.ts"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "clear": "rm -rf dist node_modules"
+    "build": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules"
   },
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@repo/tsconfig": "workspace:*",
     "@trpc/server": "^11.4.3",
@@ -17,6 +25,8 @@
     "zod": "^4.0.5"
   },
   "devDependencies": {
-    "fastify": "^5.4.0"
+    "@types/node": "^24.7.2",
+    "fastify": "^5.4.0",
+    "typescript": "^5.9.3"
   }
 }

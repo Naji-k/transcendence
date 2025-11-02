@@ -1,9 +1,9 @@
-import { loginInput, signUpInput } from '@repo/trpc/src/schemas';
+import { loginInput, signUpInput } from '@repo/trpc/schemas';
 import { trpc } from '../trpc';
 import { authStoreMethods } from '$lib/auth/store';
 import { goto } from '$app/navigation';
 
-export async function signUp(name: string, email: string, password: string, twofa_enabled: number = 0) {
+export async function signUp(name: string, email: string, password: string, twofa_enabled = 0) {
   try {
     const validInput = signUpInput.safeParse({
       name,

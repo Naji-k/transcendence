@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { request } from 'https';
-import { findUserByEmail, createUser } from '../db/src/dbFunctions';
+import { findUserByEmail, createUser } from '../db/src';
 import { jwtUtils } from './jwt';
 import { TRPCError } from '@trpc/server';
 
@@ -86,7 +86,7 @@ export function setupGoogleAuthRoutes(app: FastifyInstance) {
         },
       });
 
-      const { email, name, sub: googleId, picture } = userInfoResponse;
+      const { email, name, sub: googleId } = userInfoResponse;
 
       // Check if user exists
       let user = await findUserByEmail(email);
@@ -151,6 +151,27 @@ export function setupGoogleAuthRoutes(app: FastifyInstance) {
     } catch (err) {
       console.error(err);
       return reply.status(401).send({ error: 'Invalid or expired token' });
+    }
+  });
+}
+
+export function logoutRoute(app: FastifyInstance) {
+    app.post('/api/auth/logout', async (req, reply) => {
+    try {
+       reply.clearCookie('auth_token', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        path: '/',
+      });
+      
+      return reply.status(200).send({
+        success: true,
+        message: 'Logged out'
+      });
+    } catch (error) {
+      console.error('Logout failed:', error);
+      reply.status(500).send({ error: 'Logout failed' });
     }
   });
 }

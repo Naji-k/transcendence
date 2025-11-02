@@ -10,9 +10,8 @@ export class Paddle
 	constructor(dimensions: Vector3, _position: Vector3, surfaceNorm: Vector3, _color: Color3, scene: Scene)
 	{
 		this.surfaceNorm = surfaceNorm;
-		this.mesh = MeshBuilder.CreateBox
-		(
-			'box', 
+		this.mesh = MeshBuilder.CreateBox(
+			'box',
 			{width: dimensions.x, height: dimensions.y, depth: dimensions.z},
 			scene
 		);

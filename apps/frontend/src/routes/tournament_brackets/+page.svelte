@@ -8,7 +8,7 @@
     TournamentBrackets,
     TournamentMatches,
     TournamentRound,
-  } from '@repo/trpc/src/types';
+  } from '@repo/trpc/types';
 
   $: tournamentId = Number($page.url.searchParams.get('id')) || 0;
   let bracket: TournamentBrackets | null = null;
@@ -48,11 +48,13 @@
     try {
       error = null;
       console.log(`Starting game ${gameId}...`);
-      await trpc.game.initializeMatch.mutate({ matchId: gameId });
+      const res = await trpc.game.initializeMatch.mutate({ matchId: gameId });
+      console.log('Game initialized:', res);
       await goto(`/game?matchId=${gameId}`);
     } catch (err) {
-      console.error(`Error starting game: ${err.message}`);
-      error = `Failed to start game: ${err.message}`;
+      console.error(`Error starting game: ${err}`);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      error = `Failed to start game: ${errorMessage}`;
     }
   }
 

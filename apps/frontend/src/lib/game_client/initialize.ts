@@ -1,8 +1,11 @@
-import { Wall, Ball, Paddle, Goal, Player, Colors,
-		 ColorMap, jsonToVector3 } from '../index';
+import { Wall } from './game_objects/wall';
+import { Ball } from './game_objects/ball';
+import { Paddle } from './game_objects/paddle';
+import { Goal } from './game_objects/goal';
+import { Player } from './game_objects/player';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder } from '@babylonjs/core';
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Control } from '@babylonjs/gui';
-
+import {Colors, ColorMap, jsonToVector3 } from './utils';
 const ballDiameter = 0.5;
 
 export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: number[])
@@ -164,7 +167,7 @@ export function createScoreboard(scoreboard: TextBlock[], players: Player[])
 {
 	const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 	const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('Scores');
-	let background = new Rectangle();
+	const background = new Rectangle();
 	background.widthInPixels = canvas.width / 10;
 	background.heightInPixels = 35 * players.length + 10;
 	background.cornerRadius = 10;

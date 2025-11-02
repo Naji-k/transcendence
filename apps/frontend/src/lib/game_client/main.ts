@@ -1,10 +1,13 @@
-import { ClientGame, type GameState } from '../index';
+import { ClientGame } from './game_objects/client_game';
+import { type GameState } from '@repo/trpc/types';
 
 export async function startGame(map: string, gameState: GameState, userId: number): Promise<ClientGame>
 {
-	if (gameState == null || gameState == undefined)
+	console.log('Starting game with map:', map);
+	if (gameState == null || gameState === undefined)
 	{
-		return new Promise<ClientGame>((resolve, reject) => {reject('GameState does not exist');});
+		console.log('GameState does not exist');
+    	return Promise.reject('GameState does not exist');
 	}
 	const game = new ClientGame(gameState, userId);
 	

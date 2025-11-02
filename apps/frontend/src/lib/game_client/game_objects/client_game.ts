@@ -1,26 +1,30 @@
-import { Wall, Ball, Paddle, createSurroundingWalls,
-		createWalls, createBalls, createPlayers, createGoals,
-		createGround, createPaddles, createScoreboard, Player, Goal, jsonToVector2,
-		Colors, type GameState } from '$lib/index';
+import { Wall } from './wall';
+import { Ball } from './ball';
+import { Paddle } from './paddle';
+import { Player } from './player';
+import { Goal } from './goal';
+import { createSurroundingWalls, createWalls, createBalls, createPlayers, createGoals, createGround, createPaddles, createScoreboard } from '../initialize';
 import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
 		Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		StandardMaterial, Layer } from '@babylonjs/core';
 import { TextBlock, AdvancedDynamicTexture } from '@babylonjs/gui';
 import type { AudioEngineV2 } from '@babylonjs/core';
 import { trpc } from '../../trpc';
+import type { GameState } from '@repo/trpc/types';
+import { Colors, jsonToVector2 } from '../utils';
 
 export class ClientGame
 {
 	private engine: Engine;
 	private scene: Scene;
 	private dimensions: [number, number];
-	private	gameCanvas: HTMLCanvasElement;
-	private localPlayerIndex: number = -1;
+	private	gameCanvas: HTMLCanvasElement | null;
+	private localPlayerIndex = -1;
 
 	private camera: FreeCamera;
-	private cameraTransitionActive: boolean = false;
-	private cameraTransitionStartTime: number = 0;
-	private cameraTransitionDuration: number = 1500;
+	private cameraTransitionActive = false;
+	private cameraTransitionStartTime = 0;
+	private cameraTransitionDuration = 1500;
 	private cameraStartPos: Vector3 = Vector3.Zero();
 	private cameraEndPos: Vector3 = Vector3.Zero();
 
@@ -30,9 +34,9 @@ export class ClientGame
 	private balls: Ball[] = [];
 	private walls: Wall[] = [];
 	private goals: Goal[] = [];
-	private gameState: GameState | null = null;
+	private gameState: GameState;
 
-	private keysPressed: Set<string> = new Set();
+	private keysPressed = new Set<string>();
     private upKeys: string[] = ['ArrowUp', 'ArrowRight', 'w', 'd'];
     private downKeys: string[] = ['ArrowDown', 'ArrowLeft', 's', 'a'];
 
@@ -256,7 +260,7 @@ export class ClientGame
 		next();
 	}
 
-	public updateFromServer(gameState: GameState)
+	public updateFromServer(gameState: GameState | null)
 	{
 		this.gameState = gameState;
 	}
@@ -274,7 +278,7 @@ export class ClientGame
 	private updatePaddles()
 	{
 		const playerUpdates = this.gameState.players;
-		
+
 		for (let i = 0; i < playerUpdates.length; i++)
 		{
 			this.paddles[i].update(playerUpdates[i].position.x, playerUpdates[i].position.z);
@@ -436,15 +440,22 @@ export class ClientGame
 
 async function loadFileText(filePath: string): Promise<string>
 {
-	console.log(`Loading file: ${filePath}`);
-	const response = await fetch(filePath);
+	try {
 
-	if (response.ok == false)
-	{
-		throw new Error(`Failed to load file: ${filePath}`);
+		console.log(`Loading file: ${filePath}`);
+		const response = await fetch(filePath);
+		if (response.ok == false)
+		{
+			throw new Error(`Failed to load file: ${filePath}`);
+		}
+		return response.text();
+	
+	} catch (error) {
+		console.error(`Failed to load file: ${filePath}`, error);
+		throw error;
 	}
-	return response.text();
 }
+
 
 /*	Destroys the resources associated with the game	*/
 

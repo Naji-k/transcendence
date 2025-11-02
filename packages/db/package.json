@@ -1,18 +1,23 @@
 {
   "name": "@repo/db",
   "version": "1.0.0",
-  "description": "Schemas and types",
+  "description": "Shared database schemas and types",
+  "main": "./src/index.ts",
+  "type": "module",
   "exports": {
-    "./dbSchema": "./dbSchema.ts",
-    "./dbTypes": "./dbTypes.ts"
+    ".": "./src/index.ts",
+    "./dbSchema": "./src/dbSchema.ts",
+    "./dbTypes": "./src/dbTypes.ts"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@repo/tsconfig": "workspace:*",
     "drizzle-orm": "^0.44.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }

@@ -1,9 +1,12 @@
-import { ColorMap, saveMap, loadMap, EditorObject, startEditor, jsonToVector2, jsonToVector3 } from '$lib/index';
+import { EditorObject } from './index';
+import { startEditor } from '../main';
+import { saveMap, loadMap } from '../maps';
 import { Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		 StandardMaterial, MeshBuilder, HavokPlugin, Mesh, Observer,
 		 PointerEventTypes, HighlightLayer, LinesMesh, PickingInfo, PointerInfo } from '@babylonjs/core';
 import { type Nullable } from '@babylonjs/core/types';
 import { TextBlock, AdvancedDynamicTexture, Button, Control, Rectangle } from '@babylonjs/gui';
+import {ColorMap, jsonToVector3, jsonToVector2} from '../../game_client/utils';
 
 const rotationStep = 6 * Math.PI / 180;
 const leftStep = new Vector3(-0.5, 0, 0);
@@ -444,8 +447,10 @@ export class Editor
 												break;
 											}
 										}
+										break;
 									default: break;
 								}
+								break;
 							case 'w': obj.changePosition(upStep); break;
 							case 's': obj.changePosition(downStep); break;
 							case 'a': obj.changePosition(rightStep); break;

@@ -1,5 +1,6 @@
-import { Wall, Ball, Paddle, Goal, Player, jsonToVector3 } from './index';
+import { Wall, Ball, Paddle, Goal, Player } from './game_objects/';
 import { Scene, Vector3, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
+import { jsonToVector3 } from './utils';
 
 const ballDiameter = 0.5;
 

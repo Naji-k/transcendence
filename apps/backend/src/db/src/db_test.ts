@@ -1,8 +1,7 @@
 /* THIS FILE CONTAINS SEVERAL SEPARATE TESTS,
 EACH SECTION HAS A COMMENT ABOVE IT, SEPARATE SECTIONS CAN BE
 COMMENTED OUT IF YOU DON'T WANT TO RUN ALL THE DIFFERENT TESTS */
-import { eq, inArray } from 'drizzle-orm';
-import { reset } from 'drizzle-seed'
+import { eq } from 'drizzle-orm';
 import {
   friendshipsTable,
   matchTable,
@@ -10,14 +9,13 @@ import {
   tournamentPlayersTable,
   tournamentTable,
   usersTable,
-} from '@repo/db/dbSchema';
+} from '@repo/db';
 import { db } from './dbClientInit';
 import {
   createUser,
   findUserByAlias,
   findUserByEmail,
   findUserById,
-  playerExistsInMatch,
   matchExists,
   getMatchPlayers,
   getUserMatchHistory,

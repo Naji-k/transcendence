@@ -1,10 +1,15 @@
 {
- "extends": "./.svelte-kit/tsconfig.json",
+  "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "es2020"], /* Include DOM types */
-    "rootDir": "./src",
-    "outDir": "./dist",
-  },
-  "include": ["src/**/*", "mapIndexesScript.tsipt.mapIndexesScript.tsxesScript.ts", "src/lib/Xgame"],
-  "exclude": ["node_modules", "dist"]
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": false,
+    "strict": false,
+    "moduleResolution": "bundler"
+    },
+    "exclude": ["node_modules", "build"]
 }

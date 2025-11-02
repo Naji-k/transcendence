@@ -1,5 +1,5 @@
 import { initTRPC, TRPCError } from '@trpc/server';
-import { Context, UserToken } from './types';
+import type { Context, UserToken } from '../types/types.js';
 import superjson from 'superjson';
 
 // Initialize tRPC with the context type

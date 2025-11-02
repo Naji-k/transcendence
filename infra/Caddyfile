@@ -1,19 +1,19 @@
 # Production reverse proxy
-{$VITE_BACKEND_HOST:localhost} {
+{$VITE_BACKEND_HOST}:9000 {
     tls internal
     
     # Backend API
     handle /trpc* {
-        reverse_proxy pong:3000 {
+        reverse_proxy backend:4000 {
         }
     }
     handle /api/* {
-        reverse_proxy pong:3000
+        reverse_proxy backend:4000
     }
 
     # Frontend requests
     handle /* {
-        reverse_proxy pong:8080
+        reverse_proxy frontend:3000
     }
 
     # Logging

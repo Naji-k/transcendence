@@ -9,14 +9,28 @@ import {
 } from '@trpc/client';
 import superjson from 'superjson';
 
+//clean up this function later
 function getBackendUrl() {
-  if (!browser) {
-    const url = import.meta.env.VITE_BACKEND_HOST || 'localhost';
-    return `http://${url}/trpc`;
+  // 1️⃣ SSR (Server-Side Rendering) - must use absolute URL
+  if (!browser || import.meta.env.DEV) {
+    const host = import.meta.env.VITE_BACKEND_HOST ?? 'localhost';
+    const url = `http://${host}:4000/trpc`;
+    console.log('SSR backend URL:', url);
+    return url;
   }
-  const url = window !== undefined ? window.location.origin : import.meta.env.VITE_BACKEND_HOST;
-  return `${url}/trpc`;
 
+  // 2️⃣ Production (Browser) - use same origin (for Caddy/reverse proxy)
+  if (import.meta.env.PROD) {
+    const url = `${window.location.origin}/trpc`;
+    console.log('Production browser URL:', url);
+    return url;
+  }
+
+  // 3️⃣ Development (Browser) - use backend host
+  const host = import.meta.env.VITE_BACKEND_HOST ?? 'localhost';
+  const url = `http://${host}:4000/trpc`;
+  console.log('Development browser URL:', url);
+  return url;
 }
 
 export function getAuthToken(): string | null {
@@ -38,9 +52,9 @@ const wsURL = `${wsProtocol}//${window.location.host}/trpc`;
 
 const wsClient = createWSClient({
   url: wsURL,
-// connectionParams: async () => {
-    // const currentToken = getAuthToken();
-    // return currentToken ? { authorization: `Bearer ${currentToken}` } : {};
+  // connectionParams: async () => {
+  // const currentToken = getAuthToken();
+  // return currentToken ? { authorization: `Bearer ${currentToken}` } : {};
   // },
   lazy: {
     enabled: true,

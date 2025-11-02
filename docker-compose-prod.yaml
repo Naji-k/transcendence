@@ -1,0 +1,58 @@
+# docker-compose.prod.yml
+version: '3.8'
+
+services:
+  backend:
+    container_name: backend
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+      target: production
+    env_file:
+      - ./apps/backend/.env
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    networks:
+      - mynet
+
+  frontend:
+    container_name: frontend
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      target: production
+    env_file:
+      - ./apps/frontend/.env
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - mynet
+    depends_on:
+      - backend
+
+  caddy:
+    container_name: caddy
+    image: caddy:latest
+    env_file:
+      - ./apps/frontend/.env
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./infra/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - mynet
+    depends_on:
+      - backend
+      - frontend
+
+networks:
+  mynet:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:

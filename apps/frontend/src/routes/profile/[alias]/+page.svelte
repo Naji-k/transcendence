@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+  	import { visitUser } from '$lib/profile';
 	import { authLoaded, isAuthenticated, currentUser } from '$lib/auth/store';
 	import { trpc } from "$lib/trpc";
 	import type { MatchHistoryEntry, TournamentHistoryEntry } from "@repo/db/dbTypes";
@@ -12,30 +13,26 @@
 	let userTournamentHistory = $state([]);
 	let loading = $state(true);
 	let friendAlias = $state("");
+	let pageVisitedUserId = $derived(page.state.visitedUserId);
 
 	let visitedUserAlias = $derived(page.params.alias);
+	// svelte-ignore non_reactive_update
+	let searchBarAlias = "";
 
 	async function loadUserData() {
 		try {
 			loading = true;
 
-			// Get visited user id
-			let visitedUserId: { id: number };
-			const visitedUserIdRes = await trpc.user.getVisitedUser.query({ alias: visitedUserAlias });
-			if (visitedUserIdRes.status === 200) {
-				visitedUserId = visitedUserIdRes.data;
-			}
-
 			// Start loading the relevant data like in the original profile
-			const avatarPathRes = await trpc.user.getUserAvatar.query({ userId: visitedUserId.id});
+			const avatarPathRes = await trpc.user.getUserAvatar.query({ userId: pageVisitedUserId });
 
 			if (avatarPathRes.status === 200) {
 				userAvatar = avatarPathRes.data;
 			}
 
 			const [matchHistoryRes, tournamentHistoryRes] = await Promise.all([
-				trpc.user.getUserMatchHistory.query({ userId: visitedUserId.id}),
-				trpc.user.getUserTournamentHistory.query({ userId: visitedUserId.id}),
+				trpc.user.getUserMatchHistory.query({ userId: pageVisitedUserId }),
+				trpc.user.getUserTournamentHistory.query({ userId: pageVisitedUserId }),
 			]);
 
 			if (matchHistoryRes.status === 200) {
@@ -116,17 +113,17 @@
 			<section class="flex flex-col md:flex-row justify-between items-center">
                 <button
                     onclick={() => goto('/profile')}
-                    class="text-xs sm:text-sm md:text-md bg-gray-400 hover:bg-gray-500 text-black px-4 py-2 rounded m-2">
+                    class="text-xs sm:text-sm md:text-md bg-gray-400 hover:bg-gray-500 text-black px-4 py-2 rounded m-2 mb-4">
                     ← Back to my profile
                 </button>
 				<div class="gap-2 mb-4">
 					<input
 						type="text"
-						bind:value={visitedUserAlias}
+						bind:value={searchBarAlias}
 						class="bg-gray-800 text-xs sm:text-sm md:text-md text-white px-4 py-2 rounded"
 						placeholder="User alias"/>
 					<button
-						onclick={() => goto(`/profile/${visitedUserAlias}`)}
+						onclick={() => visitUser(searchBarAlias)}
 						class="bg-cyan-500 hover:bg-cyan-600 px-4 py-2 rounded text-xs sm:text-sm text-black font-bold">
 						Find
 					</button>

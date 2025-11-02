@@ -6,6 +6,7 @@
 	import type { MatchHistoryEntry, TournamentHistoryEntry } from "@repo/db/dbTypes";
 	import { logout } from "$lib/auth/auth"
 	import { signUpInput } from "@repo/trpc/schemas";
+	import { visitUser } from "$lib/profile";
 		
 	let userAvatar = $state("");
 	let userStat = $state({ wins: 0, losses: 0 });
@@ -230,7 +231,7 @@
 						class="bg-gray-800 text-xs sm:text-sm md:text-md text-white px-4 py-2 rounded"
 						placeholder="User alias"/>
 					<button
-						onclick={() => goto(`/profile/${visitedUserAlias}`)}
+						onclick={() => visitUser(visitedUserAlias)}
 						class="bg-cyan-500 hover:bg-cyan-600 px-4 py-2 rounded text-xs sm:text-sm text-black font-bold">
 						Find
 					</button>

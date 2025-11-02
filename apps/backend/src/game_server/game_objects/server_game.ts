@@ -131,9 +131,7 @@ export class ServerGame extends EventEmitter
 			updateMatchStatus(this.gameState.matchId, 'finished', winner.id);
 		this.gameState.lastUpdate = performance.now();
 		this.updateGameState();
-		this.gameIsRunning = false;
-		this.engine.stopRenderLoop();
-		console.log('Game finished and the winner is', winner?.id);
+		this.dispose();
 	}
 
 	run()

@@ -5,6 +5,7 @@
   import { page } from '$app/stores';
   import type { GameState, Player } from '@repo/trpc/types';
   import { trpc } from '$lib/trpc';
+  import { goto } from '$app/navigation';
   import { isAuthenticated, currentUser } from '$lib/auth/store';
   import { ClientGame } from '$lib/game_client/game_objects/client_game';
 
@@ -102,6 +103,7 @@
     window.removeEventListener('resize', resizeCanvas);
     window.removeEventListener('orientationchange', resizeCanvas);
     resizeObserver?.disconnect();
+    subscription?.unsubscribe();
     subscription = null;
 
     if (game != null) {
@@ -109,6 +111,7 @@
       await destroyGame(game);
       game = null;
     }
+    location.reload();
   });
 </script>
 

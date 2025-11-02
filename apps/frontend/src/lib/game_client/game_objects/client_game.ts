@@ -122,7 +122,7 @@ export class ClientGame
 		waitingText.horizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
 		waitingText.verticalAlignment = TextBlock.VERTICAL_ALIGNMENT_CENTER;
 		advancedTexture.addControl(waitingText);
-		while (this.gameState.status != 'in_progress') 
+		while (this.gameState.status != 'in_progress')
 		{
 			await new Promise(resolve => setTimeout(resolve, 100));
 			this.scene.render();
@@ -167,6 +167,18 @@ export class ClientGame
 		this.scene.render();
 		trpc.game.sendPlayerAction.mutate({matchId: this.gameState.matchId, action: 'ready'});
 		console.log('Player is ready, waiting for other players...');
+		if (this.gameState.status == 'in_progress')
+		{
+			this.engine.stopRenderLoop();
+			if (this.cameraTransitionActive == true)
+			{
+				this.camera.position.copyFrom(this.cameraEndPos);
+				this.camera.setTarget(Vector3.Zero());
+				this.cameraTransitionActive = false;
+			}
+			this.engine.runRenderLoop(this.gameLoop.bind(this));
+			return;
+		}
 		this.waitForStart();
 	}
 

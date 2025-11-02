@@ -34,14 +34,14 @@ COPY packages/trpc-contract/package.json ./packages/trpc-contract/
 
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy dist from builder stage
+# Copy dist and necessary files
 COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
-COPY --from=builder /app/apps/backend/database.sqlite ./database.sqlite
+COPY --from=builder /app/apps/backend/database.sqlite ./apps/backend/database.sqlite
+COPY --from=builder /app/apps/backend/src/maps ./apps/backend/src/maps
 
 
 ENV NODE_ENV=production
 
 EXPOSE 4000
 
-
-CMD ["node", "apps/backend/dist/index.js"]
+CMD ["pnpm", "--filter", "backend", "start"]

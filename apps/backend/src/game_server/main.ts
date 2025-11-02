@@ -11,9 +11,14 @@ import { type GameState } from '@repo/trpc/types';
 
 async function getPhysics(): Promise<any>
 {
-	const localPath = './src/maps/HavokPhysics.wasm';
+	// const localPath = './src/maps/HavokPhysics.wasm';
+	const libPath = 'node_modules/@babylonjs/havok/lib/esm/HavokPhysics.wasm';
 
-	const wasmPath = path.resolve(process.cwd(), localPath);
+	const wasmPath = path.resolve(
+    process.cwd(),
+	libPath
+	);
+	console.log('Loading Havok WASM from:', wasmPath);
 	const buf = fs.readFileSync(wasmPath);
 	const wasmBinary = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 

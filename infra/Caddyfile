@@ -1,5 +1,5 @@
 # Production reverse proxy
-{$VITE_BACKEND_HOST}:9000 {
+{$DOMAIN}:9000 {
     tls internal
     
     # Backend API

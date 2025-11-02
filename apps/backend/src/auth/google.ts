@@ -114,7 +114,7 @@ export function setupGoogleAuthRoutes(app: FastifyInstance) {
         path: '/',
         maxAge: 60 * 60 * 24 * 7, // 1 week
         })
-        .redirect('http://localhost:8080/welcome');
+        .redirect('http://localhost:3000/welcome');
 
     } catch (error) {
       console.error('Google Sign-In failed:', error);

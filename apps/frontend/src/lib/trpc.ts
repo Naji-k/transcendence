@@ -37,21 +37,21 @@ export function getAuthToken(): string | null {
   return localStorage.getItem('authToken');
 }
 
-// function getWsUrl() {
-//   if (!browser) {
-//     const url = import.meta.env.VITE_BACKEND_HOST || 'localhost';
-//     return `wss://${url}/trpc`;
-//   }
-//   const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-//   const url = window !== undefined ? window.location.host : import.meta.env.VITE_BACKEND_HOST;
-//   return `${wsProtocol}//${url}/trpc`;
-// }
-const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+function getWsUrl() {
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  if (import.meta.env.PROD) {
+    const wsURL = `${wsProtocol}//${window.location.host}/trpc`;
+    return wsURL;
+  }
+  const host = import.meta.env.VITE_BACKEND_HOST ?? 'localhost';
+  return `${wsProtocol}//${host}:4000/trpc`;
+}
+// const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 
-const wsURL = `${wsProtocol}//${window.location.host}/trpc`;
+// const wsURL = `${wsProtocol}//${window.location.host}/trpc`;
 
 const wsClient = createWSClient({
-  url: wsURL,
+  url: getWsUrl(),
   // connectionParams: async () => {
   // const currentToken = getAuthToken();
   // return currentToken ? { authorization: `Bearer ${currentToken}` } : {};

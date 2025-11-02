@@ -5,7 +5,7 @@ import { Player } from './player';
 import { Goal } from './goal';
 import { createSurroundingWalls, createWalls, createBalls, createPlayers,
 	 createGoals, createGround, createPaddles } from '../initialize';
-import { jsonToVector2 } from '../utils';
+import { jsonToVector2, jsonToVector3 } from '../utils';
 import { Engine, Scene, Vector3, HavokPlugin, NullEngine } from '@babylonjs/core';
 import { EventEmitter } from 'events';
 import { GameStateManager } from '../game-state-manager';
@@ -197,9 +197,8 @@ export class ServerGame extends EventEmitter
 		while (this.actionQueue.length > 0)
 		{
 			const action = this.actionQueue.shift()!;
-
-			// isn't this always action.playerID - 1?
 			const paddleIndex = this.gameState.players.findIndex(p => p.id == action.playerId);
+
 			if (paddleIndex >= 0)
 			{
 				let direction: number;
@@ -207,7 +206,6 @@ export class ServerGame extends EventEmitter
 				{
 					case '1': direction = 1; break;
 					case '-1': direction = -1; break;
-					// case '0': direction = 0; break;
 					default: direction = 0; break;
 				}
 				this.paddles[paddleIndex].update(direction, this.walls);
@@ -237,11 +235,7 @@ export class ServerGame extends EventEmitter
 					}
 					this.balls[i].destroy();
 					this.balls.splice(i, 1);
-					this.balls.push(new Ball
-					(
-						jsonToVector3(this.jsonMap.balls[i].location),
-						0.5, this.scene
-					));
+					this.balls.push(new Ball(jsonToVector3(this.jsonMap.balls[i].location), 0.5, this.scene));
 					scored = true;
 					break;
 				}

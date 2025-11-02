@@ -5,7 +5,8 @@ import { Goal } from './game_objects/goal';
 import { Player } from './game_objects/player';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder } from '@babylonjs/core';
 import { AdvancedDynamicTexture, Rectangle, TextBlock, Control } from '@babylonjs/gui';
-import {Colors, ColorMap, jsonToVector3 } from './utils';
+import { Colors, ColorMap, jsonToVector3 } from './utils';
+
 const ballDiameter = 0.5;
 
 export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: number[])
@@ -62,7 +63,6 @@ export function createWalls(scene: Scene, walls: Wall[], map: any)
 	{
 		return;
 	}
-	console.log('Creating walls from map data:', map.walls);
 	for (let i = 0; i < map.walls.length; i++)
 	{
 		walls.push(new Wall
@@ -127,8 +127,8 @@ export function createPaddles(scene: Scene, paddles: Paddle[], mapGoals: any[])
 		const normal = jsonToVector3(mapGoals[i].surfaceNormal);
 		const paddlePos = goalPos.add(normal.scale(2));
 
-		paddles.push(new Paddle
-			(dimensions,
+		paddles.push(new Paddle(
+			dimensions,
 			paddlePos,
 			normal,
 			Colors[i].color,
@@ -167,17 +167,17 @@ export function createScoreboard(scoreboard: TextBlock[], players: Player[])
 {
 	const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 	const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('Scores');
-	const background = new Rectangle();
-	background.widthInPixels = canvas.width / 10;
-	background.heightInPixels = 35 * players.length + 10;
-	background.cornerRadius = 10;
-	background.color = 'yellow';
-	background.thickness = 2;
-	background.background = 'rgba(0, 0, 0, 0.8)';
-	background.isVisible = true;
-	background.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-	background.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
-	advancedTexture.addControl(background);
+	// const background = new Rectangle();
+	// background.widthInPixels = canvas.width / 10;
+	// background.heightInPixels = 35 * players.length + 10;
+	// background.cornerRadius = 10;
+	// background.color = 'yellow';
+	// background.thickness = 2;
+	// background.background = 'rgba(0, 0, 0, 0.8)';
+	// background.isVisible = true;
+	// background.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+	// background.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+	// advancedTexture.addControl(background);
 
 	for (let i = 0; i < players.length; i++)
 	{

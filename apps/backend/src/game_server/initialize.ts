@@ -1,4 +1,8 @@
-import { Wall, Ball, Paddle, Goal, Player } from './game_objects/';
+import { Wall } from './game_objects/wall';
+import { Ball } from './game_objects/ball';
+import { Paddle } from './game_objects/paddle';
+import { Goal } from './game_objects/goal';
+import { Player } from './game_objects/player';
 import { Scene, Vector3, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
 import { jsonToVector3 } from './utils';
 

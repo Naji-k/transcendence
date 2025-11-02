@@ -1,6 +1,5 @@
 import { Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
 import { Paddle } from './paddle';
-import { Wall } from './wall';
 
 export class Ball
 {
@@ -17,7 +16,6 @@ export class Ball
 	{
 		this.mesh = MeshBuilder.CreateSphere('sphere', {diameter: _diameter}, scene);
 		this.mesh.position = _center;
-		this.originalPosition = _center.clone();
 
 		this.aggregate = new PhysicsAggregate(
 			this.mesh,

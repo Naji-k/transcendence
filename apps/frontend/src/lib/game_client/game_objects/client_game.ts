@@ -4,14 +4,12 @@ import { Paddle } from './paddle';
 import { Player } from './player';
 import { Goal } from './goal';
 import { createSurroundingWalls, createWalls, createBalls, createPlayers, createGoals, createGround, createPaddles, createScoreboard } from '../initialize';
-import { CreateStreamingSoundAsync, CreateAudioEngineAsync, StreamingSound,
-		Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
+import { Engine, Scene, FreeCamera, Color3, Vector3, HemisphericLight,
 		StandardMaterial, Layer } from '@babylonjs/core';
 import { TextBlock, AdvancedDynamicTexture } from '@babylonjs/gui';
-import type { AudioEngineV2 } from '@babylonjs/core';
 import { trpc } from '../../trpc';
 import type { GameState } from '@repo/trpc/types';
-import { Colors, jsonToVector2 } from '../utils';
+import { jsonToVector2 } from '../utils';
 
 export class ClientGame
 {
@@ -40,10 +38,6 @@ export class ClientGame
     private upKeys: string[] = ['ArrowUp', 'ArrowRight', 'w', 'd'];
     private downKeys: string[] = ['ArrowDown', 'ArrowLeft', 's', 'a'];
 
-	private static playerOutSound: StreamingSound;
-	private static victorySound: StreamingSound;
-	private static audioEngine: AudioEngineV2;
-	private static music: StreamingSound;
 	private userId: number;
 
 	constructor(gameState: GameState, userId: number)
@@ -61,38 +55,15 @@ export class ClientGame
 		console.log('Game_client started');
 	}
 
-	private async loadSounds()
-	{
-		try
-		{
-			ClientGame.audioEngine = await CreateAudioEngineAsync();
-			ClientGame.audioEngine.volume = 0.5;
-			ClientGame.music = await CreateStreamingSoundAsync('music', 'sounds/frogs.mp3');
-			ClientGame.playerOutSound = await CreateStreamingSoundAsync('playerout', 'sounds/playerout.wav');
-			ClientGame.victorySound = await CreateStreamingSoundAsync('victory', 'sounds/victory.wav');
-			ClientGame.victorySound.maxInstances = 1;
-
-			ClientGame.playerOutSound.setVolume(0.6);
-			ClientGame.music.play();
-
-			await ClientGame.audioEngine.unlockAsync();
-		}
-		catch (error)
-		{
-			console.error('Error loading audio:', error);
-		}
-	}
-
 	async loadMap(inputFile: string)
 	{
 		let fileText = '';
 		try {
 			fileText = await loadFileText(inputFile);
-			
-		} catch (error) {
+		}
+		catch (error) {
 			console.error('Error loading map:', error);
 			throw error;
-			
 		}		
 		const map = JSON.parse(fileText);
 		
@@ -100,7 +71,6 @@ export class ClientGame
 		{
 			throw new Error('Invalid map format');
 		}
-		console.log(map);
 		this.createScene(map);
 		const eliminationMat = new StandardMaterial('eliminatedMat', this.scene);
 		
@@ -111,7 +81,6 @@ export class ClientGame
 		Paddle.setEliminatedMaterial(eliminationMat);
 		Goal.setEliminatedMaterial(eliminationMat);
 		Goal.createGoalPostMaterial(this.scene);
-		await this.loadSounds();
 	}
 
 	private createScene(map: any)
@@ -138,36 +107,6 @@ export class ClientGame
 		background.isBackground = true;
 		this.scene = scene;
 		this.camera = camera;
-
-		this.updateFromServer(this.gameState);
-	}
-
-	private victory()
-	{
-		ClientGame.playVictorySound();
-		
-		const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('victoryUI', true, this.scene);
-		const victoryText = new TextBlock();
-		
-		for (let i = 0; i < this.players.length; i++)
-		{
-			if (this.players[i].isAlive() == true)
-			{
-				victoryText.color = Colors[i].name;
-				victoryText.text = `${this.players[i].getName()} wins!`;
-				break;
-			}
-		}
-		victoryText.fontSize = 50;
-		victoryText.outlineWidth = 10;
-		victoryText.outlineColor = 'black';
-		advancedTexture.addControl(victoryText);
-		setTimeout(() =>
-		{
-			this.engine.stopRenderLoop();
-			advancedTexture.removeControl(victoryText);
-			advancedTexture.dispose();
-		}, 100);
 	}
 
 	private async waitForStart()
@@ -183,39 +122,39 @@ export class ClientGame
 		waitingText.horizontalAlignment = TextBlock.HORIZONTAL_ALIGNMENT_CENTER;
 		waitingText.verticalAlignment = TextBlock.VERTICAL_ALIGNMENT_CENTER;
 		advancedTexture.addControl(waitingText);
-		while (true) 
+		while (this.gameState.status != 'in_progress') 
 		{
 			await new Promise(resolve => setTimeout(resolve, 100));
-			if (this.gameState.status == 'in_progress')
-			{
-				if (this.userId)
-				{
-					for (let i = 0; i < this.gameState.players.length; i++)
-					{
-						if (this.gameState.players[i].alias)
-						{
-							this.players[i].updatePlayer(this.gameState.players[i].id, this.gameState.players[i].alias, this.gameState.players[i].lives);
-						}
-					}
-
-				}
-				this.engine.runRenderLoop(() =>
-				{
-					this.updateCameraTransition(performance.now());
-				});
-				advancedTexture.removeControl(waitingText);
-				advancedTexture.dispose();
-				this.showCountdown(this.scene, () =>
-				{
-					console.log('Starting render loop NOW');
-					this.engine.stopRenderLoop();
-					this.engine.runRenderLoop(this.gameLoop.bind(this));
-					console.log('players: ', this.gameState.players);
-				});
-				break; 
-			}
 			this.scene.render();
 		}
+		for (let i = 0; i < this.gameState.players.length; i++)
+		{
+			if (this.gameState.players[i].alias)
+			{
+				this.players[i].updatePlayer(
+					this.gameState.players[i].id,
+					this.gameState.players[i].alias,
+					this.gameState.players[i].lives
+				);
+			}
+		}
+		this.engine.runRenderLoop(() =>
+		{
+			this.updateCameraTransition(performance.now());
+		});
+		advancedTexture.removeControl(waitingText);
+		advancedTexture.dispose();
+		this.showCountdown(this.scene, () =>
+		{
+			this.engine.stopRenderLoop();
+			if (this.cameraTransitionActive == true)
+			{
+				this.camera.position.copyFrom(this.cameraEndPos);
+				this.camera.setTarget(Vector3.Zero());
+				this.cameraTransitionActive = false;
+			}
+			this.engine.runRenderLoop(this.gameLoop.bind(this));
+		});
 	}
 
 	run()
@@ -224,7 +163,6 @@ export class ClientGame
 		this.scene.render();
 		trpc.game.sendPlayerAction.mutate({matchId: this.gameState.matchId, action: 'ready'});
 		console.log('Player is ready, waiting for other players...');
-
 		this.waitForStart();
 	}
 
@@ -260,7 +198,7 @@ export class ClientGame
 		next();
 	}
 
-	public updateFromServer(gameState: GameState | null)
+	public updateFromServer(gameState: GameState)
 	{
 		this.gameState = gameState;
 	}
@@ -293,7 +231,6 @@ export class ClientGame
 		{
 			if (this.players[i].getLives() != serverPlayers[i].lives)
 			{
-				ClientGame.playPlayerOutSound();
 				this.players[i].setLives(serverPlayers[i].lives);
 				this.scoreboard[i].text = `${this.players[i].getName()}: ${serverPlayers[i].lives}`;
 			}
@@ -304,7 +241,8 @@ export class ClientGame
 	{
 		if (this.gameState.status == 'finished')
 		{
-			this.victory();
+			setTimeout(() => { this.dispose(); }, 100);
+			return;
 		}
 		this.sendKeyPresses();
 		this.updatePaddles();
@@ -377,14 +315,13 @@ export class ClientGame
 
 	private startCameraTransitionForPlayer(durationMs: number)
 	{
-		const playerIndex = this.players.findIndex(p => p.ID === this.userId);
-		console.log('players: ', this.players, );
+		const playerIndex = this.players.findIndex(p => p.ID == this.userId);
+
 		if (playerIndex != -1)
 		{
 			this.localPlayerIndex = playerIndex;
 			console.log('Local player index set to:', this.localPlayerIndex);
 		}
-
 		if (!this.camera )
 		{
 			console.warn('Camera not initialized yet userId:', this.userId);
@@ -430,12 +367,8 @@ export class ClientGame
 		this.walls = [];
 		this.goals = [];
 		this.scoreboard = [];
-		ClientGame.audioEngine.dispose();
 		console.log('Game data deleted.');
 	}
-
-	static playPlayerOutSound() { ClientGame.playerOutSound.play(); }
-	static playVictorySound() { ClientGame.victorySound.play(); }
 }
 
 async function loadFileText(filePath: string): Promise<string>
@@ -455,7 +388,6 @@ async function loadFileText(filePath: string): Promise<string>
 		throw error;
 	}
 }
-
 
 /*	Destroys the resources associated with the game	*/
 

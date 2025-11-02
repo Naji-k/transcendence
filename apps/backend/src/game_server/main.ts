@@ -12,17 +12,12 @@ import { type GameState } from '@repo/trpc/types';
 async function getPhysics(): Promise<any>
 {
 	const localPath = './src/maps/HavokPhysics.wasm';
-	// const libPath = 'node_modules/@babylonjs/havok/lib/esm/HavokPhysics.wasm';
 
-	const wasmPath = path.resolve(
-    process.cwd(),
-	localPath
-	);
-	console.log('Loading Havok WASM from:', wasmPath);
+	const wasmPath = path.resolve(process.cwd(), localPath);
 	const buf = fs.readFileSync(wasmPath);
 	const wasmBinary = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 
-	return await HavokPhysics({ wasmBinary});
+	return await HavokPhysics({ wasmBinary });
 }
 
 /**
@@ -32,9 +27,9 @@ async function getPhysics(): Promise<any>
  * @param map Optional path to the map file
  * @returns 
  */
+
 export async function startGame(gameState: GameState, gameStateManager: GameStateManager, maxPlayers: number): Promise<ServerGame>
 {
-
 	const map = `./src/maps/standard${maxPlayers}player.map`;	
 	
 	const havokInstance = await getPhysics();
@@ -43,11 +38,9 @@ export async function startGame(gameState: GameState, gameStateManager: GameStat
 		console.error('HavokPhysics instance is not available.');
 		return Promise.reject('Physics engine is not initialized.');
 	}
-	const game = new ServerGame(havokInstance, gameState, gameStateManager); // Pass the gameStateManager instance;
+	const game = new ServerGame(havokInstance, gameState, gameStateManager);
 	
 	await game.loadMap(map);
 	game.run();
 	return game;
 }
-// /Users/NajiKanounji/42/transcendence/apps/backend/src/maps/standard2player.map
-// Loading Havok WASM from: /Users/NajiKanounji/42/transcendence/apps/backend/node_modules/@babylonjs/havok/lib/esm/HavokPhysics.wasm

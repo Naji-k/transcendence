@@ -20,7 +20,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 
 	/* | on right */
 	walls.push(
-		new Wall(new Vector3(width, wallHeight, wallThickness),
+		new Wall(new Vector3(wallThickness, wallHeight, height),
 		new Vector3(-width / 2 - wallThickness / 2, wallHeight / 2, 0),
 		new Vector3(1, 0, 0),
 		whiteColor,
@@ -30,7 +30,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 
 	/* | on left */
 	walls.push(
-		new Wall(new Vector3(width, wallHeight, wallThickness),
+		new Wall(new Vector3(wallThickness, wallHeight, height),
 		new Vector3(width / 2 + wallThickness / 2, wallHeight / 2, 0),
 		new Vector3(-1, 0, 0),
 		whiteColor,
@@ -39,7 +39,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 	);
 
 	walls.push(
-		new Wall(new Vector3(width, wallHeight, wallThickness),
+		new Wall(new Vector3(wallThickness, wallHeight, width),
 		new Vector3(0, wallHeight / 2, -height / 2 - wallThickness / 2),
 		new Vector3(0, 0, 1),
 		whiteColor,
@@ -48,7 +48,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 	);
 
 	walls.push(
-		new Wall(new Vector3(width, wallHeight, wallThickness),
+		new Wall(new Vector3(wallThickness, wallHeight, width),
 		new Vector3(0, wallHeight / 2, height / 2 + wallThickness / 2),
 		new Vector3(0, 0, -1),
 		whiteColor,
@@ -167,17 +167,6 @@ export function createScoreboard(scoreboard: TextBlock[], players: Player[])
 {
 	const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 	const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('Scores');
-	// const background = new Rectangle();
-	// background.widthInPixels = canvas.width / 10;
-	// background.heightInPixels = 35 * players.length + 10;
-	// background.cornerRadius = 10;
-	// background.color = 'yellow';
-	// background.thickness = 2;
-	// background.background = 'rgba(0, 0, 0, 0.8)';
-	// background.isVisible = true;
-	// background.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-	// background.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
-	// advancedTexture.addControl(background);
 
 	for (let i = 0; i < players.length; i++)
 	{

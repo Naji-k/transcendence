@@ -55,13 +55,13 @@
 <div class="center">
   {#if page === "home"}
     <h1>Pong SPA</h1>
-    <button on:click={() => go("game")}>Play!</button>
-    <button on:click={() => go("editor")}>Editor</button>
+    <button onclick={() => go("game")}>Play!</button>
+    <button onclick={() => go("editor")}>Editor</button>
   {:else if page === "game"}
-    <button class="back" on:click={goHome}>← Back</button>
+    <button class="back" onclick={goHome}>← Back</button>
     <Game />
   {:else if page === "editor"}
-    <button class="back" on:click={goHome}>← Back</button>
+    <button class="back" onclick={goHome}>← Back</button>
     <Editor />
   {/if}
 </div>

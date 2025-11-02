@@ -70,7 +70,7 @@
 
     <!-- Sign Up Button -->
     <button
-      on:click={handleSignUp}
+      onclick={handleSignUp}
       class="bg-cyan-500 hover:bg-cyan-600 active:scale-95 shadow-lg active:shadow-inner transition-transform rounded-xl px-6 py-3 font-bold text-black w-full"
     >
       Sign Up
@@ -98,7 +98,7 @@
 
     <!-- Google Button -->
     <button
-      on:click={handleGoogleSignUp}
+      onclick={handleGoogleSignUp}
       class="flex items-center justify-center gap-3 bg-white hover:bg-gray-100 active:scale-95 active:shadow-inner rounded-xl px-6 py-3 text-black shadow-md transition-transform mx-auto w-full"
     >
       <img

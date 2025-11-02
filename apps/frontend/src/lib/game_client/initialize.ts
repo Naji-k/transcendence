@@ -161,8 +161,6 @@ export function	createGround(scene: Scene, dimensions: number[])
 	ground.material = mat;
 }
 
-// take a look at this, alignment not quite right
-
 export function createScoreboard(scoreboard: TextBlock[], players: Player[])
 {
 	const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
@@ -172,7 +170,7 @@ export function createScoreboard(scoreboard: TextBlock[], players: Player[])
 	{
 		const player = players[i];
 		const textBlock = new TextBlock();
-		textBlock.text = `Player ${player.ID}: ${player.getLives()}`;
+		textBlock.text = `${player.getName()}: ${player.getLives()}`;
 		textBlock.color = Colors[i].name;
 		textBlock.fontSize = 30;
 		textBlock.top = `${i * 35 - canvas.height / 2 + 20}px`;

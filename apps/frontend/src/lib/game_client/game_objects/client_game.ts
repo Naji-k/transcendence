@@ -138,6 +138,10 @@ export class ClientGame
 				);
 			}
 		}
+		for (let i = 0; i < this.players.length; i++)
+		{
+			this.scoreboard[i].text = `${this.players[i].getName()}: ${this.players[i].getLives()}`;
+		}
 		this.engine.runRenderLoop(() =>
 		{
 			this.updateCameraTransition(performance.now());

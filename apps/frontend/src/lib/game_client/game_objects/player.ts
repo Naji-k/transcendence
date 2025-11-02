@@ -53,7 +53,7 @@ export class Player
 		this.goal.eliminate();
 	}
 
-	updatePlayer(id: number, name: string,lives: number)
+	updatePlayer(id: number, name: string, lives: number)
 	{
 		this.ID = id;
 		this.name = name;

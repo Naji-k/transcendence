@@ -9,8 +9,6 @@ services:
     env_file:
       - ./apps/backend/.env
     restart: unless-stopped
-    ports:
-      - "4000:4000"
     networks:
       - mynet
 
@@ -23,8 +21,6 @@ services:
     env_file:
       - ./apps/frontend/.env
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     networks:
       - mynet
     depends_on:

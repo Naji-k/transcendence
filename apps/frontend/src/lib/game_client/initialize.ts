@@ -4,7 +4,7 @@ import { Paddle } from './game_objects/paddle';
 import { Goal } from './game_objects/goal';
 import { Player } from './game_objects/player';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder } from '@babylonjs/core';
-import { AdvancedDynamicTexture, Rectangle, TextBlock, Control } from '@babylonjs/gui';
+import { AdvancedDynamicTexture, TextBlock, Control } from '@babylonjs/gui';
 import { Colors, ColorMap, jsonToVector3 } from './utils';
 
 const ballDiameter = 0.5;

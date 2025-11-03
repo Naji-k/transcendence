@@ -103,7 +103,6 @@
     window.removeEventListener('resize', resizeCanvas);
     window.removeEventListener('orientationchange', resizeCanvas);
     resizeObserver?.disconnect();
-    subscription?.unsubscribe();
     subscription = null;
 
     if (game != null) {

@@ -17,9 +17,9 @@ COPY apps/backend ./apps/backend
 COPY packages ./packages
 
 # Build with tsup (bundles @repo/* packages)
-WORKDIR /app/apps/backend
+WORKDIR /app
 RUN pnpm build
-RUN pnpm --filter backend db:generate
+RUN pnpm --filter backend db:push
 
 # Production stage
 FROM node:22-alpine AS production

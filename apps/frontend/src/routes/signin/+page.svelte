@@ -30,7 +30,7 @@
 //         goto('/profile');
 
   function handleGoogleLogin() {
-    window.location.href = 'http://localhost:4000/api/auth/google';
+    window.location.href = '/api/auth/google';
   }
 </script>
 

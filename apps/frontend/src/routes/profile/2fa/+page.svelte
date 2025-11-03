@@ -23,7 +23,7 @@
   async function setup2FA() {
     error = '';
     try {
-      const res = await fetch('http://localhost:4000/api/auth/2fa/setup', {
+      const res = await fetch('/api/auth/2fa/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId }),
@@ -40,7 +40,7 @@
   async function verify2FA() {
     error = '';
     try {
-      const res = await fetch('http://localhost:4000/api/auth/2fa/verify', {
+      const res = await fetch('/api/auth/2fa/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, token }),
@@ -61,7 +61,7 @@
   async function disable2FA() {
     error = '';
     try {
-      const res = await fetch('http://localhost:4000/api/auth/2fa/disable', {
+      const res = await fetch('/api/auth/2fa/disable', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId }),

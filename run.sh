@@ -15,6 +15,8 @@ Commands:
     logs [service Name]    follow logs (tail 200 lines). If no service, shows all
     ps                     list containers
     restart                 down then up -d
+    rebuild                 down then up -d --build
+    clear                  down, remove volumes and images
 EOF
     exit 2
 }
@@ -45,6 +47,13 @@ case "$cmd" in
     restart)
         "${COMPOSE_CMD[@]}" down
         "${COMPOSE_CMD[@]}" up -d "$@"
+        ;;
+    rebuild)
+        "${COMPOSE_CMD[@]}" down
+        "${COMPOSE_CMD[@]}" up -d --build "$@"
+        ;;
+    clear)
+        "${COMPOSE_CMD[@]}" down -v --rmi all
         ;;
     *)
         usage

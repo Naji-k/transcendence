@@ -7,7 +7,8 @@ export const Colors: { name: string, color: Color3 }[] =
 	{ name: 'green', color: new Color3(0, 1, 0) },
 	{ name: 'yellow', color: new Color3(1, 1, 0) },
 	{ name: 'purple', color: new Color3(0.5, 0, 0.5) },
-	{ name: 'orange', color: new Color3(1, 0.5, 0) }
+	{ name: 'orange', color: new Color3(1, 0.5, 0) },
+	{ name: 'black', color: new Color3(0, 0, 0) }
 ]
 
 export const ColorMap: Record<string, Color3> = 

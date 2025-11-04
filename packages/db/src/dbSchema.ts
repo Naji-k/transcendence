@@ -17,7 +17,7 @@ export const usersTable = sqliteTable('users_table', {
   password: text().notNull(),
   name: text(),
   email: text().notNull().unique(),
-  avatarPath: text().notNull().default('avatar_default.jpeg'),
+  avatarPath: text().notNull().default('https://www.shutterstock.com/image-vector/user-profile-icon-vector-avatar-600nw-2558760599.jpg'),
   googleId: text(),
   twofa_secret: text(),
   twofa_enabled: int().default(0),

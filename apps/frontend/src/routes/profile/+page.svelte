@@ -3,7 +3,7 @@
 	import { goto } from "$app/navigation";
 	import { authLoaded, isAuthenticated, currentUser } from "$lib/auth/store";
 	import { trpc } from "$lib/trpc";
-	import type { MatchHistoryEntry, TournamentHistoryEntry } from "@repo/db/dbTypes";
+	import type { MatchHistoryEntry } from "@repo/db/dbTypes";
 	import { logout } from "$lib/auth/auth"
 	import { signUpInput } from "@repo/trpc/schemas";
 	import { visitUser } from "$lib/profile";
@@ -136,7 +136,7 @@
 
 		} catch (error) {
 			friendAlias = "";
-			alert(`Failed to add friend "${newFriend}": ${error}`);
+			alert(`Failed to add friend "${newFriend}": ${error.message}`);
 			console.error(`Failed to add friend "${newFriend}": ${error}`);
 		}
 
@@ -155,7 +155,7 @@
 
 		} catch (error) {
 			friendAlias = "";
-			alert(`Failed to add friend "${friend}": ${error}`);
+			alert(`Failed to add friend "${friend}": ${error.message}`);
 			console.error(`Failed to add friend "${friend}": ${error}`);
 		}
 

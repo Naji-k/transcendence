@@ -1,8 +1,7 @@
 // It defines the context type used in tRPC routers
 
-import { GameState, PlayerAction } from './gameState';
-import type { ExistingUser, Tournament } from '@repo/db/dbTypes';
-import { MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db/dbTypes';
+import type { GameState, PlayerAction } from './gameState';
+import type { ExistingUser, Tournament, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db/dbTypes';
 
 export interface Services {
   jwtUtils: {

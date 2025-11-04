@@ -25,6 +25,13 @@ if [ $# -lt 1 ]; then
     usage
 fi
 
+for dir in apps/frontend apps/backend; do
+    if [ ! -f "$dir/.env" ]; then
+        echo "Error: $dir/.env not found."
+        exit 1
+    fi
+done
+
 cmd="$1"; shift || true
 
 case "$cmd" in

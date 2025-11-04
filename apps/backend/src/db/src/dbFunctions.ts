@@ -245,7 +245,7 @@ export async function getUserMatchHistory(userId: number): Promise<MatchHistoryE
       .select({ 
         matchId: singleMatchPlayersTable.matchId,
         date: matchTable.date,
-        placement: singleMatchPlayersTable.placement,
+        victor: matchTable.victor,
       })
       .from(singleMatchPlayersTable)
       .innerJoin(matchTable, eq(singleMatchPlayersTable.matchId, matchTable.id))
@@ -269,9 +269,8 @@ export async function getUserMatchHistory(userId: number): Promise<MatchHistoryE
         entries.push({
           id: match.matchId,
           date: match.date,
-          placement: match.placement,
           participants: participantsAlias,
-          isWin: match.placement === 1
+          isWin: match.victor === userId,
         })
     }
     return entries;

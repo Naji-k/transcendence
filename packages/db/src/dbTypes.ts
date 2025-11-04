@@ -23,7 +23,6 @@ export type MatchParticipation = typeof singleMatchPlayersTable.$inferSelect;
 export interface MatchHistoryEntry {
   id: number;
   date: string | null;
-  placement: number;
   participants: string[];
   isWin: boolean;
 }

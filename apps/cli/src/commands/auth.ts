@@ -1,5 +1,5 @@
 import { trpc } from '../trpc';
-import { setToken } from '../config';
+import { setToken, clearToken } from '../config';
 import { signUpInput, loginInput } from '@repo/trpc/schemas';
 
 export async function signin(email: string, password: string) {
@@ -40,5 +40,14 @@ export async function signup(name: string, email: string, password: string) {
     console.log(`✅ Logged in as ${res.user.email}`);
   } catch (e) {
     console.error('login failed: ', e.message);
+  }
+}
+
+export async function signout() {
+  try {
+    clearToken();
+    console.log('✅ Logged out successfully');
+  } catch (e) {
+    console.error('logout failed: ', e.message);
   }
 }

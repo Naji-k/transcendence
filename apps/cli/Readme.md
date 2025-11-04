@@ -8,6 +8,7 @@ Use this tool to sign up, sign in, and view your match history directly from the
 - **Sign Up:** Create a new account.
 - **Sign In:** Authenticate and store your token locally.
 - **Match History:** List your matches.
+- **signout**: remove the token.
 
 ## Requirements
 
@@ -20,12 +21,12 @@ Use this tool to sign up, sign in, and view your match history directly from the
 ### Development
 
 ```bash
-pnpm dev
+pnpm --filter cli dev [command] 
 ```
 
 ### Production
 
 ```bash
-pnpm build
-pnpm start
+pnpm --filter cli build
+pnpm --filter cli start [command]
 ```

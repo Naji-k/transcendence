@@ -1,4 +1,8 @@
-import { Wall, Ball, Paddle, Goal, Player } from './game_objects/';
+import { Wall } from './game_objects/wall';
+import { Ball } from './game_objects/ball';
+import { Paddle } from './game_objects/paddle';
+import { Goal } from './game_objects/goal';
+import { Player } from './game_objects/player';
 import { Scene, Vector3, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from '@babylonjs/core';
 import { jsonToVector3 } from './utils';
 
@@ -13,7 +17,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 
 	/* | on right */
 	walls.push(
-		new Wall(new Vector3(wallThickness, wallHeight, height + wallThickness * 2),
+		new Wall(new Vector3(wallThickness, wallHeight, height),
 		new Vector3(-width / 2 - wallThickness / 2, wallHeight / 2, 0),
 		new Vector3(1, 0, 0),
 		scene)
@@ -21,21 +25,21 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 
 	/* | on left */
 	walls.push(
-		new Wall(new Vector3(wallThickness, wallHeight, height + wallThickness * 2),
+		new Wall(new Vector3(wallThickness, wallHeight, height),
 		new Vector3(width / 2 + wallThickness / 2, wallHeight / 2, 0),
 		new Vector3(-1, 0, 0),
 		scene)
 	);
 
 	walls.push(
-		new Wall(new Vector3(width, wallHeight, wallThickness),
+		new Wall(new Vector3(wallThickness, wallHeight, width),
 		new Vector3(0, wallHeight / 2, -height / 2 - wallThickness / 2),
 		new Vector3(0, 0, 1),
 		scene)
 	);
 
 	walls.push(
-		new Wall(new Vector3(width, wallHeight, wallThickness),
+		new Wall(new Vector3(wallThickness, wallHeight, width),
 		new Vector3(0, wallHeight / 2, height / 2 + wallThickness / 2),
 		new Vector3(0, 0, -1),
 		scene)

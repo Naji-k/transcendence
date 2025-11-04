@@ -5,6 +5,7 @@
   import { page } from '$app/stores';
   import type { GameState, Player } from '@repo/trpc/types';
   import { trpc } from '$lib/trpc';
+  import { goto } from '$app/navigation';
   import { isAuthenticated, currentUser } from '$lib/auth/store';
   import { ClientGame } from '$lib/game_client/game_objects/client_game';
 
@@ -53,7 +54,7 @@
   };
 
   onMount(async () => {
-    const userId = Number(localStorage.getItem('id'));
+    const userId = Number(localStorage.getItem('id')); // Can this fail? I don't want to check afterwards
     const res = await trpc.game.getGameState.query({ matchId: matchId });
     initialState = { ...initialState, ...res } as GameState;
     const map = `maps/standard${initialState.players.length}player.map`;
@@ -93,7 +94,7 @@
           },
         }
       );
-    resizeCanvas();
+      resizeCanvas();
     }
   });
 
@@ -109,6 +110,7 @@
       await destroyGame(game);
       game = null;
     }
+    location.reload();
   });
 </script>
 

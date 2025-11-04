@@ -12,7 +12,9 @@ export async function startGame(map: string, gameState: GameState, userId: numbe
 	const game = new ClientGame(gameState, userId);
 	
 	await game.loadMap(map);
-	if (gameState.status !== 'finished')
+	if (gameState.status != 'finished')
+	{
 		game.run();
+	}
 	return game;
 }

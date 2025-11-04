@@ -5,7 +5,7 @@ import { Player } from './player';
 import { Goal } from './goal';
 import { createSurroundingWalls, createWalls, createBalls, createPlayers,
 	 createGoals, createGround, createPaddles } from '../initialize';
-import { jsonToVector2 } from '../utils';
+import { jsonToVector2, jsonToVector3 } from '../utils';
 import { Engine, Scene, Vector3, HavokPlugin, NullEngine } from '@babylonjs/core';
 import { EventEmitter } from 'events';
 import { GameStateManager } from '../game-state-manager';
@@ -85,8 +85,8 @@ export class ServerGame extends EventEmitter
 		{
 			throw new Error(`Map cannot have more than ${maxPlayerCount} players.`);
 		}
-		
 		const state = this.gameState;
+
 		for (let i = 0; i < this.players.length; i++)
 		{
 			state.players[i].position = this.paddles[i].getPosition();
@@ -109,7 +109,7 @@ export class ServerGame extends EventEmitter
 		createGround(scene, this.dimensions);
 		createBalls(scene, this.balls, map);
 		createSurroundingWalls(scene, this.walls, this.dimensions);
-		createWalls(scene, this.walls, map.walls);
+		createWalls(scene, this.walls, map);
 		createGoals(scene, this.goals, map);
 		createPaddles(scene, this.paddles, map.goals);
 		createPlayers(this.players, this.goals, this.paddles);
@@ -131,9 +131,7 @@ export class ServerGame extends EventEmitter
 			updateMatchStatus(this.gameState.matchId, 'finished', winner.id);
 		this.gameState.lastUpdate = performance.now();
 		this.updateGameState();
-		this.gameIsRunning = false;
-		this.engine.stopRenderLoop();
-		console.log('Game finished and the winner is', winner?.id);
+		this.dispose();
 	}
 
 	run()
@@ -153,6 +151,7 @@ export class ServerGame extends EventEmitter
 			this.gameState.players[i].lives = this.players[i].getLives?.() ?? this.gameState.players[i].lives;
 			this.gameState.players[i].isAlive = this.players[i].isAlive?.() ?? false;
 		}
+		this.gameState.balls = [];
 		this.gameState.balls = this.balls.map(ball => {
 			const pos = ball.getPosition();
 			return { x: pos.x, z: pos.z };
@@ -170,7 +169,7 @@ export class ServerGame extends EventEmitter
 			const player = this.gameState.players.find(pl => pl.id == action.playerId);
 			if (player)
 			{
-				if (action.action === 'ready')
+				if (action.action == 'ready')
 				{
 					player.isReady = true;
 					console.log(`Player ${action.playerId} is ready.`);
@@ -185,7 +184,7 @@ export class ServerGame extends EventEmitter
 						this.gameIsRunning = true;
 						this.engine.stopRenderLoop();
 						this.engine.runRenderLoop(this.gameLoop.bind(this));
-					}, 2100);
+					}, 3100);
 				}
 			}
 		}
@@ -197,6 +196,7 @@ export class ServerGame extends EventEmitter
 		{
 			const action = this.actionQueue.shift()!;
 			const paddleIndex = this.gameState.players.findIndex(p => p.id == action.playerId);
+
 			if (paddleIndex >= 0)
 			{
 				let direction: number;
@@ -204,7 +204,6 @@ export class ServerGame extends EventEmitter
 				{
 					case '1': direction = 1; break;
 					case '-1': direction = -1; break;
-					case '0': direction = 0; break;
 					default: direction = 0; break;
 				}
 				this.paddles[paddleIndex].update(direction, this.walls);
@@ -234,22 +233,19 @@ export class ServerGame extends EventEmitter
 					}
 					this.balls[i].destroy();
 					this.balls.splice(i, 1);
-					i--;
+					this.balls.push(new Ball(jsonToVector3(this.jsonMap.balls[i].location), 0.5, this.scene));
 					scored = true;
 					break;
 				}
 			}
 			if (scored == false)
 			{
-				this.balls[i].update(this.paddles, this.walls);
-			}
-			if (this.balls.length == 0)
-			{
-				createBalls(this.scene, this.balls, this.jsonMap);
+				this.balls[i].update(this.paddles);
 			}
 			scored = false;
 		}
 	}
+
 	private gameLoop()
 	{
 		if (this.gameIsRunning == true)
@@ -290,7 +286,7 @@ export async function loadFileText(filePath: string): Promise<string> {
 
 /*	Destroys the resources associated with the game	*/
 
-export async function destroyGame(game: ServerGame)
+export function destroyGame(game: ServerGame)
 {
 	game.dispose();
 }

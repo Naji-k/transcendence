@@ -4,8 +4,9 @@ import { Paddle } from './game_objects/paddle';
 import { Goal } from './game_objects/goal';
 import { Player } from './game_objects/player';
 import { Scene, Vector3, Color3, StandardMaterial, MeshBuilder } from '@babylonjs/core';
-import { AdvancedDynamicTexture, Rectangle, TextBlock, Control } from '@babylonjs/gui';
-import {Colors, ColorMap, jsonToVector3 } from './utils';
+import { AdvancedDynamicTexture, TextBlock, Control } from '@babylonjs/gui';
+import { Colors, ColorMap, jsonToVector3 } from './utils';
+
 const ballDiameter = 0.5;
 
 export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: number[])
@@ -19,7 +20,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 
 	/* | on right */
 	walls.push(
-		new Wall(new Vector3(wallThickness, wallHeight, height + wallThickness * 2),
+		new Wall(new Vector3(wallThickness, wallHeight, height),
 		new Vector3(-width / 2 - wallThickness / 2, wallHeight / 2, 0),
 		new Vector3(1, 0, 0),
 		whiteColor,
@@ -29,7 +30,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 
 	/* | on left */
 	walls.push(
-		new Wall(new Vector3(wallThickness, wallHeight, height + wallThickness * 2),
+		new Wall(new Vector3(wallThickness, wallHeight, height),
 		new Vector3(width / 2 + wallThickness / 2, wallHeight / 2, 0),
 		new Vector3(-1, 0, 0),
 		whiteColor,
@@ -38,7 +39,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 	);
 
 	walls.push(
-		new Wall(new Vector3(width, wallHeight, wallThickness),
+		new Wall(new Vector3(wallThickness, wallHeight, width),
 		new Vector3(0, wallHeight / 2, -height / 2 - wallThickness / 2),
 		new Vector3(0, 0, 1),
 		whiteColor,
@@ -47,7 +48,7 @@ export function	createSurroundingWalls(scene: Scene, walls: Wall[], dimensions: 
 	);
 
 	walls.push(
-		new Wall(new Vector3(width, wallHeight, wallThickness),
+		new Wall(new Vector3(wallThickness, wallHeight, width),
 		new Vector3(0, wallHeight / 2, height / 2 + wallThickness / 2),
 		new Vector3(0, 0, -1),
 		whiteColor,
@@ -69,8 +70,8 @@ export function createWalls(scene: Scene, walls: Wall[], map: any)
 			jsonToVector3(map.walls[i].dimensions),
 			jsonToVector3(map.walls[i].location),
 			jsonToVector3(map.walls[i].surfaceNormal),
-			ColorMap[map.walls[i].color] || ColorMap['black'],
-			map.walls[i].opacity || 1,
+			ColorMap['black'],
+			1,
 			scene
 		));
 	}
@@ -126,8 +127,8 @@ export function createPaddles(scene: Scene, paddles: Paddle[], mapGoals: any[])
 		const normal = jsonToVector3(mapGoals[i].surfaceNormal);
 		const paddlePos = goalPos.add(normal.scale(2));
 
-		paddles.push(new Paddle
-			(dimensions,
+		paddles.push(new Paddle(
+			dimensions,
 			paddlePos,
 			normal,
 			Colors[i].color,
@@ -160,29 +161,16 @@ export function	createGround(scene: Scene, dimensions: number[])
 	ground.material = mat;
 }
 
-// take a look at this, alignment not quite right
-
 export function createScoreboard(scoreboard: TextBlock[], players: Player[])
 {
 	const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 	const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI('Scores');
-	const background = new Rectangle();
-	background.widthInPixels = canvas.width / 10;
-	background.heightInPixels = 35 * players.length + 10;
-	background.cornerRadius = 10;
-	background.color = 'yellow';
-	background.thickness = 2;
-	background.background = 'rgba(0, 0, 0, 0.8)';
-	background.isVisible = true;
-	background.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-	background.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
-	advancedTexture.addControl(background);
 
 	for (let i = 0; i < players.length; i++)
 	{
 		const player = players[i];
 		const textBlock = new TextBlock();
-		textBlock.text = `Player ${player.ID}: ${player.getLives()}`;
+		textBlock.text = `${player.getName()}: ${player.getLives()}`;
 		textBlock.color = Colors[i].name;
 		textBlock.fontSize = 30;
 		textBlock.top = `${i * 35 - canvas.height / 2 + 20}px`;

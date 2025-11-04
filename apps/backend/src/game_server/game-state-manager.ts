@@ -32,7 +32,6 @@ export class GameStateManager extends EventEmitter {
    * @throws TRPCError if the game state already exists and is not in 'waiting' status
    */
 
-  //this will be called after GameLoop (matchmaking is done and players are assigned to a match)
   async initGameState(
     matchId: number,
     players: { id: number; alias: string }[]
@@ -71,6 +70,7 @@ export class GameStateManager extends EventEmitter {
    * @param action The player action to handle
    * @throws TRPCError if the match is not found
    */
+
   handlePlayerAction(action: PlayerAction): void {
     const serverGame = this.serverGames.get(action.matchId);
 
@@ -81,10 +81,10 @@ export class GameStateManager extends EventEmitter {
       });
     }
     serverGame.enqueueAction(action);
-    if (action.action === 'ready') {
-      if (serverGame.gameState.players.every((p) => p.isReady)) {
-        //here update DB that match is starting
-      }
+    if (serverGame.gameState.status == 'waiting') {
+      if (action.action == 'ready' && serverGame.gameState.players.every((p) => p.isReady)) {
+          //here update DB that match is starting
+        }
     }
   }
 }

@@ -1,6 +1,5 @@
 import { Vector3, MeshBuilder, Mesh, PhysicsShapeType, PhysicsAggregate, Scene } from '@babylonjs/core';
 import { Paddle } from './paddle';
-import { Wall } from './wall';
 
 export class Ball
 {
@@ -46,7 +45,7 @@ export class Ball
 		return randomVec;
 	}
 
-	update(paddles: Paddle[], walls: Wall[])
+	update(paddles: Paddle[])
 	{
 		for (let pad = 0; pad < paddles.length; pad++)
 		{
@@ -82,11 +81,6 @@ export class Ball
 		this.aggregate.body.setLinearVelocity(this.velocity);
 	}
 
-	reset()
-	{
-		this.speed = Ball.baseSpeed;
-	}
-
 	getMesh(): Mesh
 	{
 		return this.mesh;
@@ -99,8 +93,8 @@ export class Ball
 
 	setMovement(movement: Vector3)
 	{
-		this.aggregate.body.setLinearVelocity(movement.scale(this.speed));
 		this.velocity = movement.scale(this.speed);
+		this.aggregate.body.setLinearVelocity(this.velocity);
 	}
 
 	getPosition(): { x: number; z: number }

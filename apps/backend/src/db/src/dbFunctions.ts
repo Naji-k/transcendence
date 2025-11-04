@@ -7,12 +7,21 @@ import {
   usersTable,
 } from '@repo/db';
 import { db } from './dbClientInit';
-import { eq, and, or, gt, inArray, isNull } from 'drizzle-orm';
-import { ExistingUser, Match, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db';
+import { eq, and, or, inArray, isNull } from 'drizzle-orm';
+import type { ExistingUser, MatchHistoryEntry, TournamentHistoryEntry } from '@repo/db';
 import { TRPCError } from '@trpc/server';
 import { hashPassword } from '../../auth/password';
-import { networkInterfaces } from 'os';
 
+function throwNewTrpcError(error: any, msg: string) {
+  if (error instanceof TRPCError) {
+      throw error;
+    }
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: msg,
+      cause: error,
+    });
+}
 
 /**
  * Create and return a user, [createdUser] is destructuring the array returned from returning(),
@@ -71,11 +80,7 @@ export async function findUserById(id: number): Promise<ExistingUser | null> {
       .where(eq(usersTable.id, id));
     return foundUser ?? null;
   } catch (error) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'findUserById error',
-      cause: error,
-    });
+    throwNewTrpcError(error, 'findUserById error');
   }
 }
 
@@ -103,11 +108,7 @@ export async function findUserByAlias(
       .where(eq(usersTable.alias, alias));
     return foundUser ?? null;
   } catch (error) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'findUserByAlias error',
-      cause: error,
-    });
+    throwNewTrpcError(error, 'findUserByAlias error');
   }
 }
 
@@ -135,11 +136,7 @@ export async function findUserByEmail(
       .where(eq(usersTable.email, email));
     return foundUser ?? null;
   } catch (error) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'findUserByEmail error',
-      cause: error,
-    });
+    throwNewTrpcError(error, 'findUserByEmail error');
   }
 }
 
@@ -167,11 +164,7 @@ export async function playerExistsInMatch(
     if (playerExists.length > 0) return true;
     return false;
   } catch (error) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'playerExistsInMatch error',
-      cause: error,
-    });
+    throwNewTrpcError(error, 'playerExistsInMatch error');
   }
 }
 
@@ -191,11 +184,7 @@ export async function matchExists(matchId: number): Promise<boolean> {
     if (matchExists.length > 0) return true;
     return false;
   } catch (error) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'matchExists error',
-      cause: error,
-    });
+    throwNewTrpcError(error, 'matchExists error');
   }
 }
 
@@ -220,11 +209,7 @@ export async function getMatchPlayers(
       .where(eq(singleMatchPlayersTable.matchId, matchId));
     return matchPlayers ?? [];
   } catch (error) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'getMatchPlayers error',
-      cause: error,
-    });
+    throwNewTrpcError(error, 'getMatchPlayers error');
   }
 }
 
@@ -277,11 +262,7 @@ export async function getUserMatchHistory(userId: number): Promise<MatchHistoryE
     }
     return entries;
   } catch (error) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'getUserMatchHistory error',
-      cause: error,
-    });
+    throwNewTrpcError(error, 'getUserMatchHistory error');
   }
 }
 
@@ -321,11 +302,7 @@ export async function getUserTournamentHistory(userId: number): Promise<Tourname
     }
     return entries;
   } catch (error) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'getUserMatchHistory error',
-      cause: error,
-    });
+    throwNewTrpcError(error, 'getUserTournamentHistory error');
   }
 }
 
@@ -349,11 +326,7 @@ export async function getUserFriends(userId: number): Promise<{alias: string, la
 
     return friends;
   } catch (error) {
-    throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'getUserFriends error',
-          cause: error,
-    });
+    throwNewTrpcError(error, 'getUserFriends error');
   }
 }
 
@@ -375,11 +348,7 @@ export async function getUserAvatar(userId: number): Promise<string> {
     
     return imgPath.avatarPath;
   } catch (error) {
-    throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'getAvatarPath error',
-          cause: error,
-    });
+    throwNewTrpcError(error, 'getUserAvatar error');
   }
 }
 
@@ -400,11 +369,7 @@ export async function updateUserAvatar(userId: number, newPath: string): Promise
     
     return updatedAvatarPath.avatarPath;
   } catch (error) {
-    throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'updateUserAvatar error',
-          cause: error,
-    });
+    throwNewTrpcError(error, 'updateUserAvatar error');
   }
 }
 
@@ -425,11 +390,7 @@ export async function updateUserAlias(userId: number, newAlias: string): Promise
     
     return updatedAlias.alias;
   } catch (error) {
-    throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'updateUserAlias error',
-          cause: error,
-    });
+    throwNewTrpcError(error, 'updateUserAlias error');
   }
 }
 
@@ -453,11 +414,7 @@ export async function updateUserEmail(userId: number, newEmail: string): Promise
   
     return updatedEmail.email;
   } catch (error) {
-    throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'updateUserEmail error',
-          cause: error,
-    });
+    throwNewTrpcError(error, 'updateUserEmail error');
   }
 }
 
@@ -486,11 +443,7 @@ export async function updateUserPassword(userId: number, newPassword: string): P
     }
     return true;
   } catch (error) {
-    throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'updateUserPassword error',
-          cause: error,
-    });
+    throwNewTrpcError(error, 'updateUserPassword error');
   }
 }
 
@@ -525,11 +478,7 @@ export async function createFriendship(user: number, friend: string): Promise<bo
     }
     return true;
   } catch (error) {
-    throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'createFriendship error',
-          cause: error,
-    });
+    throwNewTrpcError(error, 'createFriendship error');
   }
 }
 
@@ -561,11 +510,7 @@ export async function removeFriendship(user: number, friend: string): Promise<bo
     }
     return true;
   } catch (error) {
-    throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'removeFriendship error',
-          cause: error,
-    });
+    throwNewTrpcError(error, 'removeFriendship error');
   }
 }
 
@@ -622,11 +567,7 @@ export async function updateActiveStatus(userId: number): Promise<Date> {
   
     return activeStatus.lastActivityTime;
   } catch (error) {
-    throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'updateUserEmail error',
-          cause: error,
-    });
+    throwNewTrpcError(error, 'updateActiveStatus error');
   }
 }
 

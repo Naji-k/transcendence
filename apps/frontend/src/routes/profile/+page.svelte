@@ -1,11 +1,9 @@
 <script lang="ts">
 
 	import { goto } from "$app/navigation";
-	import { authLoaded, isAuthenticated, currentUser, authStoreMethods, initAuthStore } from "$lib/auth/store";
+	import { authLoaded, isAuthenticated, currentUser } from "$lib/auth/store";
 	import { trpc } from "$lib/trpc";
-	import { onMount } from "svelte";
-	import type { User } from '@repo/trpc/src/types';
-	import type { MatchHistoryEntry, TournamentHistoryEntry } from "@repo/db/dbTypes";
+	import type { MatchHistoryEntry } from "@repo/db/dbTypes";
 	import { logout } from "$lib/auth/auth"
 		
 	let userStat = $state({ wins: 0, losses: 0 });

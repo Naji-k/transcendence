@@ -26,10 +26,10 @@ export const gameRouter = createRouter({
         );
         return { success: true, gameState };
       } catch (error) {
-        // console.error('Error initializing match:', error);
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to initialize match',
+          cause: error
         });
       }
     }),

@@ -5,8 +5,9 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [tailwindcss(), sveltekit()],
   server: {
+    allowedHosts: true,
     host: true,
-    port: 8080,
+    port: 3000,
     cors: true,
     watch: { usePolling: true },
     fs: {
@@ -15,7 +16,7 @@ export default defineConfig({
   },
   preview: {
     host: true,
-    port: 8080,
+    port: 3000,
     cors: true,
   },
 });

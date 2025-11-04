@@ -1,16 +1,19 @@
 # Production reverse proxy
-:9000 {
-    # Frontend requests
-    handle /* {
-        reverse_proxy pong:8080
-    }
-
+{$DOMAIN}:9000 {
+    tls internal
+    
     # Backend API
-    handle /trpc/* {
-        reverse_proxy pong:3000
+    handle /trpc* {
+        reverse_proxy backend:4000 {
+        }
     }
     handle /api/* {
-        reverse_proxy pong:3000
+        reverse_proxy backend:4000
+    }
+
+    # Frontend requests
+    handle /* {
+        reverse_proxy frontend:3000
     }
 
     # Logging

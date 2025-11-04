@@ -2,14 +2,16 @@
 services:
   pong:
     container_name: pong
-    build: .
+    build:
+      context: .
+      dockerfile: ./Dockerfile.dev
     working_dir: /pong
     volumes:
       - .:/pong
     command: tail -f /dev/null
     ports:
-      - "8080:8080"
       - "3000:3000"
+      - "4000:4000"
     networks:
       - mynet
 

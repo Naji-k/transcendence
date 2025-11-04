@@ -87,14 +87,14 @@
       <p class="text-green-600 font-medium">2FA is enabled on your account.</p>
 
       <button
-        on:click={disable2FA}
+        onclick={disable2FA}
         class="bg-red-500 hover:bg-red-600 active:scale-95 shadow-md active:shadow-inner transition-transform text-white rounded-xl px-6 py-3 font-bold w-full"
       >
         Disable 2FA
       </button>
 
       <button
-        on:click={() => goto('/profile')}
+        onclick={() => goto('/profile')}
         class="bg-cyan-500 hover:bg-cyan-600 active:scale-95 shadow-md active:shadow-inner transition-transform text-black rounded-xl px-6 py-3 font-bold w-full"
       >
         Back to Profile
@@ -109,14 +109,14 @@
       <p class="text-sm text-gray-600">Add an extra layer of security to your account.</p>
 
       <button
-        on:click={setup2FA}
+        onclick={setup2FA}
         class="bg-cyan-500 hover:bg-cyan-600 active:scale-95 shadow-md active:shadow-inner transition-transform text-black rounded-xl px-6 py-3 font-bold w-full"
       >
         Enable 2FA
       </button>
 
       <button
-        on:click={() => goto('/profile')}
+        onclick={() => goto('/profile')}
         class="bg-gray-200 hover:bg-gray-300 active:scale-95 shadow-md transition-transform rounded-xl px-6 py-3 font-bold text-gray-700 w-full"
       >
         Back to Profile
@@ -144,7 +144,7 @@
       />
 
       <button
-        on:click={verify2FA}
+        onclick={verify2FA}
         class="bg-green-500 hover:bg-green-600 active:scale-95 shadow-md active:shadow-inner transition-transform text-white rounded-xl px-6 py-3 font-bold w-full"
       >
         Verify
@@ -155,7 +155,7 @@
       {/if}
 
       <button
-        on:click={() => goto('/profile')}
+        onclick={() => goto('/profile')}
         class="bg-gray-200 hover:bg-gray-300 active:scale-95 shadow-md transition-transform rounded-xl px-6 py-3 font-bold text-gray-700 w-full"
       >
         Back to Profile

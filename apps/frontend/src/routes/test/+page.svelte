@@ -183,8 +183,8 @@
 
   <!-- Action Buttons -->
   <div class="buttons">
-    <button on:click={initGame}>🎮 Initialize Game</button>
-    <button on:click={subscribeToGame} disabled={isSubscribed}
+    <button onclick={initGame}>🎮 Initialize Game</button>
+    <button onclick={subscribeToGame} disabled={isSubscribed}
       >📡 Subscribe to Updates
     </button>
     <input
@@ -193,9 +193,9 @@
       placeholder="Player ID"
       style="width: 100px;"
     />
-    <button on:click={() => sendReady()}>✅ Send Ready</button>
+    <button onclick={() => sendReady()}>✅ Send Ready</button>
     <p>Current Player ID: {playerID}</p>
-    <button on:click={disconnect} disabled={!isSubscribed}
+    <button onclick={disconnect} disabled={!isSubscribed}
       >🔌 Disconnect
     </button>
   </div>
@@ -245,27 +245,27 @@
     </div>
   </div>
   <div class="buttons">
-    <button on:click={() => void handleCreate()}
+    <button onclick={() => void handleCreate()}
       >🏆 Create Tournament</button
     >
-    <button on:click={fetchTournaments}>📋 List All Tournaments</button>
+    <button onclick={fetchTournaments}>📋 List All Tournaments</button>
     <!--    <input type="number" bind:value={tournamentId} placeholder="tournament ID" />-->
-    <button on:click={() => joinTournament(tournamentName)}
+    <button onclick={() => joinTournament(tournamentName)}
       >➕ Join Tournament : {tournamentName}
     </button>
-    <button on:click={() => fetchPlayerCount(tournamentName)}
+    <button onclick={() => fetchPlayerCount(tournamentName)}
       >👥 Get Players in Tournament : {tournamentName}</button
     >
-    <button on:click={() => startTournament(tournamentName)}
+    <button onclick={() => startTournament(tournamentName)}
       >▶️ Start Tournament : {tournamentName}</button
     >
-    <button on:click={() => fetchBracket(tournamentName)}
+    <button onclick={() => fetchBracket(tournamentName)}
       >🗂️ Get Bracket : {tournamentName}</button>
   </div>
   <div class="messages">
     <div class="messages-header">
       <h3>List All Tournaments</h3>
-      <button on:click={() => (messages = [])}>Clear</button>
+      <button onclick={() => (messages = [])}>Clear</button>
     </div>
     <div class="message-list">
       {#if messages.length > 0}
@@ -319,7 +319,7 @@
                     <div class="flex justify-end gap-2">
                       {#if t.status === 'waiting'}
                         <button
-                          on:click={() => joinTournament(t.name)}
+                          onclick={() => joinTournament(t.name)}
                           class="inline-flex items-center px-4 py-2 border-2 border-green-400 text-[10px] font-bold rounded-xl text-green-400 bg-black/30 hover:bg-green-500 hover:text-black active:scale-95 transition-all shadow-lg"
                         >
                           JOIN
@@ -327,7 +327,7 @@
                       {/if}
                       {#if t.status === 'ready'}
                         <button
-                          on:click={() => startTournament(t.name)}
+                          onclick={() => startTournament(t.name)}
                           class="inline-flex items-center px-4 py-2 text-[10px] font-bold rounded-xl text-black bg-cyan-500 hover:bg-cyan-600 active:scale-95 transition-all shadow-lg"
                         >
                           START

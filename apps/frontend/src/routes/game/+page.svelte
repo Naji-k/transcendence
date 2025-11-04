@@ -166,7 +166,7 @@
 
       <!-- Close Button -->
       <button
-        on:click={() => {
+        onclick={() => {
           window.history.back();
           showScorePopup = false;
         }}

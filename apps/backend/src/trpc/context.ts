@@ -4,16 +4,24 @@ import { type CreateFastifyContextOptions } from '@trpc/server/adapters/fastify'
 import { db } from '../db/src';
 import {
   findUserById,
+  findUserByAlias,
   getMatchPlayers,
   playerExistsInMatch,
   matchExists,
   getUserMatchHistory,
   getUserTournamentHistory,
-  getUserFriends
+  getUserFriends,
+  getUserAvatar,
+  updateUserAvatar,
+  updateUserAlias,
+  updateUserEmail,
+  updateUserPassword,
+  createFriendship,
+  removeFriendship,
+  updateActiveStatus,
 } from '../db/src';
 import { GameStateManager } from '../game_server/game-state-manager';
 import { TournamentService, MatchService } from '../tournament';
-
 
 // const disableJWT = false; //for development,
 const gameStateManager = new GameStateManager();
@@ -42,6 +50,7 @@ function parseToken(authHeader: string | undefined): string | null {
  */
 export async function createTRPCContext({
   req,
+  res,
 }: CreateFastifyContextOptions): Promise<Context> {
   let userToken: UserToken | undefined;
   // 1. HTTP requests (headers)
@@ -63,12 +72,21 @@ export async function createTRPCContext({
     },
     dbServices: {
       findUserById: findUserById,
+      findUserByAlias: findUserByAlias,
       getMatchPlayers: getMatchPlayers,
       playerExistsInMatch: playerExistsInMatch,
       matchExists: matchExists,
       getUserMatchHistory: getUserMatchHistory,
       getUserTournamentHistory: getUserTournamentHistory,
-      getUserFriends: getUserFriends
+      getUserFriends: getUserFriends,
+      getUserAvatar: getUserAvatar,
+      updateUserAvatar: updateUserAvatar,
+      updateUserAlias: updateUserAlias,
+      updateUserEmail: updateUserEmail,
+      updateUserPassword: updateUserPassword,
+      createFriendship: createFriendship,
+      removeFriendship: removeFriendship,
+      updateActiveStatus: updateActiveStatus,
     },
     gameStateManager: {
       subscribe: gameStateManager.subscribe.bind(gameStateManager),

@@ -87,6 +87,14 @@ export class ServerGame extends EventEmitter
 		}
 		const state = this.gameState;
 
+		for (let i = 0; i < state.players.length; i++)
+		{
+			this.players[i].updatePlayer(
+				state.players[i].id,
+				state.players[i].alias,
+				state.players[i].lives
+			);
+		}
 		for (let i = 0; i < this.players.length; i++)
 		{
 			state.players[i].position = this.paddles[i].getPosition();
@@ -126,9 +134,10 @@ export class ServerGame extends EventEmitter
 	private gameFinished()
 	{
 		this.gameState.status = 'finished';
-		const winner = this.gameState.players.find(p => p.isAlive);
+		const winner = this.players.find(p => p.isAlive());
+		console.log('Game finished. Winner:', winner ? winner.ID : 'No winner');
 		if (winner)
-			updateMatchStatus(this.gameState.matchId, 'finished', winner.id);
+			updateMatchStatus(this.gameState.matchId, 'finished', winner.ID);
 		this.gameState.lastUpdate = performance.now();
 		this.updateGameState();
 		this.dispose();
@@ -149,7 +158,7 @@ export class ServerGame extends EventEmitter
 
 			this.gameState.players[i].position = { x: p.x, z: p.z };
 			this.gameState.players[i].lives = this.players[i].getLives?.() ?? this.gameState.players[i].lives;
-			this.gameState.players[i].isAlive = this.players[i].isAlive?.() ?? false;
+			this.gameState.players[i].isAlive = this.gameState.players[i].lives > 0;
 		}
 		this.gameState.balls = [];
 		this.gameState.balls = this.balls.map(ball => {

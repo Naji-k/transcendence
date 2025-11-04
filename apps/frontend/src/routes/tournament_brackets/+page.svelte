@@ -108,6 +108,11 @@
 <div
   class="min-h-screen font-['Press_Start_2P'] bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364] py-8"
 >
+	<button
+		onclick={() => goto('/profile')}
+		class="text-xs sm:text-sm md:text-md bg-gray-400 hover:bg-gray-500 text-black px-4 py-2 rounded m-2 mb-4">
+		← Back to my profile
+	</button>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     {#if error}
       <div
@@ -173,7 +178,7 @@
               </p>
             </div>
             <button
-              on:click={() => startGame(myActiveMatch.id)}
+              onclick={() => startGame(myActiveMatch.id)}
               class="px-8 py-4 bg-cyan-500 hover:bg-cyan-600 active:scale-95 shadow-lg transition-transform rounded-xl font-bold text-black text-sm"
             >
               START GAME NOW!

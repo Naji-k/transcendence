@@ -88,6 +88,11 @@
 <div
   class="min-h-screen font-['Press_Start_2P'] bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364] py-8"
 >
+	<button
+		onclick={() => goto('/profile')}
+		class="text-xs sm:text-sm md:text-md bg-gray-400 hover:bg-gray-500 text-black px-4 py-2 rounded m-2 mb-4">
+		← Back to my profile
+	</button>
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-8">
       <h1 class="text-5xl font-bold text-cyan-400 drop-shadow-lg mb-4">
@@ -136,7 +141,7 @@
           <option value={6}>6 Players</option>
         </select>
         <button
-          on:click={createGame}
+         onclick={createGame}
           disabled={loading}
           class="px-8 py-4 bg-cyan-500 hover:bg-cyan-600 active:scale-95 shadow-lg active:shadow-inner transition-transform rounded-xl font-bold text-black disabled:opacity-50 disabled:cursor-not-allowed text-sm"
         >
@@ -144,7 +149,7 @@
         </button>
 
         <button
-          on:click={fetchGames}
+         onclick={fetchGames}
           disabled={loading}
           class="px-8 py-4 bg-purple-500 hover:bg-purple-600 active:scale-95 shadow-lg active:shadow-inner transition-transform rounded-xl font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed text-sm"
         >
@@ -267,7 +272,7 @@
                     <div class="flex justify-end gap-2">
                       {#if game.playerCount < game.maxPlayers && game.status === 'waiting'}
                         <button
-                          on:click={() => joinGame(game.id)}
+                          onclick={() => joinGame(game.id)}
                           class="inline-flex items-center px-4 py-2 border-2 border-green-400 text-[10px] font-bold rounded-xl text-green-400 bg-black/30 hover:bg-green-500 hover:text-black active:scale-95 transition-all shadow-lg"
                         >
                           JOIN
@@ -275,7 +280,7 @@
                       {/if}
                       {#if game.playerCount === game.maxPlayers}
                         <button
-                          on:click={() => startGame(game.id)}
+                          onclick={() => startGame(game.id)}
                           class="inline-flex items-center px-4 py-2 text-[10px] font-bold rounded-xl text-black bg-cyan-500 hover:bg-cyan-600 active:scale-95 transition-all shadow-lg"
                         >
                           START

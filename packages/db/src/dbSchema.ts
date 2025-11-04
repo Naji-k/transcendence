@@ -16,14 +16,13 @@ export const usersTable = sqliteTable('users_table', {
   alias: text().notNull().unique(),
   password: text().notNull(),
   name: text(),
-  email: text().notNull().unique(), // Do we want email to be a mandatory field?
-  avatarPath: text().default('avatar_default'),
-  backgroundPath: text().default('background_default'),
+  email: text().notNull().unique(),
+  avatarPath: text().notNull().default('https://www.shutterstock.com/image-vector/user-profile-icon-vector-avatar-600nw-2558760599.jpg'),
   googleId: text(),
   twofa_secret: text(),
-  twofa_enabled: int().default(0)
+  twofa_enabled: int().default(0),
+  lastActivityTime: int({ mode: 'timestamp' }).notNull().default(sql`(strftime('%s','now'))`), // use this to get active status for the last 5 minutes
   // lastLoginTime: int({ mode: 'timestamp' }),
-  // lastActivityTime: int({ mode: 'timestamp' }), // we can use this to display last seen status, I understand that online status will come from memory
 });
 
 /**

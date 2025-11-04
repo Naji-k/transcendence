@@ -98,6 +98,11 @@
 <div
   class="min-h-screen font-['Press_Start_2P'] bg-gradient-to-br from-[#0f2027] via-[#203a43] to-[#2c5364] py-8"
 >
+	<button
+		onclick={() => goto('/profile')}
+		class="text-xs sm:text-sm md:text-md bg-gray-400 hover:bg-gray-500 text-black px-4 py-2 rounded m-2 mb-4">
+		← Back to my profile
+	</button>
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-8">
       <h1 class="text-5xl font-bold text-cyan-400 drop-shadow-lg mb-4">
@@ -155,13 +160,13 @@
           <option value={8}>8 Players</option>
         </select>
         <button
-          on:click={handleCreate}
+          onclick={handleCreate}
           class="px-8 py-2 bg-cyan-500 hover:bg-cyan-600 active:scale-95 shadow-lg active:shadow-inner transition-transform rounded-xl font-bold text-black text-sm"
         >
           CREATE TOURNAMENT
         </button>
         <button
-          on:click={fetchTournaments}
+          onclick={fetchTournaments}
           disabled={loading}
           class="px-8 py-2 bg-purple-500 hover:bg-purple-600 active:scale-95 shadow-lg active:shadow-inner transition-transform rounded-xl font-bold text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -273,7 +278,7 @@
                     <div class="flex justify-end gap-2">
                       {#if t.status === 'waiting'}
                         <button
-                          on:click={() => joinTournament(t.name)}
+                          onclick={() => joinTournament(t.name)}
                           class="inline-flex items-center px-4 py-2 border-2 border-green-400 text-[10px] font-bold rounded-xl text-green-400 bg-black/30 hover:bg-green-500 hover:text-black active:scale-95 transition-all shadow-lg"
                         >
                           JOIN
@@ -281,7 +286,7 @@
                       {/if}
                       {#if t.status === 'ready'}
                         <button
-                          on:click={() => startTournament(t)}
+                          onclick={() => startTournament(t)}
                           class="inline-flex items-center px-4 py-2 text-[10px] font-bold rounded-xl text-black bg-cyan-500 hover:bg-cyan-600 active:scale-95 transition-all shadow-lg"
                         >
                           START
@@ -289,7 +294,7 @@
                       {/if}
                       {#if t.status === 'ongoing'}
                         <button
-                          on:click={() => goToLobby(t.id)}
+                          onclick={() => goToLobby(t.id)}
                           class="inline-flex items-center px-4 py-2 text-[10px] font-bold rounded-xl text-black bg-cyan-500 hover:bg-cyan-600 active:scale-95 transition-all shadow-lg"
                         >
                           LOBBY

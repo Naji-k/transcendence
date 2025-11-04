@@ -40,7 +40,7 @@
     />
 
     <button
-      on:click={handle2FAVerify}
+      onclick={handle2FAVerify}
       class="bg-cyan-500 hover:bg-cyan-600 active:scale-95 transition-transform rounded-xl px-6 py-3 font-bold text-black w-full"
     >
       Verify

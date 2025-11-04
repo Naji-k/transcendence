@@ -25,6 +25,19 @@ services:
       - mynet
     depends_on:
       - backend
+    
+  cli:
+    container_name: cli
+    build: 
+      context: .
+      dockerfile: apps/cli/Dockerfile
+      target: production
+    depends_on:
+      - backend
+    stdin_open: true
+    tty: true
+    networks:
+      - mynet
 
   caddy:
     container_name: caddy

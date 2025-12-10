@@ -1,109 +1,180 @@
-# 📦 Monorepo Guide: Using pnpm for Development
+# ft_transcendence (Pong Game)
+A 3D real-time multiplayer Pong game with tournament management, built with a **backend-authoritative architecture** ensuring fair gameplay and cheat prevention.
 
-Welcome to the Pong Game monorepo!  
-We use [pnpm](https://pnpm.io/) as our package manager for its speed, workspace support, and reliability.  
-**Please read and follow these instructions to keep our development workflow smooth for everyone!**
+## 📋 Table of Contents
+
+- [Features](#-features)
+- [Technology Stack](#-Tech-Stack)
+- [Project Architecture](#-project-architecture)
+- [Project Structure](#-Project-Architecture)
+- [Getting Started](#-Getting-Started)
+- [Workspace Structure](#Workspace-Structure)
+- [Authors](#-Authors)
+- [Screenshots](#-Screenshots)
 
 ---
 
+## ✨ Features
+
+### 🔐 Authentication & User Management
+- **Email/Password Authentication** - Secure user registration and login with Argon2 password hashing
+- **Google OAuth Integration** - Sign in with Google account
+- **JWT-based Sessions** - Stateless authentication with token-based security
+- **User Profiles** - Customizable player profiles with avatars
+- **Friend System** - Add and manage friends
+
+### 🎮 Real-time Gameplay
+- **3D Pong Game** - Immersive 3D gameplay powered by Babylon.js
+- **2-6 Player Support** - Flexible player count per match
+- **Backend-Authoritative Logic** - All game state managed server-side for fair play
+- **Real-time Synchronization** - Smooth gameplay with tRPC WebSocket subscriptions
+- **Lives System** - Track player lives and elimination
+- **Physics-based Ball Movement** - Realistic ball physics and collision detection
+- **Player Actions** - Responsive paddle controls (up, down, ready states)
+
+### 🔐 Security
+
+- **Password Hashing** - Argon2 with secure defaults
+- **JWT Authentication** - Stateless token-based auth
+- **Input Validation** - Zod schemas validate all inputs
+- **Backend-Authoritative** - All game logic server-side to prevent cheating
+- **CORS Protection** - Configured for security
+- **SQL Injection Prevention** - Drizzle ORM with parameterized queries
+
+### 🏆 Tournament Management
+- **Create Tournaments** - Set up tournaments with customizable player limits (2-6 players)
+- **Join Tournaments** - Browse and join available tournaments
+- **Tournament Brackets** - Automatic bracket generation and progression
+- **Match Scheduling** - Organized match flow within tournaments
+- **Real-time Status Updates** - Live tournament status (waiting, ready, ongoing, finished)
+
+### 📊 Statistics & Social
+- **Match History** - Track past games and performance
+- **Player Statistics** - View wins, losses, and tournament placements
+
+---
+
+## 🛠 Tech Stack
+
+### **Frontend**
+- **[SvelteKit](https://kit.svelte.dev/)** - Modern, reactive UI framework
+- **[Babylon.js](https://www.babylonjs.com/)** - Powerful 3D rendering engine for game graphics
+- **[TailwindCSS](https://tailwindcss.com/)** - CSS framework
+- **[tRPC Client](https://trpc.io/)** - End-to-end type-safe API client
+
+### **Backend**
+- **[Fastify](https://fastify.dev/)** - High-performance Node.js web framework
+- **[tRPC](https://trpc.io/)** - Type-safe API with WebSocket support for real-time features
+- **[Drizzle ORM](https://orm.drizzle.team/)** - TypeScript ORM with excellent type inference
+- **[SQLite](https://www.sqlite.org/)** - Lightweight, serverless database
+- **[Argon2](https://github.com/ranisalt/node-argon2)** - Industry-standard password hashing
+- **[JWT](https://jwt.io/)** - Secure token-based authentication
+- **[Zod](https://zod.dev)** - Validates and parses inputs 
+
+### **Development Tools**
+- **pnpm** - Fast, disk-efficient package manager with workspace support
+- **TypeScript** - Type safety across the entire stack
+- **ESLint** - Code quality and consistency
+- **Prettier** - Code formatting
+- **Drizzle Kit** - Database migrations and schema management
+
+### **Infrastructure**
+- **Monorepo Architecture** - Organized workspace with shared packages
+- **Docker** - Containerized deployment
+- **Caddy** - Modern reverse proxy
+
+---
+
+## 🏗 Project Architecture
+
+### **Architectural Principles**
+
+1. **Backend-Authoritative Game Logic** - All game state and physics calculations happen on the server
+2. **Type Safety Everywhere** - Shared TypeScript types across frontend and backend
+3. **Real-time via tRPC** - WebSocket subscriptions for live game updates, mutations for player actions
+4. **Service Layer Pattern** - Clean separation of business logic from API routes
+5. **Monorepo Benefits** - Shared packages for consistency and code reuse
+
+### **Real-time Communication**
+
+- **Player Actions** → Sent via tRPC mutations (HTTP)
+- **Game State Updates** → Broadcast via tRPC subscriptions (WebSocket)
+- **No separate WebSocket server** - tRPC handles all real-time communication
+
+
 ## 🚀 Getting Started
 
-### Install pnpm (if you haven’t already)
+### **Prerequisites**
 
-You only need to do this once:
+- **Docker**
 
-```bash
-npm install -g pnpm #at Codam we don't have the rights to install pnpm
-```
+or for development version
+- **Node.js** v22.x or higher
+- **pnpm** v8.x or higher
 
-   ### 🚨 At Codam 
+### **Installation**
 
-```bash
-docker compose up -d
-docker compose exec pong bash
+1. **Clone the repository**
 
+  ```bash
+    git clone https://github.com/Soepgroente/transcendence.git
+  ```
+
+2. **Set up environment variables**
+
+Create `.env` file in `apps/backend/` && `apps/frontend/`:
+- Reference `.env.example` in each respective directory for required variables
+
+3. **Run production version**
+  ```bash
+  ./run.sh  #for help menu
+  ```
+
+4. **Access the application**
+- Frontend: http://hostIpAddress || localhost:9000
+
+
+### Run Development version
+# Install all dependencies
+``` bash 
 pnpm install
+pnpm dev
 ```
+- Frontend: http://localhost:3000
+- Backend: http://localhost:4000
 
+---
 
-After pulling changes from the root directory run :
-``` bash
-pnpm install
-```
-### To run Apps
+## **Workspace Structure**
 
-- Backend: `pnpm --filter backend dev` || `pnpm dev:backend`
+The project uses **pnpm workspaces** for monorepo management:
 
-- Frontend: `pnpm --filter frontend dev` || `pnpm dev:frontend`
+- `apps/*` - Deployable applications (backend, frontend, cli)
+- `packages/*` - Shared code (db, trpc-contract, tsconfig)
+- `infra` - Caddy file
 
-- All: `pnpm dev`
-- Eslint: `pnpm lint:backend` || `pnpm lint:frontend` || `pnpm lint`
-- Prettier formatter: `pnpm format:backend` || `pnpm format:frontend` || `pnpm format`
+---
 
-### Project Structure
-``` bash
-/Transcendence
-│
-├── /apps
-│   ├── /frontend
-│   │    ├── package.json   
-│   │    └── (src)
-│   └── /backend
-│        ├── package.json   
-│        └── (src)
-│
-├── /packages #shared packages between frontend, backend: (db, auth, trpc, types)
-│   ├── /db
-│   │  ├── package.json   
-│   │  └── (src)
-│   └── /trpc
-│        ├── package.json   
-│        └── (src)
-├── /infra
-├── Caddyfile
-├── docker-compose.yml
-└── package.json            
-```
-### 🛠️ Important Rules When Using pnpm:
-1.	Never use npm install or yarn install in any sub-folder.
-Always use pnpm install from the root directory.
+## 👥 Authors
+The project was developed by the following contributors:
+- [Alex](https://github.com/alexkasiot)
+- [Julia](https://github.com/julicaro31)
+- [Naji](https://github.com/Naji-k)
+- [Vincent](https://github.com/Soepgroente)
 
-2.	Add new packages with pnpm, not npm/yarn!
-    Example:
-    To add lodash to backend only:
-    ``` bash
-    pnpm add lodash --filter backend
-    ```
-    To add a dev dependency to frontend only:
-    ``` bash
-    pnpm add -D esbuild --filter frontend
-    ```
+---
 
+## 📸 Screenshots
 
-4. How to use shared(packages) <package-name>: (ex: will use `trpc` as shared package)
+_Screenshots will be added here_
 
-    create a sub-dir for the package with it's name, 
-    ``` bash
-    mkdir -p packages/trpc
-    cd packages/trpc
-    npm init --scope=repo (to be shared by other apps)
-    ```
-    make sure you will have the following in `./packages/trpc/package.json` ->   `"name": "@repo/trpc"`.
-   
-    **from root directory**
-    ``` bash
-    pnpm add <package-name> --filter @repo/trpc
-    #ex:
-    pnpm add zod --filter @repo/trpc #adding package zod to ./package/trpc
+---
 
-    ```
+## check the docs for more info:
 
-6. To use a share package with frontend or backend, you need to add it by the following:
-    ``` bash
-    pnpm add @repo/trpc --workspace --filter backend  # installs the @repo/trpc package as a dependency specifically for the backend project
-    ```
+- **[Database schema](./docs/dbSchema.png)**
+- **[Project Commands](./docs/Project%20Commands.md)**
+- **[Monorepo Guide](./docs/Monorepo%20Guide.md)**
+- **[Game Architecture](./docs/Game%20Architecture.md)**
 
-### 🤝 Need Help?
-If you’re new to pnpm or monorepos, check out:
-
-- [pnpm Documentation](https://pnpm.io/motivation)
+---

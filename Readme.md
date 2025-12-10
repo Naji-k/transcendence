@@ -104,44 +104,61 @@ A 3D real-time multiplayer Pong game with tournament management, built with a **
 
 ## 🚀 Getting Started
 
-### **Prerequisites**
+<details>
+<summary><strong>Prerequisites</strong></summary>
+<details>
+
+<summary>📦 <strong>Production</strong></summary>
 
 - **Docker**
 
-or for development version
+</details>
+
+<details>
+<summary>🛠 <strong>Development</strong></summary>
+
 - **Node.js** v22.x or higher
 - **pnpm** v8.x or higher
 
-### **Installation**
+</details>
+</details>
+<details><summary><strong>Installation</strong></summary>
 
 1. **Clone the repository**
 
   ```bash
     git clone https://github.com/Soepgroente/transcendence.git
+    cd transcendence
   ```
 
 2. **Set up environment variables**
 
 Create `.env` file in `apps/backend/` && `apps/frontend/`:
 - Reference `.env.example` in each respective directory for required variables
+</details>
+<details><summary><strong>Running the Application</strong></summary>
 
-3. **Run production version**
+### Run Production version with Docker
   ```bash
   ./run.sh  #for help menu
   ```
-
-4. **Access the application**
+**Access the application**
 - Frontend: http://hostIpAddress || localhost:9000
 
+</details>
 
-### Run Development version
-# Install all dependencies
+<details><summary><strong>Development version</strong></summary>
+after cloning the repo, from the root directory run and setup env files as mentioned above:
+
+### Install all dependencies
 ``` bash 
 pnpm install
 pnpm dev
 ```
 - Frontend: http://localhost:3000
 - Backend: http://localhost:4000
+
+</details>
 
 ---
 

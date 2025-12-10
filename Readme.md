@@ -20,8 +20,10 @@ A 3D real-time multiplayer Pong game with tournament management, built with a **
 - **Email/Password Authentication** - Secure user registration and login with Argon2 password hashing
 - **Google OAuth Integration** - Sign in with Google account
 - **JWT-based Sessions** - Stateless authentication with token-based security
+- **2FA Support** - two-factor authentication for enhanced security
 - **User Profiles** - Customizable player profiles with avatars
 - **Friend System** - Add and manage friends
+- **Active Status** - Show online/offline status of users
 
 ### 🎮 Real-time Gameplay
 - **3D Pong Game** - Immersive 3D gameplay powered by Babylon.js
